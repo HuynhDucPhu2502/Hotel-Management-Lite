@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum ObjectStatus {
-    ACTIVE("Active"),
-    INACTIVE("Inactive");
+    ACTIVE("Hoạt động"),
+    INACTIVE("Không hoạt động");
 
-    private final String displayname;
+    public final String displayname;
 
     @Override
     public String toString() {

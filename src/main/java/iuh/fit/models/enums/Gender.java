@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum Gender {
     MALE("Nam"), FEMALE("Nữ");
 
-    private final String displayName;
+    public final String displayName;
 
     @Override
     public String toString() {
