@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd"
+             version="3.2">
+
+    <persistence-unit name="mssql" >
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>iuh.fit.models.TestEntity</class>>
+        <properties>
+            <!-- Cấu Hình Cơ Sở Dữ Liệu -->
+            <property name="jakarta.persistence.jdbc.driver"
+                      value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+
+            <property name="jakarta.persistence.jdbc.url"
+                      value="jdbc:sqlserver://localhost:1433;
+                      databaseName=NewHotelDatabase;
+                      encrypt=true;
+                      trustServerCertificate=true;" />
+
+            <property name="hibernate.dialect"
+                      value="org.hibernate.dialect.SQLServerDialect" />
+
+
+            <!-- Tài khoản -->
+            <property name="jakarta.persistence.jdbc.user" value="sa"/>
+            <property name="jakarta.persistence.jdbc.password"
+                      value="sapassword"/>
+
+            <!-- Cấu Hình Hibernate -->
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+        </properties>
+    </persistence-unit>
+</persistence>

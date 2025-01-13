@@ -1,0 +1,36 @@
+package iuh.fit.models;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.Set;
+
+/**
+ * Admin 1/7/2025
+ **/
+@Entity
+@Table(name = "groups")
+@Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
+@NoArgsConstructor
+public class Group {
+    @Id
+    @Column(name = "group_id")
+    @EqualsAndHashCode.Include
+    private int id;
+
+    @Column(columnDefinition = "varchar(45)", unique = true, nullable = false)
+    private String name;
+
+    @ManyToMany
+    @JoinTable(
+            name = "users_groups",
+            joinColumns = @JoinColumn(name = "group_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"),
+            uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "group_id"})
+    )
+    @ToString.Exclude
+    private Set<User> users;
+
+}
