@@ -24,4 +24,6 @@ module iuh.fit {
     // Xuất (exports) các gói công khai
     exports iuh.fit;
     exports iuh.fit.models;
+
+    uses net.datafaker.idnumbers.IdNumberGenerator;
 }
