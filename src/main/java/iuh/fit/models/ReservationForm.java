@@ -1,5 +1,6 @@
 package iuh.fit.models;
 
+import iuh.fit.models.enums.ReservationStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,15 +30,20 @@ public class ReservationForm {
     @Column(name = "approx_check_out_date", nullable = false)
     private LocalDateTime approxcheckOutTime;
 
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reservation_status", nullable = false)
+    private ReservationStatus reservationStatus;
+
     @OneToOne
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
     @ManyToOne
-    @JoinColumn(name = "customer_code", nullable = false)
+    @JoinColumn(name = "customer_code", referencedColumnName = "customer_code", nullable = false)
     private Customer customer;
 
     @ManyToOne
-    @JoinColumn(name = "employee_code", nullable = false)
+    @JoinColumn(name = "employee_code", referencedColumnName = "employee_code", nullable = false)
     private Employee employee;
 }
