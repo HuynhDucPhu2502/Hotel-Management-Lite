@@ -7,9 +7,6 @@
     <persistence-unit name="mssql" >
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <class>iuh.fit.models.TestEntity</class>
-        <class>iuh.fit.models.ServiceCategory</class>
-
         <!-- Human Resource -->
         <class>iuh.fit.models.Person</class>
         <class>iuh.fit.models.Employee</class>
@@ -19,6 +16,11 @@
         <!-- Room -->
         <class>iuh.fit.models.Room</class>
         <class>iuh.fit.models.RoomCategory</class>
+
+        <!-- Invoices/Services -->
+        <class>iuh.fit.models.HotelService</class>
+        <class>iuh.fit.models.ServiceCategory</class>
+        <class>iuh.fit.models.ReservationForm</class>
 
 
         <properties>
