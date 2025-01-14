@@ -24,5 +24,7 @@ public class Employee extends Person {
     @Column(nullable = false)
     private Position position;
 
+    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
+    private Account account;
 
 }

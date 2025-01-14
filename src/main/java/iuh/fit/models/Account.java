@@ -30,6 +30,6 @@ public class Account {
     private AccountStatus status;
 
     @OneToOne
-    @JoinColumn(name = "employee_code", nullable = false)
+    @JoinColumn(name = "employee_code", nullable = false, unique = true)
     private Employee employee;
 }
