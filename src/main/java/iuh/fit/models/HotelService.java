@@ -19,18 +19,18 @@ public class HotelService {
     @EqualsAndHashCode.Include
     private String serviceID;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "service_name", unique = true, nullable = false)
     private String serviceName;
 
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "service_price", nullable = false)
     private double servicePrice;
 
     @Column(nullable = false)
     private ObjectStatus isActivate;
 
     @ManyToOne()
-    @JoinColumn(name = "serviceCategoryID")
+    @JoinColumn(name = "service_category_id")
     private ServiceCategory serviceCategory;
 }
