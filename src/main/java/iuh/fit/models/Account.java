@@ -29,7 +29,7 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "employee_code", nullable = false, unique = true)
     private Employee employee;
 }
