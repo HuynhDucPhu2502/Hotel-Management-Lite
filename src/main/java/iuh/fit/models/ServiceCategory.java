@@ -14,9 +14,10 @@ import lombok.*;
 public class ServiceCategory {
     @Id
     @EqualsAndHashCode.Include
+    @Column(name = "service_category_id")
     private String serviceCategoryID;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "service_category_name", unique = true, nullable = false)
     private String serviceCategoryName;
 
     @Enumerated(EnumType.STRING)
