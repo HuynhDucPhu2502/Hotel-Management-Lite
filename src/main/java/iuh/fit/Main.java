@@ -10,8 +10,6 @@ import net.datafaker.Faker;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 /**
@@ -114,17 +112,25 @@ public class Main {
 
     // Tạo dữ liệu HotelService, ServiceCategory
     private static void generateFakeHotelServiceAndServiceCategoryData(Faker faker, EntityManager em) {
-        // Service Name unque, mảng tạo để check xem Faker có
+        // mảng tạo để check xem Faker có
         // tạo ra dữ liệu trùng không.
         // Đừng xóa
-        Set<String> uniqueServiceNames = new HashSet<>();
+        Set<String> uniqueHotelServiceNames = new HashSet<>();
+        Set<String> uniqueServiceCategoryNames = new HashSet<>();
+
 
         for(int i = 0; i < 10; ++i) {
             ServiceCategory serviceCategory = new ServiceCategory();
 
             serviceCategory.setServiceCategoryID("SC-" + String.format("%06d", (i + 1)));
-            serviceCategory.setServiceCategoryName(faker.commerce().department());
             serviceCategory.setIsActivate(faker.options().option(ObjectStatus.class));
+
+            // Tìm service category name sao cho DataFaker generate ra không trùng
+            String serviceCategoryName;
+            do {
+                serviceCategoryName = faker.commerce().department();
+            } while (!uniqueServiceCategoryNames.add(serviceCategoryName));
+            serviceCategory.setServiceCategoryName(serviceCategoryName);
 
             em.persist(serviceCategory);
 
@@ -137,12 +143,12 @@ public class Main {
                 hs.setIsActivate(faker.options().option(ObjectStatus.class));
                 hs.setServiceCategory(serviceCategory);
 
-                // Tìm service name sao cho DataFaker generate ra không trùng
-                String serviceName;
+                // Tìm hotel service name sao cho DataFaker generate ra không trùng
+                String hotelServiceName;
                 do {
-                    serviceName = faker.commerce().productName();
-                } while (!uniqueServiceNames.add(serviceName));
-                hs.setServiceName(serviceName);
+                    hotelServiceName = faker.commerce().productName();
+                } while (!uniqueHotelServiceNames.add(hotelServiceName));
+                hs.setServiceName(hotelServiceName);
 
                 em.persist(hs);
             }
