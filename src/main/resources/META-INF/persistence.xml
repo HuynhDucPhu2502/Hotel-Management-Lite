@@ -6,8 +6,21 @@
 
     <persistence-unit name="mssql" >
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
         <class>iuh.fit.models.TestEntity</class>
         <class>iuh.fit.models.ServiceCategory</class>
+
+        <!-- Human Resource -->
+        <class>iuh.fit.models.Person</class>
+        <class>iuh.fit.models.Employee</class>
+        <class>iuh.fit.models.Customer</class>
+        <class>iuh.fit.models.Account</class>
+
+        <!-- Room -->
+        <class>iuh.fit.models.Room</class>
+        <class>iuh.fit.models.RoomCategory</class>
+
+
         <properties>
             <!-- Cấu Hình Cơ Sở Dữ Liệu -->
             <property name="jakarta.persistence.jdbc.driver"
