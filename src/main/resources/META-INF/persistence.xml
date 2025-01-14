@@ -7,6 +7,9 @@
     <persistence-unit name="mssql" >
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>iuh.fit.models.TestEntity</class>
+        <class>iuh.fit.models.Person</class>
+        <class>iuh.fit.models.Employee</class>
+        <class>iuh.fit.models.Customer</class>
         <properties>
             <!-- Cấu Hình Cơ Sở Dữ Liệu -->
             <property name="jakarta.persistence.jdbc.driver"
