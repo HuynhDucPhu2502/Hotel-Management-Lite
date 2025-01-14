@@ -1,67 +1,152 @@
 package iuh.fit;
 
-import iuh.fit.models.HotelService;
-import iuh.fit.models.ServiceCategory;
-import iuh.fit.models.enums.ObjectStatus;
+import iuh.fit.models.*;
+import iuh.fit.models.enums.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import net.datafaker.Faker;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Admin 1/13/2025
  **/
 public class Main {
     public static void main(String[] args) {
-//        Application.main(args);
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("mssql");
-        EntityManager em = emf.createEntityManager();
-
-
-        EntityManagerFactory emf2 = Persistence.createEntityManagerFactory("maria");
-        EntityManager em2 = emf2.createEntityManager();
-
-        Random random = new Random();
-
         Faker faker = new Faker();
-        em.getTransaction().begin();
-        em2.getTransaction().begin();
-        for(String x : List.of("an uong", "choi", "gai")){
-            ServiceCategory serviceCategory = new ServiceCategory();
-            String id = faker.name().fullName();
 
-            serviceCategory.setServiceCategoryID(id); // Gán id cho serviceCategoryID
-            serviceCategory.setServiceCategoryName(x); // Gán name cho serviceCategoryName
-            serviceCategory.setIsActivate(ObjectStatus.ACTIVE);
+        try (
+                EntityManagerFactory emf = Persistence.createEntityManagerFactory("mssql");
+                EntityManager em = emf.createEntityManager()
+        ) {
+            em.getTransaction().begin();
+
+            generateFakeCustomerData(faker, em);
+            generateFakeEmployeeAndAccountData(faker, em);
+            generateFakeRoomAndRoomCategoryData(faker, em);
+            generateFakeHotelServiceAndServiceCategoryData(faker, em);
+
+            em.getTransaction().commit();
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    // Tạo dữ liệu Customer
+    private static void generateFakeCustomerData(Faker faker, EntityManager em) {
+        for (int i = 1; i <= 10; i++) {
+            Customer customer = new Customer();
+            customer.setFullName(faker.name().fullName());
+            customer.setPhoneNumber(faker.number().digits(10));
+            customer.setAddress(faker.address().fullAddress());
+            customer.setGender(faker.options().option(Gender.class));
+            customer.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
+            customer.setIsActivate(faker.options().option(ObjectStatus.class));
+            customer.setIdCardNumber(faker.number().digits(12));
+            customer.setCustomerCode("CUS-" + String.format("%06d", (i + 1)));
+
+            em.persist(customer);
+        }
+    }
+
+    // Tạo dữ liệu Employee và Account
+    private static void generateFakeEmployeeAndAccountData(Faker faker, EntityManager em) {
+        for (int i = 1; i <= 10; i++) {
+            Employee employee = new Employee();
+            employee.setFullName(faker.name().fullName());
+            employee.setPhoneNumber(faker.number().digits(10));
+            employee.setAddress(faker.address().fullAddress());
+            employee.setGender(faker.options().option(Gender.class));
+            employee.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
+            employee.setIsActivate(faker.options().option(ObjectStatus.class));
+            employee.setIdCardNumber(faker.number().digits(12));
+            employee.setEmployeeCode("EMP-" + String.format("%06d", (i + 1)));
+            employee.setPosition(faker.options().option(Position.class));
+
+            Account account = new Account();
+            account.setAccountID("ACC-" + String.format("%06d", (i + 1)));
+            account.setUserName(faker.name().username());
+            account.setPassword(faker.internet().password());
+            account.setStatus(faker.options().option(AccountStatus.class));
+
+            account.setEmployee(employee);
+
+            em.persist(account);
+        }
+    }
+
+    // Tạo dữ liệu Room và RoomCategory
+    private static void generateFakeRoomAndRoomCategoryData(Faker faker, EntityManager em) {
+        Set<RoomCategory> roomCategories = new HashSet<>();
+        for(int i = 0; i < 10; i++) {
+            RoomCategory roomCategory = new RoomCategory();
+
+            roomCategory.setRoomCategoryID("RC-" + String.format("%06d", (i + 1)));
+            roomCategory.setRoomCategoryName(faker.team().name());
+            roomCategory.setNumberOfBed(faker.number().numberBetween(1, 4));
+            roomCategory.setHourlyPrice(faker.number().randomDouble(2, 100, 500));
+            roomCategory.setDailyPrice(faker.number().randomDouble(2, 1000, 5000));
+            roomCategory.setIsActivate(faker.options().option(ObjectStatus.class));
+
+            em.persist(roomCategory);
+            roomCategories.add(roomCategory);
+        }
+
+        for(int i = 0; i < 20; i++){
+            Room room = new Room();
+
+            room.setRoomID("R-" + String.format("%06d", (i + 1)));
+            room.setRoomStatus(faker.options().option(RoomStatus.class));
+            room.setIsActivate(faker.options().option(ObjectStatus.class));
+            room.setDateOfCreation(LocalDateTime.now());
+            room.setRoomCategory(roomCategories.stream().skip(faker.number().numberBetween(0, 10)).findFirst().get());
+
+            em.persist(room);
+        }
+    }
+
+    // Tạo dữ liệu HotelService, ServiceCategory
+    private static void generateFakeHotelServiceAndServiceCategoryData(Faker faker, EntityManager em) {
+        // Service Name unque, mảng tạo để check xem Faker có
+        // tạo ra dữ liệu trùng không.
+        // Đừng xóa
+        Set<String> uniqueServiceNames = new HashSet<>();
+
+        for(int i = 0; i < 10; ++i) {
+            ServiceCategory serviceCategory = new ServiceCategory();
+
+            serviceCategory.setServiceCategoryID("SC-" + String.format("%06d", (i + 1)));
+            serviceCategory.setServiceCategoryName(faker.commerce().department());
+            serviceCategory.setIsActivate(faker.options().option(ObjectStatus.class));
 
             em.persist(serviceCategory);
-            em2.persist(serviceCategory);
 
             for (int y = 0; y < 10; y++) {
                 HotelService hs = new HotelService();
 
-                String hotelid = faker.name().fullName();
-                String hotelsName = faker.name().fullName();
-                String desc = faker.lorem().sentence();
-                double price = random.nextDouble();
-
-                hs.setServiceID(hotelid);
-                hs.setServiceName(hotelsName);
-                hs.setDescription(desc);
-                hs.setServicePrice(price);
-                hs.setIsActivate(ObjectStatus.ACTIVE);
+                hs.setServiceID("HS-" + String.format("%06d", (i * 10 + y + 1)));
+                hs.setDescription(faker.lorem().sentence());
+                hs.setServicePrice(faker.number().randomDouble(2, 50, 300));
+                hs.setIsActivate(faker.options().option(ObjectStatus.class));
                 hs.setServiceCategory(serviceCategory);
 
+                // Tìm service name sao cho DataFaker generate ra không trùng
+                String serviceName;
+                do {
+                    serviceName = faker.commerce().productName();
+                } while (!uniqueServiceNames.add(serviceName));
+                hs.setServiceName(serviceName);
+
                 em.persist(hs);
-                em2.persist(hs);
             }
+
         }
-
-        em.getTransaction().commit();
-        em2.getTransaction().commit();
-
     }
 }
