@@ -1,9 +1,7 @@
 package iuh.fit.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import iuh.fit.models.enums.AccountStatus;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,4 +25,11 @@ public class Account {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status;
+
+    @OneToOne
+    @JoinColumn(name = "employee_code", nullable = false)
+    private Employee employee;
 }

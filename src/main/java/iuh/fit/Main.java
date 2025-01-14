@@ -12,5 +12,7 @@ public class Main {
 //        Application.main(args);
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("mssql");
         EntityManager em = emf.createEntityManager();
+
+
     }
 }
