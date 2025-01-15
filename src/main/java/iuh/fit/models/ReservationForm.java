@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * Admin 1/14/2025
@@ -46,4 +47,28 @@ public class ReservationForm {
     @ManyToOne
     @JoinColumn(name = "employee_code", referencedColumnName = "employee_code", nullable = false)
     private Employee employee;
+
+    @OneToOne(
+            mappedBy = "reservationForm",
+            cascade = {
+                    CascadeType.MERGE,
+                    CascadeType.PERSIST
+            },
+            orphanRemoval = true
+    )
+    private HistoryCheckOut historyCheckOut;
+
+    @OneToOne(
+            mappedBy = "reservationForm",
+            cascade = {
+                    CascadeType.MERGE,
+                    CascadeType.PERSIST
+            },
+            orphanRemoval = true
+    )
+    private HistoryCheckIn historyCheckIn;
+
+    @OneToMany(mappedBy = "reservationForm")
+    private Set<RoomUsageService> roomUsageService;
+
 }
