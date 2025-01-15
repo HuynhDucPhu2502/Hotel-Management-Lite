@@ -2,10 +2,10 @@ package iuh.fit.models;
 
 import iuh.fit.models.enums.Position;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Admin 1/14/2025
@@ -23,5 +23,9 @@ public class Employee extends Person {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Position position;
+
+    @ManyToMany(mappedBy = "employees")
+    @ToString.Exclude
+    private Set<Shift> shifts = new HashSet<>();
 
 }
