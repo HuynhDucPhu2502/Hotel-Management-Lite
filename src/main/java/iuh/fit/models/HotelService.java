@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class HotelService {
     @Id
     @EqualsAndHashCode.Include
+    @Column(name = "service_id")
     private String serviceID;
 
     @Column(name = "service_name", unique = true, nullable = false)
