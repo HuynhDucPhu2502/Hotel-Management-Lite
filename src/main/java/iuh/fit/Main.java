@@ -10,10 +10,9 @@ import net.datafaker.Faker;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.time.LocalTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Admin 1/13/2025
@@ -23,24 +22,29 @@ public class Main {
         Faker faker = new Faker();
 
         try (
-                EntityManagerFactory emf = Persistence.createEntityManagerFactory("mssql");
-                EntityManager em = emf.createEntityManager()
+                EntityManagerFactory emf = Persistence.createEntityManagerFactory("mssql")
         ) {
-            em.getTransaction().begin();
+            EntityManager em = emf.createEntityManager();
+            try{
+                em.getTransaction().begin();
 
-            //generateFakeCustomerData(faker, em);
-            //generateFakeEmployeeAndAccountData(faker, em);
-            //generateFakeRoomAndRoomCategoryData(faker, em);
-            //generateFakeHotelServiceAndServiceCategoryData(faker, em);
-            //generateReservationFormData(faker,em);
-            //generateFakerRoomUsageService(faker,em);
-//            generateHistoryCheckinData(faker, em);
-//            generateHistoryCheckoutData(faker, em);
+                generateFakeCustomerData(faker, em);
+                generateFakeEmployeeAndAccountData(faker, em);
+                generateFakeRoomAndRoomCategoryData(faker, em);
+                generateFakeHotelServiceAndServiceCategoryData(faker, em);
+                generateReservationFormData(faker,em);
+                generateFakerRoomUsageService(faker,em);
+                generateHistoryCheckinData(faker, em);
+                generateHistoryCheckoutData(faker, em);
+                generateFakeShiftAndShiftAssignmentData(faker, em);
 
-            em.getTransaction().commit();
-
-        } catch (Exception exception) {
-            exception.printStackTrace();
+                em.getTransaction().commit();
+            }catch(Exception e){
+                e.printStackTrace();
+                em.getTransaction().rollback();
+            }finally {
+                em.close();
+            }
         }
 
 
@@ -194,7 +198,7 @@ public class Main {
             room.setRoomStatus(faker.options().option(RoomStatus.class));
             room.setIsActivate(faker.options().option(ObjectStatus.class));
             room.setDateOfCreation(LocalDateTime.now());
-            room.setRoomCategory(roomCategories.stream().skip(faker.number().numberBetween(0, 10)).findFirst().get());
+            roomCategories.stream().skip(faker.number().numberBetween(0, 10)).findFirst().ifPresent(room::setRoomCategory);
 
             em.persist(room);
         }
@@ -244,5 +248,64 @@ public class Main {
             }
 
         }
+    }
+
+    private static void generateFakeShiftAndShiftAssignmentData(Faker faker, EntityManager em){
+        Random random = new Random();
+        Set<Shift> shifts = new HashSet<>();
+        List<Employee> employees = em.createQuery("SELECT e FROM Employee e", Employee.class).getResultList();
+
+        for(int i = 0; i < 10; i++){
+            Shift shift = new Shift();
+
+            shift.setShiftID("S-" + String.format("%06d", (i + 1)));
+            shift.setStartTime(LocalTime.of(faker.number().numberBetween(0, 24), faker.number().numberBetween(0, 60)));
+            shift.setEndTime(LocalTime.of(faker.number().numberBetween(0, 24), faker.number().numberBetween(0, 60)));
+            shift.setShiftDaysSchedule(faker.options().option(ShiftDaysSchedule.class));
+            shift.setModifiedDate(LocalDateTime.now());
+            shift.setNumberOfHour(faker.number().numberBetween(1, 12));
+
+            em.persist(shift);
+            shifts.add(shift);
+        }
+
+        List<Employee> selectedEmployees = new ArrayList<>();
+
+        for (Employee e : employees) {
+            if (random.nextInt(2) == 1) {
+                selectedEmployees.add(e);
+            }
+        }
+
+        selectedEmployees.forEach(employee -> {
+            // Chọn một số ca làm việc ngẫu nhiên
+            Set<Shift> selectedShifts = shifts.stream()
+                    .skip(random.nextInt(shifts.size()))
+                    .collect(Collectors.toSet());
+
+            System.out.println(employee);
+            selectedShifts.forEach(shift -> System.out.println(shift.toString()));
+
+            final int[] counter = {0};
+
+            // Gán shifts vào employee thông qua ShiftAssignment
+            selectedShifts.forEach(shift -> {
+                ShiftAssignment shiftAssignment = new ShiftAssignment();
+                shiftAssignment.setShiftAssignmentID("SA-" + String.format("%06d", (counter[0] + 1)));
+                shiftAssignment.setShift(shift);
+                shiftAssignment.setEmployee(employee);
+                shiftAssignment.setDescription(faker.lorem().sentence());
+                counter[0]++;
+
+                // Persist đối tượng ShiftAssignment
+                shift.getShiftAssignments().add(shiftAssignment);
+                employee.getShiftAssignments().add(shiftAssignment);
+
+                em.merge(shiftAssignment);
+
+                em.merge(shift);
+                em.merge(employee);
+            });
+        });
     }
 }
