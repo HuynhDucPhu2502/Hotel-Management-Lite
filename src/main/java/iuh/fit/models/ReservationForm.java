@@ -36,7 +36,7 @@ public class ReservationForm {
     @Column(name = "reservation_status", nullable = false)
     private ReservationStatus reservationStatus;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
