@@ -185,29 +185,39 @@ public class Main {
             shifts.add(shift);
         }
 
-        List<Employee> seletedEmployees = employees.stream()
-                .filter(employee -> random.nextInt(2) == 1)
-                .skip(random.nextInt(employees.size())).toList();
+        List<Employee> selectedEmployees = employees.stream()
+                .skip(random.nextInt(employees.size()))
+                .toList();
 
-        seletedEmployees
-                .forEach(employee->{
-                    Set<Shift> selectedShifts = shifts.stream()
-                            .skip(random.nextInt(shifts.size()))
-                            .limit(random.nextInt(4))
-                            .collect(Collectors.toSet());
+        selectedEmployees.forEach(employee -> {
+            // Chọn một số ca làm việc ngẫu nhiên
+            Set<Shift> selectedShifts = shifts.stream()
+                    .skip(random.nextInt(shifts.size()))
+                    .collect(Collectors.toSet());
 
-                    System.out.println(employee);
-                    selectedShifts.forEach(shift -> System.out.println(shift.toString()));
+            System.out.println(employee);
+            selectedShifts.forEach(shift -> System.out.println(shift.toString()));
 
-                    employee.setShifts(selectedShifts);
+            final int[] counter = {0};
 
-                    // Cập nhật hai chiều: Thêm Employee vào employees của Shift
-                    selectedShifts.forEach(shift -> shift.getEmployees().add(employee));
+            // Gán shifts vào employee thông qua ShiftAssignment
+            selectedShifts.forEach(shift -> {
+                ShiftAssignment shiftAssignment = new ShiftAssignment();
+                shiftAssignment.setShiftAssignmentID("SA-" + String.format("%06d", (counter[0] + 1)));
+                shiftAssignment.setShift(shift);
+                shiftAssignment.setEmployee(employee);
+                shiftAssignment.setDescription(faker.lorem().sentence());
+                counter[0]++;
 
-                    // Persist những thay đổi (cập nhật quan hệ ManyToMany)
-                    selectedShifts.forEach(em::merge);
-                    em.merge(employee);
-                });
+                // Persist đối tượng ShiftAssignment
+                shift.getShiftAssignments().add(shiftAssignment);
+                employee.getShiftAssignments().add(shiftAssignment);
 
+                em.merge(shiftAssignment);
+
+                em.merge(shift);
+                em.merge(employee);
+            });
+        });
     }
 }

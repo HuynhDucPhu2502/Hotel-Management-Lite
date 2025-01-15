@@ -45,12 +45,7 @@ public class Shift {
     @Column(name = "number_of_hour", columnDefinition = "int", nullable = false)
     private int numberOfHour;
 
-    @ManyToMany
-    @JoinTable(
-            name = "shift_assignments",
-            joinColumns = @JoinColumn(name = "shift_id"),
-            inverseJoinColumns = @JoinColumn(name = "employee_id")
-    )
+    @OneToMany(mappedBy = "shift")
     @ToString.Exclude
-    private Set<Employee> employees = new HashSet<>();
+    private Set<ShiftAssignment>  shiftAssignments = new HashSet<>();
 }
