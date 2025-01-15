@@ -11,10 +11,7 @@ import net.datafaker.Faker;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -272,9 +269,13 @@ public class Main {
             shifts.add(shift);
         }
 
-        List<Employee> selectedEmployees = employees.stream()
-                .skip(random.nextInt(employees.size()))
-                .toList();
+        List<Employee> selectedEmployees = new ArrayList<>();
+
+        for (Employee e : employees) {
+            if (random.nextInt(2) == 1) {
+                selectedEmployees.add(e);
+            }
+        }
 
         selectedEmployees.forEach(employee -> {
             // Chọn một số ca làm việc ngẫu nhiên
