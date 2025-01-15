@@ -18,8 +18,11 @@ import java.time.LocalDateTime;
 public class RoomUsageService {
     @Id
     @EqualsAndHashCode.Include
-    @Column(name = "room_usage_id")
+    @Column(name = "room_usage_service_id")
     private String roomUsageServiceID;
+
+    @Column(name = "unit_price", nullable = false)
+    private double unitPrice;
 
     @Column(nullable = false)
     private int quantity;
