@@ -22,9 +22,9 @@ public class Main {
         Faker faker = new Faker();
 
         try (
-                EntityManagerFactory emf = Persistence.createEntityManagerFactory("mssql")
+                EntityManagerFactory emf = Persistence.createEntityManagerFactory("mssql");
+                EntityManager em = emf.createEntityManager()
         ) {
-            EntityManager em = emf.createEntityManager();
             try{
                 em.getTransaction().begin();
 
@@ -39,96 +39,164 @@ public class Main {
                 generateFakeShiftAndShiftAssignmentData(faker, em);
 
                 em.getTransaction().commit();
-            }catch(Exception e){
-                e.printStackTrace();
+            }catch(Exception exception){
+                exception.printStackTrace();
                 em.getTransaction().rollback();
-            }finally {
-                em.close();
             }
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
-
 
     }
 
     private static void generateHistoryCheckoutData(Faker faker, EntityManager em) {
         List<ReservationForm> rfs = ReservationFormDAO.getData(em);
-        for(int i = 0; i < 10; i++){
-            HistoryCheckOut hco = new HistoryCheckOut();
-            hco.setRoomHistoryCheckOutID("HCO-" + String.format("%06d", (i + 1)));
-            hco.setDateOfCheckingOut(
-                    rfs.get(i).getApproxcheckOutTime().plusDays(1)
-            );
-            hco.setReservationForm(rfs.get(i));
+        for(int i = 0; i < rfs.size(); i++) {
 
-            em.persist(hco);
+            ReservationForm rf = rfs.get(i);
+            ReservationStatus rfStatus = rf.getReservationStatus();
+
+            if (rfStatus.equals(ReservationStatus.CHECKED_OUT)) {
+                HistoryCheckOut hco = new HistoryCheckOut();
+                hco.setRoomHistoryCheckOutID("HCO-" + String.format("%06d", (i + 1)));
+                hco.setDateOfCheckingOut(
+                        rf.getApproxcheckOutTime().plusDays(1)
+                );
+                hco.setReservationForm(rf);
+
+                em.persist(hco);
+            }
         }
     }
 
+    // Tạo dữ liệu HistoryCheckIn
     private static void generateHistoryCheckinData(Faker faker, EntityManager em) {
         List<ReservationForm> rfs = ReservationFormDAO.getData(em);
-        for(int i = 0; i < 10; i++){
-            HistoryCheckIn hci = new HistoryCheckIn();
-            hci.setRoomHistoryCheckinID("HCI-" + String.format("%06d", (i + 1)));
-            hci.setCheckInDate(
-                    rfs.get(i).getApproxcheckInDate().plusDays(1)
-            );
-            hci.setReservationForm(rfs.get(i));
 
-            em.persist(hci);
+        for(int i = 0; i < rfs.size(); i++){
+
+            ReservationForm rf = rfs.get(i);
+            ReservationStatus rfStatus = rf.getReservationStatus();
+
+            if (
+                    rfStatus.equals(ReservationStatus.CHECKED_IN)
+                    || rfStatus.equals(ReservationStatus.CHECKED_OUT)
+            ) {
+                HistoryCheckIn hci = new HistoryCheckIn();
+
+                hci.setRoomHistoryCheckinID("HCI-" + String.format("%06d", (i + 1)));
+                hci.setCheckInDate(
+                        rf.getApproxcheckInDate().plusHours(faker.number().numberBetween(0, 1))
+                );
+                hci.setReservationForm(rf);
+
+                if (rfStatus.equals(ReservationStatus.CHECKED_IN))
+                    rf.getRoom().setRoomStatus(RoomStatus.IN_USE);
+
+                em.persist(hci);
+            }
         }
     }
 
+    // Tạo dữ liệu RoomUsageService
     private static void generateFakerRoomUsageService(Faker faker, EntityManager em) {
         List<ReservationForm> rfs = ReservationFormDAO.getData(em);
         List<HotelService> hs = HotelServiceDAO.getData(em);
-        Random rd = new Random();
-        for(int i = 0; i < 10; i++) {
-            RoomUsageService rus = new RoomUsageService();
 
-            rus.setRoomUsageServiceID("RUS-" + String.format("%06d", (i + 1)));
-            rus.setQuantity(rd.nextInt(1, 10));
-            rus.setDayAdded(
-                    rfs.get(i).getReservationDate()
-                            .plusDays(rd.nextInt(1, 5))
-            );
-            rus.setHotelService(hs.get(i));
-            rus.setReservationForm(rfs.get(i));
+        int count = 0;
+        for(int i = 0; i < rfs.size(); i++) {
 
-            em.persist(rus);
+            ReservationForm rf = rfs.get(i);
+            ReservationStatus rfStatus = rf.getReservationStatus();
+
+            if (
+                    rfStatus.equals(ReservationStatus.CHECKED_IN)
+                    || rfStatus.equals(ReservationStatus.CHECKED_OUT)
+            ) {
+                int numberOfService = faker.number().numberBetween(1, 5);
+
+                for (int j = 0; j < numberOfService; j++) {
+                    HotelService hotelService = hs.get(faker.number().numberBetween(0, hs.size() - 1));
+                    LocalDateTime dayAdded = rfStatus.equals(ReservationStatus.CHECKED_IN)
+                            ? LocalDateTime.now()
+                            : rf.getApproxcheckOutTime().minusDays(faker.number().numberBetween(1, 2));
+
+                    RoomUsageService rus = new RoomUsageService();
+
+                    rus.setRoomUsageServiceID("RUS-" + String.format("%06d", ++count));
+                    rus.setQuantity(faker.number().numberBetween(1, 10));
+                    rus.setDayAdded(dayAdded);
+                    rus.setHotelService(hotelService);
+                    rus.setReservationForm(rf);
+                    rus.setUnitPrice(hotelService.getServicePrice());
+
+                    em.persist(rus);
+                }
+            }
+
         }
     }
 
+    // Tạo dữ liệu ReservationForm
     private static void generateReservationFormData(Faker faker, EntityManager em) {
+        List<Employee> emps = EmployeeDAO.getData(em);
+        List<Customer> cus = CustomerDAO.getData(em);
+        List<Room> rooms = RoomDAO.getData(em);
+
+        // Tạo phiếu cho trường hợp IN_USE, RESERVATION
         for (int i = 0; i < 10; i++) {
-            List<Employee> emps = EmployeeDAO.getData(em);
-            List<Customer> cus = CustomerDAO.getData(em);
-            List<Room> rooms = RoomDAO.getData(em);
-
             ReservationForm rf = new ReservationForm();
-            String id = ("RF-" + String.format("%06d", (i + 1)));
-            LocalDateTime rfDate = LocalDateTime.now()
-                    .minusDays(new Random().nextInt(1, 10));
-            LocalDateTime rfCheckinDate = LocalDateTime.now()
-                    .plusDays(new Random().nextInt(1, 10));
-            LocalDateTime rfCheckoutDate = LocalDateTime.now()
-                    .plusDays(new Random().nextInt(11, 20));
 
-            rf.setReservationID(id);
+            LocalDateTime now = LocalDateTime.now();
+
+            LocalDateTime rfDate = now.minusDays(new Random().nextInt(1, 4));
+            LocalDateTime rfCheckinDate = now.plusDays(new Random().nextInt(-5, 5));
+            LocalDateTime rfCheckoutDate = now.plusDays(new Random().nextInt(6, 10));
+
+
+            ReservationStatus reservationStatus = rfCheckinDate.isAfter(now)
+                    ? ReservationStatus.RESERVATION : faker.options().option(ReservationStatus.CANCEL, ReservationStatus.CHECKED_IN);
+
+            rf.setReservationID("RF-" + String.format("%06d", (i + 1)));
+            rf.setReservationStatus(reservationStatus);
+
             rf.setReservationDate(rfDate);
             rf.setApproxcheckInDate(rfCheckinDate);
             rf.setApproxcheckOutTime(rfCheckoutDate);
-            rf.setReservationStatus(
-                    faker.options().option(
-                            ReservationStatus.RESERVATION,
-                            ReservationStatus.IN_USE
-                    )
-            );
+
+
             rf.setCustomer(cus.get(i));
             rf.setEmployee(emps.get(i));
             rf.setRoom(rooms.get(i));
 
             em.persist(rf);
         }
+
+        // Tạo phiếu cho trường hợp OVER_DUE
+        for (int i = 11; i < 15; i++) {
+            ReservationForm rf = new ReservationForm();
+
+            LocalDateTime now = LocalDateTime.now();
+
+            LocalDateTime rfDate = now.minusDays(new Random().nextInt(12,18));
+            LocalDateTime rfCheckinDate = rfDate.plusDays(new Random().nextInt(1, 2));
+            LocalDateTime rfCheckoutDate = rfDate.plusDays(new Random().nextInt(5, 8));
+
+            rf.setReservationID("RF-" + String.format("%06d", i));
+            rf.setReservationStatus(ReservationStatus.CHECKED_OUT);
+
+            rf.setReservationDate(rfDate);
+            rf.setApproxcheckInDate(rfCheckinDate);
+            rf.setApproxcheckOutTime(rfCheckoutDate);
+
+
+            rf.setCustomer(cus.get(i-11));
+            rf.setEmployee(emps.get(i-11));
+            rf.setRoom(rooms.get(i-11));
+
+            em.persist(rf);
+        }
+
     }
 
     // Tạo dữ liệu Customer
@@ -195,7 +263,7 @@ public class Main {
             Room room = new Room();
 
             room.setRoomID("R-" + String.format("%06d", (i + 1)));
-            room.setRoomStatus(faker.options().option(RoomStatus.class));
+            room.setRoomStatus(RoomStatus.AVAILABLE);
             room.setIsActivate(faker.options().option(ObjectStatus.class));
             room.setDateOfCreation(LocalDateTime.now());
             roomCategories.stream().skip(faker.number().numberBetween(0, 10)).findFirst().ifPresent(room::setRoomCategory);
@@ -250,6 +318,7 @@ public class Main {
         }
     }
 
+    // Tạo dữ liệu Shift, ShiftAssignment
     private static void generateFakeShiftAndShiftAssignmentData(Faker faker, EntityManager em){
         Random random = new Random();
         Set<Shift> shifts = new HashSet<>();
@@ -283,8 +352,6 @@ public class Main {
                     .skip(random.nextInt(shifts.size()))
                     .collect(Collectors.toSet());
 
-            System.out.println(employee);
-            selectedShifts.forEach(shift -> System.out.println(shift.toString()));
 
             final int[] counter = {0};
 
