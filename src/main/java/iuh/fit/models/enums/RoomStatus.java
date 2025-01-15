@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum RoomStatus {
     AVAILABLE("Phòng trống"),
-    ON_USE("Đang sử dụng"),
+    IN_USE("Đang sử dụng"),
     UNAVAILABLE("Không sử dụng");
 
     public final String roomStatus;
