@@ -24,8 +24,8 @@ public class Employee extends Person {
     @Column(nullable = false)
     private Position position;
 
-    @ManyToMany(mappedBy = "employees")
+    @OneToMany(mappedBy = "employee")
     @ToString.Exclude
-    private Set<Shift> shifts = new HashSet<>();
+    private Set<ShiftAssignment>  shiftAssignments = new HashSet<>();
 
 }
