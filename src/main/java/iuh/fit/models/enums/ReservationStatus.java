@@ -8,8 +8,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ReservationStatus {
     RESERVATION("Đã đặt"),
-    IN_USE("Đang sử dụng"),
-    CANCEL("Đã hết hạn");
+    CHECKED_IN("Đã nhận phòng"),
+    CHECKED_OUT("Đã trả phòng"),
+    CANCEL("Đã hủy");
 
     private final String displayname;
 
