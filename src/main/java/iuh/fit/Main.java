@@ -1,5 +1,6 @@
 package iuh.fit;
 
+import iuh.fit.dao.*;
 import iuh.fit.models.*;
 import iuh.fit.models.enums.*;
 import jakarta.persistence.EntityManager;
@@ -10,6 +11,8 @@ import net.datafaker.Faker;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -25,15 +28,102 @@ public class Main {
         ) {
             em.getTransaction().begin();
 
-            generateFakeCustomerData(faker, em);
-            generateFakeEmployeeAndAccountData(faker, em);
-            generateFakeRoomAndRoomCategoryData(faker, em);
-            generateFakeHotelServiceAndServiceCategoryData(faker, em);
+            //generateFakeCustomerData(faker, em);
+            //generateFakeEmployeeAndAccountData(faker, em);
+            //generateFakeRoomAndRoomCategoryData(faker, em);
+            //generateFakeHotelServiceAndServiceCategoryData(faker, em);
+            //generateReservationFormData(faker,em);
+            //generateFakerRoomUsageService(faker,em);
+//            generateHistoryCheckinData(faker, em);
+//            generateHistoryCheckoutData(faker, em);
 
             em.getTransaction().commit();
 
         } catch (Exception exception) {
             exception.printStackTrace();
+        }
+
+
+    }
+
+    private static void generateHistoryCheckoutData(Faker faker, EntityManager em) {
+        List<ReservationForm> rfs = ReservationFormDAO.getData(em);
+        for(int i = 0; i < 10; i++){
+            HistoryCheckOut hco = new HistoryCheckOut();
+            hco.setRoomHistoryCheckOutID("HCO-" + String.format("%06d", (i + 1)));
+            hco.setDateOfCheckingOut(
+                    rfs.get(i).getApproxcheckOutTime().plusDays(1)
+            );
+            hco.setReservationForm(rfs.get(i));
+
+            em.persist(hco);
+        }
+    }
+
+    private static void generateHistoryCheckinData(Faker faker, EntityManager em) {
+        List<ReservationForm> rfs = ReservationFormDAO.getData(em);
+        for(int i = 0; i < 10; i++){
+            HistoryCheckIn hci = new HistoryCheckIn();
+            hci.setRoomHistoryCheckinID("HCI-" + String.format("%06d", (i + 1)));
+            hci.setCheckInDate(
+                    rfs.get(i).getApproxcheckInDate().plusDays(1)
+            );
+            hci.setReservationForm(rfs.get(i));
+
+            em.persist(hci);
+        }
+    }
+
+    private static void generateFakerRoomUsageService(Faker faker, EntityManager em) {
+        List<ReservationForm> rfs = ReservationFormDAO.getData(em);
+        List<HotelService> hs = HotelServiceDAO.getData(em);
+        Random rd = new Random();
+        for(int i = 0; i < 10; i++) {
+            RoomUsageService rus = new RoomUsageService();
+
+            rus.setRoomUsageServiceID("RUS-" + String.format("%06d", (i + 1)));
+            rus.setQuantity(rd.nextInt(1, 10));
+            rus.setDayAdded(
+                    rfs.get(i).getReservationDate()
+                            .plusDays(rd.nextInt(1, 5))
+            );
+            rus.setHotelService(hs.get(i));
+            rus.setReservationForm(rfs.get(i));
+
+            em.persist(rus);
+        }
+    }
+
+    private static void generateReservationFormData(Faker faker, EntityManager em) {
+        for (int i = 0; i < 10; i++) {
+            List<Employee> emps = EmployeeDAO.getData(em);
+            List<Customer> cus = CustomerDAO.getData(em);
+            List<Room> rooms = RoomDAO.getData(em);
+
+            ReservationForm rf = new ReservationForm();
+            String id = ("RF-" + String.format("%06d", (i + 1)));
+            LocalDateTime rfDate = LocalDateTime.now()
+                    .minusDays(new Random().nextInt(1, 10));
+            LocalDateTime rfCheckinDate = LocalDateTime.now()
+                    .plusDays(new Random().nextInt(1, 10));
+            LocalDateTime rfCheckoutDate = LocalDateTime.now()
+                    .plusDays(new Random().nextInt(11, 20));
+
+            rf.setReservationID(id);
+            rf.setReservationDate(rfDate);
+            rf.setApproxcheckInDate(rfCheckinDate);
+            rf.setApproxcheckOutTime(rfCheckoutDate);
+            rf.setReservationStatus(
+                    faker.options().option(
+                            ReservationStatus.RESERVATION,
+                            ReservationStatus.IN_USE
+                    )
+            );
+            rf.setCustomer(cus.get(i));
+            rf.setEmployee(emps.get(i));
+            rf.setRoom(rooms.get(i));
+
+            em.persist(rf);
         }
     }
 
