@@ -3,9 +3,8 @@ package iuh.fit;
 import iuh.fit.dao.*;
 import iuh.fit.models.*;
 import iuh.fit.models.enums.*;
+import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import net.datafaker.Faker;
 
 import java.time.LocalDate;
@@ -21,36 +20,113 @@ public class Main {
     public static void main(String[] args) {
         Faker faker = new Faker();
 
+        generateFakeData(faker);
+        testCRUD(faker);
+
+
+        EntityManagerUtil.close();
+    }
+
+    // ==================================================================================================================
+    // Tạo Dữ Liệu
+    // ==================================================================================================================
+    private static void generateFakeData(Faker faker) {
+
         try (
-                EntityManagerFactory emf = Persistence.createEntityManagerFactory("mssql");
-                EntityManager em = emf.createEntityManager()
+                EntityManager em = EntityManagerUtil.getEntityManager()
         ) {
-            try{
+
+            try {
                 em.getTransaction().begin();
-
                 generateFakeCustomerData(faker, em);
-                generateFakeEmployeeAndAccountData(faker, em);
-                generateFakeRoomAndRoomCategoryData(faker, em);
-                generateFakeHotelServiceAndServiceCategoryData(faker, em);
-                generateReservationFormData(faker,em);
-                generateFakerRoomUsageService(faker,em);
-                generateHistoryCheckinData(faker, em);
-                generateHistoryCheckoutData(faker, em);
-                generateFakeShiftAndShiftAssignmentData(faker, em);
-
                 em.getTransaction().commit();
-            }catch(Exception exception){
-                exception.printStackTrace();
+            } catch (Exception e) {
                 em.getTransaction().rollback();
+                e.printStackTrace();
             }
+
+            try {
+                em.getTransaction().begin();
+                generateFakeEmployeeAndAccountData(faker, em);
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                em.getTransaction().rollback();
+                e.printStackTrace();
+            }
+
+            try {
+                em.getTransaction().begin();
+                generateFakeRoomAndRoomCategoryData(faker, em);
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                em.getTransaction().rollback();
+                e.printStackTrace();
+            }
+
+            try {
+                em.getTransaction().begin();
+                generateFakeHotelServiceAndServiceCategoryData(faker, em);
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                em.getTransaction().rollback();
+                e.printStackTrace();
+            }
+
+            try {
+                em.getTransaction().begin();
+                generateReservationFormData(faker, em);
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                em.getTransaction().rollback();
+                e.printStackTrace();
+            }
+
+            try {
+                em.getTransaction().begin();
+                generateFakerRoomUsageService(faker, em);
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                em.getTransaction().rollback();
+                e.printStackTrace();
+            }
+
+            try {
+                em.getTransaction().begin();
+                generateHistoryCheckinData(faker, em);
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                em.getTransaction().rollback();
+                e.printStackTrace();
+            }
+
+            try {
+                em.getTransaction().begin();
+                generateHistoryCheckoutData(faker, em);
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                em.getTransaction().rollback();
+                e.printStackTrace();
+            }
+
+            try {
+                em.getTransaction().begin();
+                generateFakeShiftAndShiftAssignmentData(faker, em);
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                em.getTransaction().rollback();
+                e.printStackTrace();
+            }
+
+
+
         } catch (Exception exception) {
             exception.printStackTrace();
         }
-
     }
 
     private static void generateHistoryCheckoutData(Faker faker, EntityManager em) {
         List<ReservationForm> rfs = ReservationFormDAO.getData(em);
+
         for(int i = 0; i < rfs.size(); i++) {
 
             ReservationForm rf = rfs.get(i);
@@ -80,7 +156,7 @@ public class Main {
 
             if (
                     rfStatus.equals(ReservationStatus.CHECKED_IN)
-                    || rfStatus.equals(ReservationStatus.CHECKED_OUT)
+                            || rfStatus.equals(ReservationStatus.CHECKED_OUT)
             ) {
                 HistoryCheckIn hci = new HistoryCheckIn();
 
@@ -111,7 +187,7 @@ public class Main {
 
             if (
                     rfStatus.equals(ReservationStatus.CHECKED_IN)
-                    || rfStatus.equals(ReservationStatus.CHECKED_OUT)
+                            || rfStatus.equals(ReservationStatus.CHECKED_OUT)
             ) {
                 int numberOfService = faker.number().numberBetween(1, 5);
 
@@ -140,8 +216,9 @@ public class Main {
     // Tạo dữ liệu ReservationForm
     private static void generateReservationFormData(Faker faker, EntityManager em) {
         List<Employee> emps = EmployeeDAO.getData(em);
-        List<Customer> cus = CustomerDAO.getData(em);
+        List<Customer> cus = CustomerDAO.findAll();
         List<Room> rooms = RoomDAO.getData(em);
+
 
         // Tạo phiếu cho trường hợp IN_USE, RESERVATION
         for (int i = 0; i < 10; i++) {
@@ -172,9 +249,10 @@ public class Main {
             em.persist(rf);
         }
 
-        // Tạo phiếu cho trường hợp OVER_DUE
+        //Tạo phiếu cho trường hợp OVER_DUE
         for (int i = 11; i < 15; i++) {
             ReservationForm rf = new ReservationForm();
+
 
             LocalDateTime now = LocalDateTime.now();
 
@@ -201,6 +279,8 @@ public class Main {
 
     // Tạo dữ liệu Customer
     private static void generateFakeCustomerData(Faker faker, EntityManager em) {
+
+
         for (int i = 1; i <= 10; i++) {
             Customer customer = new Customer();
             customer.setFullName(faker.name().fullName());
@@ -210,7 +290,7 @@ public class Main {
             customer.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
             customer.setIsActivate(faker.options().option(ObjectStatus.class));
             customer.setIdCardNumber(faker.number().digits(12));
-            customer.setCustomerCode("CUS-" + String.format("%06d", (i + 1)));
+            customer.setCustomerCode("CUS-" + String.format("%06d", i));
 
             em.persist(customer);
         }
@@ -227,11 +307,11 @@ public class Main {
             employee.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
             employee.setIsActivate(faker.options().option(ObjectStatus.class));
             employee.setIdCardNumber(faker.number().digits(12));
-            employee.setEmployeeCode("EMP-" + String.format("%06d", (i + 1)));
+            employee.setEmployeeCode("EMP-" + String.format("%06d", i));
             employee.setPosition(faker.options().option(Position.class));
 
             Account account = new Account();
-            account.setAccountID("ACC-" + String.format("%06d", (i + 1)));
+            account.setAccountID("ACC-" + String.format("%06d", i));
             account.setUserName(faker.name().username());
             account.setPassword(faker.internet().password());
             account.setStatus(faker.options().option(AccountStatus.class));
@@ -374,5 +454,52 @@ public class Main {
                 em.merge(employee);
             });
         });
+    }
+
+    // ==================================================================================================================
+    // Test xóa sửa cập nhật
+    // ==================================================================================================================
+    private static void testCRUD(Faker faker) {
+        testCRUDCustomer(faker);
+    }
+
+    private static void testCRUDCustomer(Faker faker) {
+        System.out.println("\n\n\nCRUD bảng Customer");
+
+        // Create
+        Customer newCustomer = new Customer();
+        newCustomer.setFullName(faker.name().fullName());
+        newCustomer.setPhoneNumber(faker.number().digits(10));
+        newCustomer.setAddress(faker.address().fullAddress());
+        newCustomer.setGender(faker.options().option(Gender.class));
+        newCustomer.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
+        newCustomer.setIsActivate(faker.options().option(ObjectStatus.class));
+        newCustomer.setIdCardNumber(faker.number().digits(12));
+        newCustomer.setCustomerCode("CUS-" + String.format("%06d", 11));
+        CustomerDAO.create(newCustomer);
+
+        System.out.println("Tạo Customer: " + newCustomer.getCustomerCode());
+
+        // Read
+        System.out.println("Đọc Customer: " + newCustomer.getCustomerCode());
+        Customer customer = CustomerDAO.findById("CUS-000011");
+        System.out.println(customer);
+
+        // Update
+
+        customer.setFullName("Test");
+        CustomerDAO.update(customer);
+
+        System.out.println("Đọc lại Customer khi đổi tên: " + newCustomer.getCustomerCode());
+        Customer updatedCustomer = CustomerDAO.findById("CUS-000011");
+        System.out.println(updatedCustomer);
+
+        // Delete
+        CustomerDAO.delete("CUS-000011");
+
+        System.out.println("Xóa customer: " + newCustomer.getCustomerCode());
+        Customer deletedCustomer = CustomerDAO.findById("CUS-000011");
+        System.out.println(deletedCustomer);
+
     }
 }
