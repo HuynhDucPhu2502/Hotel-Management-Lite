@@ -71,4 +71,14 @@ public class ReservationForm {
     @OneToMany(mappedBy = "reservationForm")
     private Set<RoomUsageService> roomUsageService;
 
+    @Override
+    public String toString() {
+        return "ReservationForm{" +
+                "reservationID='" + reservationID + '\'' +
+                ", reservationDate=" + reservationDate +
+                ", approxcheckInDate=" + approxcheckInDate +
+                ", approxcheckOutTime=" + approxcheckOutTime +
+                ", reservationStatus=" + reservationStatus +
+                '}';
+    }
 }
