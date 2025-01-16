@@ -28,4 +28,12 @@ public class Employee extends Person {
     @ToString.Exclude
     private Set<ShiftAssignment>  shiftAssignments = new HashSet<>();
 
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "employeeCode='" + employeeCode + '\'' +
+                ", position=" + position +
+                ", " + super.toString() +
+                '}';
+    }
 }
