@@ -125,7 +125,7 @@ public class Main {
     }
 
     private static void generateHistoryCheckoutData(Faker faker, EntityManager em) {
-        List<ReservationForm> rfs = ReservationFormDAO.getData(em);
+        List<ReservationForm> rfs = ReservationFormDAO.findAll();
 
         for(int i = 0; i < rfs.size(); i++) {
 
@@ -147,7 +147,7 @@ public class Main {
 
     // Tạo dữ liệu HistoryCheckIn
     private static void generateHistoryCheckinData(Faker faker, EntityManager em) {
-        List<ReservationForm> rfs = ReservationFormDAO.getData(em);
+        List<ReservationForm> rfs = ReservationFormDAO.findAll();
 
         for(int i = 0; i < rfs.size(); i++){
 
@@ -176,7 +176,7 @@ public class Main {
 
     // Tạo dữ liệu RoomUsageService
     private static void generateFakerRoomUsageService(Faker faker, EntityManager em) {
-        List<ReservationForm> rfs = ReservationFormDAO.getData(em);
+        List<ReservationForm> rfs = ReservationFormDAO.findAll();
         List<HotelService> hs = HotelServiceDAO.getData(em);
 
         int count = 0;
@@ -463,6 +463,7 @@ public class Main {
         testCRUDCustomer(faker);
         testCRUDEmployee(faker);
         testCRUDAccount(faker);
+        testCRUDReservationForm(faker);
     }
 
     private static void testCRUDCustomer(Faker faker) {
@@ -548,7 +549,7 @@ public class Main {
     private static void testCRUDAccount(Faker faker) {
         System.out.println("\n\n\nCRUD bảng Account");
 
-        // Create Account
+        // Create Employee
         Employee newEmployee = new Employee();
         newEmployee.setFullName(faker.name().fullName());
         newEmployee.setPhoneNumber(faker.number().digits(10));
@@ -560,6 +561,7 @@ public class Main {
         newEmployee.setEmployeeCode("EMP-" + String.format("%06d", 12));
         newEmployee.setPosition(faker.options().option(Position.class));
 
+        // Create Account
         Account newAccount = new Account();
         newAccount.setAccountID("ACC-" + String.format("%06d", 12));
         newAccount.setUserName(faker.name().username());
@@ -590,6 +592,87 @@ public class Main {
         System.out.println("Xóa Employee: " + account.getAccountID());
         Account deletedAccount = AccountDAO.findById("ACC-000012");
         System.out.println(deletedAccount);
+
+    }
+
+    private static void testCRUDReservationForm(Faker faker) {
+        System.out.println("\n\n\nCRUD bảng ReservationForm");
+
+
+        // Create Customer
+        Customer newCustomer = new Customer();
+        newCustomer.setFullName(faker.name().fullName());
+        newCustomer.setPhoneNumber(faker.number().digits(10));
+        newCustomer.setAddress(faker.address().fullAddress());
+        newCustomer.setGender(faker.options().option(Gender.class));
+        newCustomer.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
+        newCustomer.setIsActivate(faker.options().option(ObjectStatus.class));
+        newCustomer.setIdCardNumber(faker.number().digits(12));
+        newCustomer.setCustomerCode("CUS-" + String.format("%06d", 12));
+        CustomerDAO.create(newCustomer);
+
+        // Create Employee
+        Employee newEmployee = new Employee();
+        newEmployee.setFullName(faker.name().fullName());
+        newEmployee.setPhoneNumber(faker.number().digits(10));
+        newEmployee.setAddress(faker.address().fullAddress());
+        newEmployee.setGender(faker.options().option(Gender.class));
+        newEmployee.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
+        newEmployee.setIsActivate(faker.options().option(ObjectStatus.class));
+        newEmployee.setIdCardNumber(faker.number().digits(12));
+        newEmployee.setEmployeeCode("EMP-" + String.format("%06d", 13));
+        newEmployee.setPosition(faker.options().option(Position.class));
+        EmployeeDAO.create(newEmployee);
+
+        Room room = RoomDAO.findById("R-000016");
+
+        ReservationForm newReservationForm = new ReservationForm();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        LocalDateTime rfDate = now.minusDays(new Random().nextInt(1, 4));
+        LocalDateTime rfCheckinDate = now.plusDays(new Random().nextInt(1, 5));
+        LocalDateTime rfCheckoutDate = now.plusDays(new Random().nextInt(6, 10));
+
+
+        ReservationStatus reservationStatus = rfCheckinDate.isAfter(now)
+                ? ReservationStatus.RESERVATION : faker.options().option(ReservationStatus.CANCEL, ReservationStatus.CHECKED_IN);
+
+        newReservationForm.setReservationID("RF-" + String.format("%06d", 16));
+        newReservationForm.setReservationStatus(reservationStatus);
+
+        newReservationForm.setReservationDate(rfDate);
+        newReservationForm.setApproxcheckInDate(rfCheckinDate);
+        newReservationForm.setApproxcheckOutTime(rfCheckoutDate);
+
+
+        newReservationForm.setCustomer(newCustomer);
+        newReservationForm.setEmployee(newEmployee);
+        newReservationForm.setRoom(room);
+
+        // CREATE
+        ReservationFormDAO.create(newReservationForm);
+        System.out.println("Tạo ReservationForm: " + newReservationForm.getReservationID());
+
+        // READ
+        System.out.println("Đọc ReservationForm: " + newReservationForm.getReservationID());
+        ReservationForm reservationForm = ReservationFormDAO.findById("RF-000016");
+        System.out.println(reservationForm);
+
+        // UPDATE
+        reservationForm.setReservationStatus(ReservationStatus.CANCEL);
+        ReservationFormDAO.update(reservationForm);
+
+        System.out.println("Đọc lại ReservationForm khi đổi status: " + reservationForm.getReservationID());
+        ReservationForm updatedReservationForm = ReservationFormDAO.findById("RF-000016");
+        System.out.println(updatedReservationForm);
+
+        // DELETE
+        ReservationFormDAO.delete("RF-000016");
+        System.out.println("Xóa ReservationForm: " + reservationForm.getReservationID());
+        ReservationForm deletedReservationForm = ReservationFormDAO.findById("RF-000016");
+        System.out.println(deletedReservationForm);
+
 
     }
 }
