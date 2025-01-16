@@ -127,6 +127,7 @@ public class Main {
     private static void generateHistoryCheckoutData(Faker faker, EntityManager em) {
         List<ReservationForm> rfs = ReservationFormDAO.findAll();
 
+        int historyCheckOuntCount = 0;
         for(int i = 0; i < rfs.size(); i++) {
 
             ReservationForm rf = rfs.get(i);
@@ -134,7 +135,7 @@ public class Main {
 
             if (rfStatus.equals(ReservationStatus.CHECKED_OUT)) {
                 HistoryCheckOut hco = new HistoryCheckOut();
-                hco.setRoomHistoryCheckOutID("HCO-" + String.format("%06d", (i + 1)));
+                hco.setRoomHistoryCheckOutID("HCO-" + String.format("%06d", ++historyCheckOuntCount));
                 hco.setDateOfCheckingOut(
                         rf.getApproxcheckOutTime().plusDays(1)
                 );
@@ -149,6 +150,8 @@ public class Main {
     private static void generateHistoryCheckinData(Faker faker, EntityManager em) {
         List<ReservationForm> rfs = ReservationFormDAO.findAll();
 
+        int historyCheckOutCount = 0;
+        int reservationFormCount = 0;
         for(int i = 0; i < rfs.size(); i++){
 
             ReservationForm rf = rfs.get(i);
@@ -160,7 +163,7 @@ public class Main {
             ) {
                 HistoryCheckIn hci = new HistoryCheckIn();
 
-                hci.setRoomHistoryCheckinID("HCI-" + String.format("%06d", (i + 1)));
+                hci.setRoomHistoryCheckinID("HCI-" + String.format("%06d", ++historyCheckOutCount));
                 hci.setCheckInDate(
                         rf.getApproxcheckInDate().plusHours(faker.number().numberBetween(0, 1))
                 );
@@ -169,7 +172,14 @@ public class Main {
                 if (rfStatus.equals(ReservationStatus.CHECKED_IN))
                     rf.getRoom().setRoomStatus(RoomStatus.IN_USE);
 
+                ReservationRoomDetail reservationRoomDetail = new ReservationRoomDetail();
+                reservationRoomDetail.setRoom(rf.getRoom());
+                reservationRoomDetail.setReservationForm(rf);
+                reservationRoomDetail.setDateChanged(hci.getCheckInDate());
+                reservationRoomDetail.setReservationRoomDetailID("RRD-" + String.format("%06d", ++reservationFormCount));
+
                 em.persist(hci);
+                em.persist(reservationRoomDetail);
             }
         }
     }
