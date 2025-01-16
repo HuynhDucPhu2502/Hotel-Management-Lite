@@ -29,5 +29,3 @@ SELECT * FROM accounts;
 SELECT * FROM customers;
 SELECT * FROM hotel_services;
 SELECT * FROM service_categories;
-DROP TABLE shift_assignments;
-DROP TABLE shifts;
