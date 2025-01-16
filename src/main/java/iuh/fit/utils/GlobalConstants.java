@@ -6,7 +6,7 @@ package iuh.fit.utils;
 public class GlobalConstants {
 
 
-    private static final String PERSISTENCE_UNIT_NAME = "mssql";
+    public static final String PERSISTENCE_UNIT_NAME = "mssql";
 
     // ==================================================================================================================
     // Table ID/Code Prefix
