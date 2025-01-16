@@ -21,4 +21,12 @@ public class Customer extends Person {
 
     @Column(name = "customer_code", unique = true, nullable = false)
     private String customerCode;
+
+    @Override
+    public String toString() {
+        return  "Customer{" +
+                "customerCode='" + customerCode + '\'' +
+                super.toString() +
+                '}';
+    }
 }
