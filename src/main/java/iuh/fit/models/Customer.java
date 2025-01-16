@@ -26,7 +26,7 @@ public class Customer extends Person {
     public String toString() {
         return  "Customer{" +
                 "customerCode='" + customerCode + '\'' +
-                super.toString() +
+                ", " + super.toString() +
                 '}';
     }
 }
