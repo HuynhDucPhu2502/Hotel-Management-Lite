@@ -45,4 +45,16 @@ public abstract class Person {
     @Column(name = "is_activate", nullable = false)
     @Enumerated(EnumType.STRING)
     private ObjectStatus isActivate;
+
+    @Override
+    public String toString() {
+        return "personID=" + personID +
+                ", fullName='" + fullName + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", address='" + address + '\'' +
+                ", gender=" + gender +
+                ", idCardNumber='" + idCardNumber + '\'' +
+                ", dob=" + dob +
+                ", isActivate=" + isActivate;
+    }
 }
