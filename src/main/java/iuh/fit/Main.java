@@ -215,7 +215,7 @@ public class Main {
 
     // Tạo dữ liệu ReservationForm
     private static void generateReservationFormData(Faker faker, EntityManager em) {
-        List<Employee> emps = EmployeeDAO.getData(em);
+        List<Employee> emps = EmployeeDAO.findAll();
         List<Customer> cus = CustomerDAO.findAll();
         List<Room> rooms = RoomDAO.getData(em);
 
@@ -457,10 +457,12 @@ public class Main {
     }
 
     // ==================================================================================================================
-    // Test xóa sửa cập nhật
+    // CRUD
     // ==================================================================================================================
     private static void testCRUD(Faker faker) {
         testCRUDCustomer(faker);
+        testCRUDEmployee(faker);
+        testCRUDAccount(faker);
     }
 
     private static void testCRUDCustomer(Faker faker) {
@@ -497,9 +499,97 @@ public class Main {
         // Delete
         CustomerDAO.delete("CUS-000011");
 
-        System.out.println("Xóa customer: " + newCustomer.getCustomerCode());
+        System.out.println("Xóa customer: " + customer.getCustomerCode());
         Customer deletedCustomer = CustomerDAO.findById("CUS-000011");
         System.out.println(deletedCustomer);
+
+    }
+
+    private static void testCRUDEmployee(Faker faker) {
+        System.out.println("\n\n\nCRUD bảng Employee");
+
+        // Create Employee
+        Employee newEmployee = new Employee();
+        newEmployee.setFullName(faker.name().fullName());
+        newEmployee.setPhoneNumber(faker.number().digits(10));
+        newEmployee.setAddress(faker.address().fullAddress());
+        newEmployee.setGender(faker.options().option(Gender.class));
+        newEmployee.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
+        newEmployee.setIsActivate(faker.options().option(ObjectStatus.class));
+        newEmployee.setIdCardNumber(faker.number().digits(12));
+        newEmployee.setEmployeeCode("EMP-" + String.format("%06d", 11));
+        newEmployee.setPosition(faker.options().option(Position.class));
+        EmployeeDAO.create(newEmployee);
+
+        System.out.println("Tạo Employee: " + newEmployee.getEmployeeCode());
+
+        // Read
+        System.out.println("Đọc Employee: " + newEmployee.getEmployeeCode());
+        Employee employee = EmployeeDAO.findById("EMP-000011");
+        System.out.println(employee);
+
+        // Update
+        employee.setFullName("Test");
+        EmployeeDAO.update(employee);
+
+        System.out.println("Đọc lại Employee khi đổi tên: " + employee.getEmployeeCode());
+        Employee updatedEmployee = EmployeeDAO.findById("EMP-000011");
+        System.out.println(updatedEmployee);
+
+        // Delete
+        EmployeeDAO.delete("EMP-000011");
+
+        System.out.println("Xóa Employee: " +employee.getEmployeeCode());
+        Employee deletedEmployee = EmployeeDAO.findById("EMP-000011");
+        System.out.println(deletedEmployee);
+
+    }
+
+    private static void testCRUDAccount(Faker faker) {
+        System.out.println("\n\n\nCRUD bảng Account");
+
+        // Create Account
+        Employee newEmployee = new Employee();
+        newEmployee.setFullName(faker.name().fullName());
+        newEmployee.setPhoneNumber(faker.number().digits(10));
+        newEmployee.setAddress(faker.address().fullAddress());
+        newEmployee.setGender(faker.options().option(Gender.class));
+        newEmployee.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
+        newEmployee.setIsActivate(faker.options().option(ObjectStatus.class));
+        newEmployee.setIdCardNumber(faker.number().digits(12));
+        newEmployee.setEmployeeCode("EMP-" + String.format("%06d", 12));
+        newEmployee.setPosition(faker.options().option(Position.class));
+
+        Account newAccount = new Account();
+        newAccount.setAccountID("ACC-" + String.format("%06d", 12));
+        newAccount.setUserName(faker.name().username());
+        newAccount.setPassword(faker.internet().password());
+        newAccount.setStatus(AccountStatus.ACTIVE);
+        newAccount.setEmployee(newEmployee);
+
+        AccountDAO.create(newAccount);
+
+        System.out.println("Tạo Account: " + newAccount.getAccountID());
+
+        // Read
+        System.out.println("Đọc Account: " + newAccount.getAccountID());
+        Account account = AccountDAO.findById("ACC-000012");
+        System.out.println(account);
+
+        // Update
+        account.setStatus(AccountStatus.LOCKED);
+        AccountDAO.update(account);
+
+        System.out.println("Đọc lại Account khi đổi status: " + account.getAccountID());
+        Account updatedAccount = AccountDAO.findById("ACC-000012");
+        System.out.println(updatedAccount);
+
+        // Delete
+        AccountDAO.delete("ACC-000012");
+
+        System.out.println("Xóa Employee: " + account.getAccountID());
+        Account deletedAccount = AccountDAO.findById("ACC-000012");
+        System.out.println(deletedAccount);
 
     }
 }
