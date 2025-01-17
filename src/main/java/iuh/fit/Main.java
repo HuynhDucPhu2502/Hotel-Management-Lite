@@ -20,7 +20,7 @@ public class Main {
     public static void main(String[] args) {
         Faker faker = new Faker();
 
-        //generateFakeData(faker);
+        generateFakeData(faker);
         testCRUD(faker);
 
 
@@ -866,9 +866,9 @@ public class Main {
         System.out.println(updateRoomCategory);
 
         // Delete
-        RoomDAO.delete(updateRoomCategory.getRoomCategoryID());
-        System.out.println("Xóa Room: " + readRoomCategory.getRoomCategoryID());
-        RoomCategory deletedRoomCategory = RoomCategoryDAO.getById("R-000021");
+        RoomCategoryDAO.delete(updateRoomCategory.getRoomCategoryID());
+        System.out.println("Xóa RoomCategory: " + updateRoomCategory.getRoomCategoryID());
+        RoomCategory deletedRoomCategory = RoomCategoryDAO.getById(updateRoomCategory.getRoomCategoryID());
         System.out.println(deletedRoomCategory);
     }
 
