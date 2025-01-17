@@ -1,19 +1,17 @@
 package iuh.fit.dao;
 
-import iuh.fit.models.HotelService;
-import iuh.fit.models.Room;
-import iuh.fit.models.ServiceCategory;
+import iuh.fit.models.HistoryCheckIn;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
 import java.util.List;
 
-public class HotelServiceDAO {
-    public static boolean create(EntityManager em, HotelService hs){
+public class HistoryCheckInDAO {
+    public static boolean create(EntityManager em, HistoryCheckIn hci){
         try{
             em.getTransaction().begin();
-            em.persist(hs);
+            em.persist(hci);
             em.getTransaction().commit();
             return true;
         }catch (Exception e){
@@ -27,8 +25,8 @@ public class HotelServiceDAO {
         try{
             em.getTransaction().begin();
             Query query = em.createQuery(
-                    "delete from HotelService " +
-                            "where serviceID = :id "
+                    "delete from HistoryCheckIn " +
+                            "where roomHistoryCheckinID = :id "
             );
             query.setParameter("id", id);
             n = query.executeUpdate();
@@ -40,7 +38,7 @@ public class HotelServiceDAO {
         }
     }
 
-    public static boolean update(EntityManager em, HotelService newInfor){
+    public static boolean update(EntityManager em, HistoryCheckIn newInfor){
         try{
             em.getTransaction().begin();
             em.merge(newInfor);
@@ -52,11 +50,11 @@ public class HotelServiceDAO {
         }
     }
 
-    public static List<HotelService> findAll(EntityManager em){
+    public static List<HistoryCheckIn> findAll(EntityManager em){
         try{
-            TypedQuery<HotelService> query = em.createQuery(
-                    "select hs from HotelService hs",
-                    HotelService.class
+            TypedQuery<HistoryCheckIn> query = em.createQuery(
+                    "select hci from HistoryCheckIn hci",
+                    HistoryCheckIn.class
             );
 
             return query.getResultList();
@@ -65,10 +63,10 @@ public class HotelServiceDAO {
         }
     }
 
-    public static HotelService findById(EntityManager em, String id){
+    public static HistoryCheckIn findById(EntityManager em, String id){
         try {
             return em.find(
-                    HotelService.class,
+                    HistoryCheckIn.class,
                     id
             );
         }catch (Exception e){

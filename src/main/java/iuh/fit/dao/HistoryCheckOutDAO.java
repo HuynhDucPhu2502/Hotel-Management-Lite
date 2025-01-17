@@ -1,7 +1,6 @@
 package iuh.fit.dao;
 
-import iuh.fit.models.HotelService;
-import iuh.fit.models.Room;
+import iuh.fit.models.HistoryCheckOut;
 import iuh.fit.models.ServiceCategory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -9,11 +8,11 @@ import jakarta.persistence.TypedQuery;
 
 import java.util.List;
 
-public class HotelServiceDAO {
-    public static boolean create(EntityManager em, HotelService hs){
+public class HistoryCheckOutDAO {
+    public static boolean create(EntityManager em, HistoryCheckOut hco){
         try{
             em.getTransaction().begin();
-            em.persist(hs);
+            em.persist(hco);
             em.getTransaction().commit();
             return true;
         }catch (Exception e){
@@ -27,8 +26,8 @@ public class HotelServiceDAO {
         try{
             em.getTransaction().begin();
             Query query = em.createQuery(
-                    "delete from HotelService " +
-                            "where serviceID = :id "
+                    "delete from HistoryCheckOut " +
+                            "where roomHistoryCheckOutID = :id "
             );
             query.setParameter("id", id);
             n = query.executeUpdate();
@@ -40,7 +39,7 @@ public class HotelServiceDAO {
         }
     }
 
-    public static boolean update(EntityManager em, HotelService newInfor){
+    public static boolean update(EntityManager em, HistoryCheckOut newInfor){
         try{
             em.getTransaction().begin();
             em.merge(newInfor);
@@ -52,11 +51,11 @@ public class HotelServiceDAO {
         }
     }
 
-    public static List<HotelService> findAll(EntityManager em){
+    public static List<HistoryCheckOut> findAll(EntityManager em){
         try{
-            TypedQuery<HotelService> query = em.createQuery(
-                    "select hs from HotelService hs",
-                    HotelService.class
+            TypedQuery<HistoryCheckOut> query = em.createQuery(
+                    "select hco from HistoryCheckOut hco",
+                    HistoryCheckOut.class
             );
 
             return query.getResultList();
@@ -65,10 +64,10 @@ public class HotelServiceDAO {
         }
     }
 
-    public static HotelService findById(EntityManager em, String id){
+    public static HistoryCheckOut findById(EntityManager em, String id){
         try {
             return em.find(
-                    HotelService.class,
+                    HistoryCheckOut.class,
                     id
             );
         }catch (Exception e){
