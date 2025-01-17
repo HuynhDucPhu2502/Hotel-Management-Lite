@@ -18,7 +18,7 @@ public class RoomChargesCalculate {
             LocalDateTime checkOutTime,
             Room room
     )  {
-        RoomCategory roomCategory = RoomCategoryDAO.findById(room.getRoomCategory().getRoomCategoryID());
+        RoomCategory roomCategory = RoomCategoryDAO.getById(room.getRoomCategory().getRoomCategoryID());
 
         double hourlyPrice = roomCategory.getHourlyPrice();
         double dailyPrice = roomCategory.getDailyPrice();
