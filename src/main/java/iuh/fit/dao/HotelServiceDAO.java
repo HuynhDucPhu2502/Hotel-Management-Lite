@@ -3,6 +3,7 @@ package iuh.fit.dao;
 import iuh.fit.models.HotelService;
 import iuh.fit.models.Room;
 import iuh.fit.models.ServiceCategory;
+import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -10,50 +11,47 @@ import jakarta.persistence.TypedQuery;
 import java.util.List;
 
 public class HotelServiceDAO {
-    public static boolean create(EntityManager em, HotelService hs){
-        try{
+    public static boolean create(HotelService hs){
+        try(EntityManager em = EntityManagerUtil.getEntityManager()){
             em.getTransaction().begin();
             em.persist(hs);
             em.getTransaction().commit();
             return true;
         }catch (Exception e){
-            em.getTransaction().rollback();
             throw new RuntimeException(e);
         }
     }
 
-    public static boolean delete(EntityManager em, String id){
-        int n = 0;
-        try{
+    public static boolean delete(String id){
+        try(EntityManager em = EntityManagerUtil.getEntityManager()){
             em.getTransaction().begin();
-            Query query = em.createQuery(
-                    "delete from HotelService " +
-                            "where serviceID = :id "
+            HotelService hs = em.find(
+                    HotelService.class,
+                    id
             );
-            query.setParameter("id", id);
-            n = query.executeUpdate();
+            if(hs == null)
+                return false;
+            em.remove(hs);
             em.getTransaction().commit();
-            return n > 0;
+            return true;
         }catch (Exception e){
-            em.getTransaction().rollback();
             throw new RuntimeException(e);
         }
     }
 
-    public static boolean update(EntityManager em, HotelService newInfor){
-        try{
+    public static boolean update(HotelService newInfor){
+        try(EntityManager em = EntityManagerUtil.getEntityManager()){
             em.getTransaction().begin();
             em.merge(newInfor);
             em.getTransaction().commit();
             return true;
         }catch (Exception e){
-            em.getTransaction().rollback();
             throw new RuntimeException(e);
         }
     }
 
-    public static List<HotelService> findAll(EntityManager em){
-        try{
+    public static List<HotelService> findAll(){
+        try(EntityManager em = EntityManagerUtil.getEntityManager()){
             TypedQuery<HotelService> query = em.createQuery(
                     "select hs from HotelService hs",
                     HotelService.class
@@ -65,8 +63,8 @@ public class HotelServiceDAO {
         }
     }
 
-    public static HotelService findById(EntityManager em, String id){
-        try {
+    public static HotelService findById(String id){
+        try(EntityManager em = EntityManagerUtil.getEntityManager()) {
             return em.find(
                     HotelService.class,
                     id
