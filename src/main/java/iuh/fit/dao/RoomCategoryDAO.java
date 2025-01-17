@@ -7,12 +7,7 @@ import jakarta.persistence.Query;
 
 import java.util.List;
 
-/**
- * @author Le Tran Gia Huy
- * @created 16/01/2025 - 5:44 PM
- * @project Hotel-Management-Plus
- * @package iuh.fit.dao
- */
+
 public class RoomCategoryDAO {
 
     public static List getAll(){

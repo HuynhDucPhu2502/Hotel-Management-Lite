@@ -1,6 +1,6 @@
 package iuh.fit.dao;
 
-import iuh.fit.models.Employee;
+import iuh.fit.models.Account;
 import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -8,18 +8,16 @@ import jakarta.persistence.TypedQuery;
 import java.util.Collections;
 import java.util.List;
 
-public class EmployeeDAO {
-    // Note: Employee không có ID, nhận ID từ bảng cha là
-    // bảng Persons, mà có một trường Unique trong bảng
-    // Customer là employee_code.
-    // => Ngầm hiểu employee_code là ID của Customer.
-
-    public static void create(Employee employee) {
+/**
+ * Admin 1/16/2025
+ **/
+public class AccountDAO {
+    public static void create(Account account) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             try{
 
                 em.getTransaction().begin();
-                em.persist(employee);
+                em.persist(account);
                 em.getTransaction().commit();
 
             }catch(Exception transactionException) {
@@ -35,11 +33,11 @@ public class EmployeeDAO {
         }
     }
 
-    public static List<Employee> findAll() {
+    public static List<Account> findAll() {
 
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
 
-            TypedQuery<Employee> query = em.createQuery("select e from Employee e", Employee.class);
+            TypedQuery<Account> query = em.createQuery("select a from Account a", Account.class);
             return query.getResultList();
 
         }  catch (Exception resourceException) {
@@ -50,16 +48,10 @@ public class EmployeeDAO {
         }
     }
 
-    public static Employee findById(String id) {
+    public static Account findById(String id) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
 
-            TypedQuery<Employee> query = em.createQuery (
-                    "SELECT e FROM Employee e WHERE e.employeeCode = :code",
-                    Employee.class
-            );
-            query.setParameter("code", id);
-
-            return query.getResultStream().findFirst().orElse(null);
+            return em.find(Account.class, id);
 
         }  catch (Exception resourceException) {
 
@@ -69,12 +61,12 @@ public class EmployeeDAO {
         }
     }
 
-    public static void update(Employee employee) {
+    public static void update(Account account) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             try{
 
                 em.getTransaction().begin();
-                em.merge(employee);
+                em.merge(account);
                 em.getTransaction().commit();
 
             }catch(Exception transactionException) {
@@ -96,13 +88,8 @@ public class EmployeeDAO {
 
                 em.getTransaction().begin();
 
-                TypedQuery<Employee> query = em.createQuery (
-                        "SELECT e FROM Employee e WHERE e.employeeCode = :code",
-                        Employee.class
-                );
-                query.setParameter("code", id);
-
-                query.getResultStream().findFirst().ifPresent(em::remove);
+                Account account = em.find(Account.class, id);
+                if (account != null) em.remove(account);
 
                 em.getTransaction().commit();
 
@@ -118,5 +105,4 @@ public class EmployeeDAO {
 
         }
     }
-
 }

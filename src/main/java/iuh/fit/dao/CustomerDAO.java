@@ -2,7 +2,6 @@ package iuh.fit.dao;
 
 import iuh.fit.models.Customer;
 import iuh.fit.utils.EntityManagerUtil;
-import iuh.fit.utils.GlobalConstants;
 import jakarta.persistence.*;
 
 import java.util.Collections;
@@ -13,7 +12,6 @@ public class CustomerDAO {
     // bảng Persons, mà có một trường Unique trong bảng
     // Customer là customer_code.
     // => Ngầm hiểu customer_code là ID của Customer.
-
 
     public static void create(Customer customer) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
@@ -101,8 +99,7 @@ public class CustomerDAO {
                 );
                 query.setParameter("code", id);
 
-                Customer customer = query.getResultStream().findFirst().orElse(null);
-                if (customer != null) em.remove(customer);
+                query.getResultStream().findFirst().ifPresent(em::remove);
 
                 em.getTransaction().commit();
 

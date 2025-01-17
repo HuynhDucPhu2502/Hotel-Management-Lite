@@ -125,8 +125,9 @@ public class Main {
     }
 
     private static void generateHistoryCheckoutData(Faker faker, EntityManager em) {
-        List<ReservationForm> rfs = ReservationFormDAO.getData(em);
+        List<ReservationForm> rfs = ReservationFormDAO.findAll();
 
+        int historyCheckOuntCount = 0;
         for(int i = 0; i < rfs.size(); i++) {
 
             ReservationForm rf = rfs.get(i);
@@ -134,7 +135,7 @@ public class Main {
 
             if (rfStatus.equals(ReservationStatus.CHECKED_OUT)) {
                 HistoryCheckOut hco = new HistoryCheckOut();
-                hco.setRoomHistoryCheckOutID("HCO-" + String.format("%06d", (i + 1)));
+                hco.setRoomHistoryCheckOutID("HCO-" + String.format("%06d", ++historyCheckOuntCount));
                 hco.setDateOfCheckingOut(
                         rf.getApproxcheckOutTime().plusDays(1)
                 );
@@ -147,8 +148,10 @@ public class Main {
 
     // Tạo dữ liệu HistoryCheckIn
     private static void generateHistoryCheckinData(Faker faker, EntityManager em) {
-        List<ReservationForm> rfs = ReservationFormDAO.getData(em);
+        List<ReservationForm> rfs = ReservationFormDAO.findAll();
 
+        int historyCheckOutCount = 0;
+        int reservationFormCount = 0;
         for(int i = 0; i < rfs.size(); i++){
 
             ReservationForm rf = rfs.get(i);
@@ -160,7 +163,7 @@ public class Main {
             ) {
                 HistoryCheckIn hci = new HistoryCheckIn();
 
-                hci.setRoomHistoryCheckinID("HCI-" + String.format("%06d", (i + 1)));
+                hci.setRoomHistoryCheckinID("HCI-" + String.format("%06d", ++historyCheckOutCount));
                 hci.setCheckInDate(
                         rf.getApproxcheckInDate().plusHours(faker.number().numberBetween(0, 1))
                 );
@@ -169,15 +172,22 @@ public class Main {
                 if (rfStatus.equals(ReservationStatus.CHECKED_IN))
                     rf.getRoom().setRoomStatus(RoomStatus.IN_USE);
 
+                ReservationRoomDetail reservationRoomDetail = new ReservationRoomDetail();
+                reservationRoomDetail.setRoom(rf.getRoom());
+                reservationRoomDetail.setReservationForm(rf);
+                reservationRoomDetail.setDateChanged(hci.getCheckInDate());
+                reservationRoomDetail.setReservationRoomDetailID("RRD-" + String.format("%06d", ++reservationFormCount));
+
                 em.persist(hci);
+                em.persist(reservationRoomDetail);
             }
         }
     }
 
     // Tạo dữ liệu RoomUsageService
     private static void generateFakerRoomUsageService(Faker faker, EntityManager em) {
-        List<ReservationForm> rfs = ReservationFormDAO.getData(em);
-        List<HotelService> hs = HotelServiceDAO.getData(em);
+        List<ReservationForm> rfs = ReservationFormDAO.findAll();
+        List<HotelService> hs = HotelServiceDAO.findAll(em);
 
         int count = 0;
         for(int i = 0; i < rfs.size(); i++) {
@@ -215,7 +225,7 @@ public class Main {
 
     // Tạo dữ liệu ReservationForm
     private static void generateReservationFormData(Faker faker, EntityManager em) {
-        List<Employee> emps = EmployeeDAO.getData(em);
+        List<Employee> emps = EmployeeDAO.findAll();
         List<Customer> cus = CustomerDAO.findAll();
         List<Room> rooms = RoomDAO.getAll();
 
@@ -457,10 +467,13 @@ public class Main {
     }
 
     // ==================================================================================================================
-    // Test xóa sửa cập nhật
+    // CRUD
     // ==================================================================================================================
     private static void testCRUD(Faker faker) {
         testCRUDCustomer(faker);
+        testCRUDEmployee(faker);
+        testCRUDAccount(faker);
+        testCRUDReservationForm(faker);
     }
 
     private static void testCRUDCustomer(Faker faker) {
@@ -497,9 +510,179 @@ public class Main {
         // Delete
         CustomerDAO.delete("CUS-000011");
 
-        System.out.println("Xóa customer: " + newCustomer.getCustomerCode());
+        System.out.println("Xóa customer: " + customer.getCustomerCode());
         Customer deletedCustomer = CustomerDAO.findById("CUS-000011");
         System.out.println(deletedCustomer);
+
+    }
+
+    private static void testCRUDEmployee(Faker faker) {
+        System.out.println("\n\n\nCRUD bảng Employee");
+
+        // Create Employee
+        Employee newEmployee = new Employee();
+        newEmployee.setFullName(faker.name().fullName());
+        newEmployee.setPhoneNumber(faker.number().digits(10));
+        newEmployee.setAddress(faker.address().fullAddress());
+        newEmployee.setGender(faker.options().option(Gender.class));
+        newEmployee.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
+        newEmployee.setIsActivate(faker.options().option(ObjectStatus.class));
+        newEmployee.setIdCardNumber(faker.number().digits(12));
+        newEmployee.setEmployeeCode("EMP-" + String.format("%06d", 11));
+        newEmployee.setPosition(faker.options().option(Position.class));
+        EmployeeDAO.create(newEmployee);
+
+        System.out.println("Tạo Employee: " + newEmployee.getEmployeeCode());
+
+        // Read
+        System.out.println("Đọc Employee: " + newEmployee.getEmployeeCode());
+        Employee employee = EmployeeDAO.findById("EMP-000011");
+        System.out.println(employee);
+
+        // Update
+        employee.setFullName("Test");
+        EmployeeDAO.update(employee);
+
+        System.out.println("Đọc lại Employee khi đổi tên: " + employee.getEmployeeCode());
+        Employee updatedEmployee = EmployeeDAO.findById("EMP-000011");
+        System.out.println(updatedEmployee);
+
+        // Delete
+        EmployeeDAO.delete("EMP-000011");
+
+        System.out.println("Xóa Employee: " +employee.getEmployeeCode());
+        Employee deletedEmployee = EmployeeDAO.findById("EMP-000011");
+        System.out.println(deletedEmployee);
+
+    }
+
+    private static void testCRUDAccount(Faker faker) {
+        System.out.println("\n\n\nCRUD bảng Account");
+
+        // Create Employee
+        Employee newEmployee = new Employee();
+        newEmployee.setFullName(faker.name().fullName());
+        newEmployee.setPhoneNumber(faker.number().digits(10));
+        newEmployee.setAddress(faker.address().fullAddress());
+        newEmployee.setGender(faker.options().option(Gender.class));
+        newEmployee.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
+        newEmployee.setIsActivate(faker.options().option(ObjectStatus.class));
+        newEmployee.setIdCardNumber(faker.number().digits(12));
+        newEmployee.setEmployeeCode("EMP-" + String.format("%06d", 12));
+        newEmployee.setPosition(faker.options().option(Position.class));
+
+        // Create Account
+        Account newAccount = new Account();
+        newAccount.setAccountID("ACC-" + String.format("%06d", 12));
+        newAccount.setUserName(faker.name().username());
+        newAccount.setPassword(faker.internet().password());
+        newAccount.setStatus(AccountStatus.ACTIVE);
+        newAccount.setEmployee(newEmployee);
+
+        AccountDAO.create(newAccount);
+
+        System.out.println("Tạo Account: " + newAccount.getAccountID());
+
+        // Read
+        System.out.println("Đọc Account: " + newAccount.getAccountID());
+        Account account = AccountDAO.findById("ACC-000012");
+        System.out.println(account);
+
+        // Update
+        account.setStatus(AccountStatus.LOCKED);
+        AccountDAO.update(account);
+
+        System.out.println("Đọc lại Account khi đổi status: " + account.getAccountID());
+        Account updatedAccount = AccountDAO.findById("ACC-000012");
+        System.out.println(updatedAccount);
+
+        // Delete
+        AccountDAO.delete("ACC-000012");
+
+        System.out.println("Xóa Employee: " + account.getAccountID());
+        Account deletedAccount = AccountDAO.findById("ACC-000012");
+        System.out.println(deletedAccount);
+
+    }
+
+    private static void testCRUDReservationForm(Faker faker) {
+        System.out.println("\n\n\nCRUD bảng ReservationForm");
+
+
+        // Create Customer
+        Customer newCustomer = new Customer();
+        newCustomer.setFullName(faker.name().fullName());
+        newCustomer.setPhoneNumber(faker.number().digits(10));
+        newCustomer.setAddress(faker.address().fullAddress());
+        newCustomer.setGender(faker.options().option(Gender.class));
+        newCustomer.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
+        newCustomer.setIsActivate(faker.options().option(ObjectStatus.class));
+        newCustomer.setIdCardNumber(faker.number().digits(12));
+        newCustomer.setCustomerCode("CUS-" + String.format("%06d", 12));
+        CustomerDAO.create(newCustomer);
+
+        // Create Employee
+        Employee newEmployee = new Employee();
+        newEmployee.setFullName(faker.name().fullName());
+        newEmployee.setPhoneNumber(faker.number().digits(10));
+        newEmployee.setAddress(faker.address().fullAddress());
+        newEmployee.setGender(faker.options().option(Gender.class));
+        newEmployee.setDob(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)));
+        newEmployee.setIsActivate(faker.options().option(ObjectStatus.class));
+        newEmployee.setIdCardNumber(faker.number().digits(12));
+        newEmployee.setEmployeeCode("EMP-" + String.format("%06d", 13));
+        newEmployee.setPosition(faker.options().option(Position.class));
+        EmployeeDAO.create(newEmployee);
+
+        Room room = RoomDAO.getById("R-000016");
+
+        ReservationForm newReservationForm = new ReservationForm();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        LocalDateTime rfDate = now.minusDays(new Random().nextInt(1, 4));
+        LocalDateTime rfCheckinDate = now.plusDays(new Random().nextInt(1, 5));
+        LocalDateTime rfCheckoutDate = now.plusDays(new Random().nextInt(6, 10));
+
+
+        ReservationStatus reservationStatus = rfCheckinDate.isAfter(now)
+                ? ReservationStatus.RESERVATION : faker.options().option(ReservationStatus.CANCEL, ReservationStatus.CHECKED_IN);
+
+        newReservationForm.setReservationID("RF-" + String.format("%06d", 16));
+        newReservationForm.setReservationStatus(reservationStatus);
+
+        newReservationForm.setReservationDate(rfDate);
+        newReservationForm.setApproxcheckInDate(rfCheckinDate);
+        newReservationForm.setApproxcheckOutTime(rfCheckoutDate);
+
+
+        newReservationForm.setCustomer(newCustomer);
+        newReservationForm.setEmployee(newEmployee);
+        newReservationForm.setRoom(room);
+
+        // CREATE
+        ReservationFormDAO.create(newReservationForm);
+        System.out.println("Tạo ReservationForm: " + newReservationForm.getReservationID());
+
+        // READ
+        System.out.println("Đọc ReservationForm: " + newReservationForm.getReservationID());
+        ReservationForm reservationForm = ReservationFormDAO.findById("RF-000016");
+        System.out.println(reservationForm);
+
+        // UPDATE
+        reservationForm.setReservationStatus(ReservationStatus.CANCEL);
+        ReservationFormDAO.update(reservationForm);
+
+        System.out.println("Đọc lại ReservationForm khi đổi status: " + reservationForm.getReservationID());
+        ReservationForm updatedReservationForm = ReservationFormDAO.findById("RF-000016");
+        System.out.println(updatedReservationForm);
+
+        // DELETE
+        ReservationFormDAO.delete("RF-000016");
+        System.out.println("Xóa ReservationForm: " + reservationForm.getReservationID());
+        ReservationForm deletedReservationForm = ReservationFormDAO.findById("RF-000016");
+        System.out.println(deletedReservationForm);
+
 
     }
 }

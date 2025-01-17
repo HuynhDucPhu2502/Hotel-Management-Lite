@@ -1,11 +1,9 @@
 package iuh.fit.dao;
 
-import iuh.fit.models.Customer;
 import iuh.fit.models.Room;
 import iuh.fit.models.RoomCategory;
 import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Query;
 
 import java.time.LocalDateTime;
@@ -16,7 +14,7 @@ public class RoomDAO {
     public static List<Room> getAll(){
         try(EntityManager em = EntityManagerUtil.getEntityManager()){
             Query query = em.createQuery(
-                    "select r from Room r"
+                    "select r from Room r where r.isActivate = 'ACTIVATE'"
             );
             return query.getResultList();
         }catch (Exception e){

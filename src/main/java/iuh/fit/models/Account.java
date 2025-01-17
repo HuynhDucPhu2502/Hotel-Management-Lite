@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * Admin 1/14/2025
@@ -29,7 +30,10 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "employee_code", nullable = false, unique = true)
     private Employee employee;
+
+
 }
