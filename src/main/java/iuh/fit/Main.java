@@ -20,7 +20,7 @@ public class Main {
     public static void main(String[] args) {
         Faker faker = new Faker();
 
-        generateFakeData(faker);
+        //generateFakeData(faker);
         testCRUD(faker);
 
 
@@ -489,10 +489,12 @@ public class Main {
     // CRUD
     // ==================================================================================================================
     private static void testCRUD(Faker faker) {
-        testCRUDCustomer(faker);
-        testCRUDEmployee(faker);
-        testCRUDAccount(faker);
-        testCRUDReservationForm(faker);
+//        testCRUDCustomer(faker);
+//        testCRUDEmployee(faker);
+//        testCRUDAccount(faker);
+//        testCRUDReservationForm(faker);
+        //testCRUDServiceCategory(faker);
+        testCRUDHistoryCheckin(faker);
     }
 
     private static void testCRUDCustomer(Faker faker) {
@@ -701,7 +703,103 @@ public class Main {
         System.out.println("Xóa ReservationForm: " + reservationForm.getReservationID());
         ReservationForm deletedReservationForm = ReservationFormDAO.findById("RF-000016");
         System.out.println(deletedReservationForm);
+    }
+
+    private static void testCRUDServiceCategory(Faker faker) {
+        System.out.println("\n\n\nCRUD bảng ServiceCategory");
+
+        // Create ServiceCategory
+        ServiceCategory serviceCategory = new ServiceCategory();
+
+        serviceCategory.setServiceCategoryID("SC-" + String.format(
+                "%06d",
+                new Random().nextInt(100, 200))
+        );
+        serviceCategory.setServiceCategoryName(faker.name().fullName());
+        serviceCategory.setIsActivate(ObjectStatus.ACTIVE);
+
+        ServiceCategoryDAO.create(serviceCategory);
+
+        System.out.println("Tạo ServiceCategory: " + ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID()));
+
+        // READ
+        System.out.println("Đọc ServiceCategory: " + serviceCategory.getServiceCategoryID());
+        System.out.println(ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID()));
+
+        // delete
+        if(ServiceCategoryDAO.delete(serviceCategory.getServiceCategoryID()))
+            System.out.println("Xóa ServiceCategory thanh cong");
+
+        // UPDATE
+        serviceCategory.setIsActivate(ObjectStatus.INACTIVE);
+        ServiceCategoryDAO.update(serviceCategory);
+
+        System.out.println("Đọc lại ServiceCategory khi đổi status: " + serviceCategory.getServiceCategoryID());
+        ServiceCategory updatedServiceCategory = ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID());
+        System.out.println(updatedServiceCategory);
+    }
+
+    private static void testCRUDHistoryCheckin(Faker faker) {
+        List<Employee> emps = EmployeeDAO.findAll();
+        List<Customer> cus = CustomerDAO.findAll();
+        List<Room> rooms = RoomDAO.findAll();
+
+        System.out.println("\n\n\nCRUD bảng HistoryCheckin");
+
+        // Create HistoryCheckin
+
+        ReservationForm rf = new ReservationForm();
+        LocalDateTime now = LocalDateTime.now();
+
+        LocalDateTime rfDate = now.minusDays(new Random().nextInt(12,18));
+        LocalDateTime rfCheckinDate = rfDate.plusDays(new Random().nextInt(1, 2));
+        LocalDateTime rfCheckoutDate = rfDate.plusDays(new Random().nextInt(5, 8));
+
+        rf.setReservationID("RF-" + String.format(
+                "%06d",
+                new Random().nextInt(100, 200))
+        );
+        rf.setReservationStatus(ReservationStatus.CHECKED_OUT);
+
+        rf.setReservationDate(rfDate);
+        rf.setApproxcheckInDate(rfCheckinDate);
+        rf.setApproxcheckOutTime(rfCheckoutDate);
 
 
+        rf.setCustomer(cus.get(1));
+        rf.setEmployee(emps.get(1));
+        rf.setRoom(rooms.get(1));
+
+        ReservationFormDAO.create(rf);
+
+        HistoryCheckIn hci = new HistoryCheckIn();
+
+        hci.setRoomHistoryCheckinID("HCI-" + String.format(
+                "%06d",
+                new Random().nextInt(100, 200)));
+        hci.setCheckInDate(
+                rf.getApproxcheckInDate().plusHours(faker.number().numberBetween(0, 1))
+        );
+        hci.setReservationForm(rf);
+
+        HistoryCheckInDAO.create(hci);
+
+        System.out.println("Tạo HistoryCheckin: " + HistoryCheckInDAO.findById(hci.getRoomHistoryCheckinID()));
+
+        // READ
+        System.out.println("Đọc HistoryCheckin: " + hci.getRoomHistoryCheckinID());
+        System.out.println(HistoryCheckInDAO.findById(hci.getRoomHistoryCheckinID()));
+
+        // delete
+        if(HistoryCheckInDAO.delete(hci.getRoomHistoryCheckinID()))
+            System.out.println("Xóa HistoryCheckin thanh cong");
+
+        // UPDATE
+        hci.setCheckInDate(LocalDateTime.now());
+        HistoryCheckInDAO.update(hci);
+
+        System.out.println("Đọc lại HistoryCheckin khi đổi status: " + hci.getRoomHistoryCheckinID());
+        HistoryCheckIn updatedHistoryCheckIn = HistoryCheckInDAO.findById(hci.getRoomHistoryCheckinID());
+        System.out.println(updatedHistoryCheckIn);
     }
 }
