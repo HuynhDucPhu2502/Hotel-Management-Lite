@@ -217,7 +217,7 @@ public class Main {
     private static void generateReservationFormData(Faker faker, EntityManager em) {
         List<Employee> emps = EmployeeDAO.getData(em);
         List<Customer> cus = CustomerDAO.findAll();
-        List<Room> rooms = RoomDAO.getData(em);
+        List<Room> rooms = RoomDAO.getAll();
 
 
         // Tạo phiếu cho trường hợp IN_USE, RESERVATION

@@ -16,7 +16,7 @@ public class MainTestDAO {
 //                .forEach(System.out::println);
 //        CustomerDAO.getData(em)
 //                .forEach(System.out::println);
-        RoomDAO.getData(em)
+        RoomDAO.getAll()
                 .forEach(System.out::println);
 
         em.close();

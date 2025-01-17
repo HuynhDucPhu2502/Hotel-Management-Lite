@@ -30,9 +30,7 @@ public class CustomerDAO {
 
             }
         }  catch (Exception resourceException) {
-
             resourceException.printStackTrace();
-
         }
     }
 
