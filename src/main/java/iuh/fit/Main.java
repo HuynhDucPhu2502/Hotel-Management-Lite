@@ -92,7 +92,7 @@ public class Main {
 
             try {
                 em.getTransaction().begin();
-                generateHistoryCheckinData(faker, em);
+                generateHistoryCheckinAndRoomReservationDetailData(faker, em);
                 em.getTransaction().commit();
             } catch (Exception e) {
                 em.getTransaction().rollback();
@@ -124,6 +124,7 @@ public class Main {
         }
     }
 
+
     private static void generateHistoryCheckoutData(Faker faker, EntityManager em) {
         List<ReservationForm> rfs = ReservationFormDAO.findAll();
 
@@ -142,12 +143,25 @@ public class Main {
                 hco.setReservationForm(rf);
 
                 em.persist(hco);
+
+                Invoice invoice = new Invoice();
+                invoice.setInvoiceID("INV-" + String.format("%06d", ++historyCheckOuntCount));
+                invoice.setInvoiceDate(rf.getApproxcheckOutTime());
+                invoice.setReservationForm(rf);
+                invoice.setSubTotal(0);
+                invoice.setRoomCharges(0);
+                invoice.setServiceCharges(0);
+                invoice.setTaxCharge(0);
+                invoice.setTotalDue(0);
+
+
+                em.persist(invoice);
             }
         }
     }
 
     // Tạo dữ liệu HistoryCheckIn
-    private static void generateHistoryCheckinData(Faker faker, EntityManager em) {
+    private static void generateHistoryCheckinAndRoomReservationDetailData(Faker faker, EntityManager em) {
         List<ReservationForm> rfs = ReservationFormDAO.findAll();
 
         int historyCheckOutCount = 0;
@@ -227,7 +241,7 @@ public class Main {
     private static void generateReservationFormData(Faker faker, EntityManager em) {
         List<Employee> emps = EmployeeDAO.findAll();
         List<Customer> cus = CustomerDAO.findAll();
-        List<Room> rooms = RoomDAO.getAll();
+        List<Room> rooms = RoomDAO.findAll();
 
 
         // Tạo phiếu cho trường hợp IN_USE, RESERVATION
@@ -634,7 +648,7 @@ public class Main {
         newEmployee.setPosition(faker.options().option(Position.class));
         EmployeeDAO.create(newEmployee);
 
-        Room room = RoomDAO.getById("R-000016");
+        Room room = RoomDAO.findById("R-000016");
 
         ReservationForm newReservationForm = new ReservationForm();
 
