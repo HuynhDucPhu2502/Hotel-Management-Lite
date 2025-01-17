@@ -493,6 +493,8 @@ public class Main {
         testCRUDEmployee(faker);
         testCRUDAccount(faker);
         testCRUDReservationForm(faker);
+        testCRUDRoomAndRoomCategory(faker);
+        testCRUDShiftAndShiftAssignment(faker);
     }
 
     private static void testCRUDCustomer(Faker faker) {
@@ -701,7 +703,151 @@ public class Main {
         System.out.println("Xóa ReservationForm: " + reservationForm.getReservationID());
         ReservationForm deletedReservationForm = ReservationFormDAO.findById("RF-000016");
         System.out.println(deletedReservationForm);
+    }
+
+    private static void testCRUDRoomAndRoomCategory(Faker faker) {
+        //TEST CREATE FOR ROOM AND ROOM CATEGORY
+        // Create RoomCategory
+        RoomCategory roomCategory = new RoomCategory();
+        roomCategory.setRoomCategoryID("RC-" + String.format("%06d", 11));
+        roomCategory.setRoomCategoryName(faker.team().name());
+        roomCategory.setNumberOfBed(faker.number().numberBetween(1, 4));
+        roomCategory.setHourlyPrice(faker.number().randomDouble(2, 100, 500));
+        roomCategory.setDailyPrice(faker.number().randomDouble(2, 1000, 5000));
+        roomCategory.setIsActivate(ObjectStatus.ACTIVE);
+        RoomCategoryDAO.create(roomCategory);
+
+        // Create Room
+        Room newRoom = new Room();
+        newRoom.setRoomID("R-" + String.format("%06d", 21));
+        newRoom.setRoomStatus(RoomStatus.AVAILABLE);
+        newRoom.setIsActivate(faker.options().option(ObjectStatus.class));
+        newRoom.setDateOfCreation(LocalDateTime.now());
+        newRoom.setRoomCategory(roomCategory);
+        RoomDAO.create(newRoom);
+
+        System.out.println("Tạo Room: " + newRoom.getRoomID());
+
+        //TEST CRUD FOR ROOM
+        // Read
+        System.out.println("Đọc Room: " + newRoom.getRoomID());
+        Room room = RoomDAO.findById("R-000021");
+        System.out.println(room);
+
+        // Update
+        room.setRoomStatus(RoomStatus.IN_USE);
+        RoomDAO.update(room);
+
+        System.out.println("Đọc lại Room khi đổi status: " + room.getRoomID());
+        Room updatedRoom = RoomDAO.findById("R-000021");
+        System.out.println(updatedRoom);
+
+        // Delete
+        RoomDAO.delete("R-000021");
+        System.out.println("Xóa Room: " + room.getRoomID());
+        Room deletedRoom = RoomDAO.findById("R-000021");
+        System.out.println(deletedRoom);
 
 
+        //TEST CRUD FOR ROOM CATEGORY
+        // Read
+        System.out.println("Đọc RoomCategory: " + roomCategory.getRoomCategoryID());
+        RoomCategory readRoomCategory = RoomCategoryDAO.getById("RC-000011");
+        System.out.println(readRoomCategory);
+
+        // Update
+        readRoomCategory.setRoomCategoryName("Test");
+        RoomCategoryDAO.update(readRoomCategory);
+
+        System.out.println("Đọc lại Room khi đổi status: " + readRoomCategory.getRoomCategoryID());
+        RoomCategory updateRoomCategory = RoomCategoryDAO.getById("RC-000011");
+        System.out.println(updateRoomCategory);
+
+        // Delete
+        RoomDAO.delete(updateRoomCategory.getRoomCategoryID());
+        System.out.println("Xóa Room: " + readRoomCategory.getRoomCategoryID());
+        RoomCategory deletedRoomCategory = RoomCategoryDAO.getById("R-000021");
+        System.out.println(deletedRoomCategory);
+    }
+
+    private static void testCRUDShiftAndShiftAssignment(Faker faker){
+        Random random = new Random();
+        //TEST CREATE FOR SHIFT AND SHIFT ASSIGNMENT
+        // Create Shift
+        Shift newShift = new Shift();
+        newShift.setShiftID("S-" + String.format("%06d", 11));
+        newShift.setStartTime(LocalTime.of(faker.number().numberBetween(0, 24), faker.number().numberBetween(0, 60)));
+        newShift.setEndTime(LocalTime.of(faker.number().numberBetween(0, 24), faker.number().numberBetween(0, 60)));
+        newShift.setShiftDaysSchedule(faker.options().option(ShiftDaysSchedule.class));
+        newShift.setModifiedDate(LocalDateTime.now());
+        newShift.setNumberOfHour(faker.number().numberBetween(1, 12));
+        ShiftDAO.create(newShift);
+
+        System.out.println("Tạo Shift: " + newShift.getShiftID());
+
+        //TEST CRUD FOR SHIFT
+        // Read
+        System.out.println("Đọc Shift: " + newShift.getShiftID());
+        Shift shift = ShiftDAO.findById("S-000011");
+        System.out.println(shift);
+
+        // Update
+        shift.setNumberOfHour(10);
+        ShiftDAO.update(shift);
+
+        System.out.println("Đọc lại Shift khi đổi số giờ: " + shift.getShiftID());
+        Shift updatedShift = ShiftDAO.findById("S-000011");
+        System.out.println(updatedShift);
+
+
+        //TEST CREATE FOR SHIFT ASSIGNMENT
+        // Create ShiftAssignment
+        List<Employee> employees = EmployeeDAO.findAll();
+        List<Employee> selectedEmployees = new ArrayList<>();
+        for (Employee e : employees) {
+            if (random.nextInt(2) == 1) {
+                selectedEmployees.add(e);
+            }
+        }
+
+        final int[] counter = {1};
+
+        selectedEmployees.forEach(employee -> {
+
+            ShiftAssignment shiftAssignment = new ShiftAssignment();
+            shiftAssignment.setShiftAssignmentID("SATEST-" + String.format("%06d", (counter[0])));
+            shiftAssignment.setShift(shift);
+            shiftAssignment.setEmployee(employee);
+            shiftAssignment.setDescription(faker.lorem().sentence());
+            counter[0]++;
+
+            ShiftAssignmentDAO.create(shiftAssignment, shift, employee);
+        });
+
+        //TEST READ AND UPDATE FOR SHIFT ASSIGNMENT
+        // Read
+        System.out.println("Đọc ShiftAssignment: " + "SATEST-000001");
+        ShiftAssignment shiftAssignment = ShiftAssignmentDAO.findById("SATEST-000001");
+        System.out.println(shiftAssignment);
+
+        // Update
+        shiftAssignment.setDescription("Test");
+        ShiftAssignmentDAO.update(shiftAssignment);
+        System.out.println("Đọc ShiftAssignment sau khi update: " + shiftAssignment.getShiftAssignmentID());
+        System.out.println(shiftAssignment);
+
+        //TEST DELETE FOR SHIFT AND SHIFT ASSIGNMENT
+
+        // Delete ShiftAssignment
+        ShiftAssignmentDAO.delete(shiftAssignment.getShiftAssignmentID());
+        System.out.println("Đọc ShiftAssignment sau khi delete: " + shiftAssignment.getShiftAssignmentID());
+        System.out.println(shiftAssignment);
+
+        // Delete
+        ShiftAssignmentDAO.deleteByShift(ShiftDAO.findById("S-000011"));
+        ShiftDAO.delete("S-000011");
+        System.out.println("Xóa Shift: " + shift.getShiftID());
+        Shift deletedShift = ShiftDAO.findById("S-000011");
+        System.out.println(deletedShift);
     }
 }

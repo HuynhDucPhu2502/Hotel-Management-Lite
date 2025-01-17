@@ -85,7 +85,7 @@ public class RoomCategoryDAO {
                 em.getTransaction().begin();
                 em.createQuery(
                         "update RoomCategory rc set rc.isActivate = 'INACTIVE' where rc.roomCategoryID = :id"
-                ).setParameter("id", id);
+                ).setParameter("id", id).executeUpdate();
                 em.getTransaction().commit();
             } catch (Exception e) {
                 e.printStackTrace();

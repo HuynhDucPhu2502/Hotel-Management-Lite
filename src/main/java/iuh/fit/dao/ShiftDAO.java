@@ -1,6 +1,7 @@
 package iuh.fit.dao;
 
 import iuh.fit.models.Shift;
+import iuh.fit.models.ShiftAssignment;
 import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
 
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class ShiftDAO {
 
-    public static List<Shift> getAll(){
+    public static List<Shift> findAll(){
         try(
                 EntityManager em = EntityManagerUtil.getEntityManager()
                 ){
@@ -28,7 +29,21 @@ public class ShiftDAO {
         }
     }
 
-    public static Shift getById(String id){
+    public static List<ShiftAssignment> findAllShiftAssignment(Shift shift){
+        try(
+                EntityManager em = EntityManagerUtil.getEntityManager()
+                ){
+
+            return (List<ShiftAssignment>) em.createQuery(
+                    "select sa from ShiftAssignment sa where sa.shift = :shift");
+
+        }catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Shift findById(String id){
         try(
                 EntityManager em = EntityManagerUtil.getEntityManager()
                 ){

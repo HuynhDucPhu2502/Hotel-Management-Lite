@@ -90,8 +90,9 @@ public class RoomDAO {
 
                 em.getTransaction().begin();
 
-                Account account = em.find(Account.class, id);
-                if (account != null) em.remove(account);
+                em.createQuery("update Room r set r.isActivate = 'INACTIVE' where r.roomID = :id")
+                        .setParameter("id", id)
+                        .executeUpdate();
 
                 em.getTransaction().commit();
 
@@ -124,7 +125,7 @@ public class RoomDAO {
             and (r.dateOfCreation >= :lowerBoundDate or :lowerBoundDate is null)
             and (r.dateOfCreation <= :upperBoundDate or :upperBoundDate is null)
             and ((:roomCategoryID = 'ALL') OR (rc.roomCategoryID = ? OR (? = 'NULL' AND rc.roomCategoryID IS NULL)))
-            and r.isActivate = 'ACTIVATE'
+            and r.isActivate = 'ACTIVE'
             """
             );
             query.setParameter("newId", newId);
