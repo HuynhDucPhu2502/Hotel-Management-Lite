@@ -148,11 +148,16 @@ public class Main {
                 invoice.setInvoiceID("INV-" + String.format("%06d", ++historyCheckOuntCount));
                 invoice.setInvoiceDate(rf.getApproxcheckOutTime());
                 invoice.setReservationForm(rf);
-                invoice.setSubTotal(0);
-                invoice.setRoomCharges(0);
-                invoice.setServiceCharges(0);
-                invoice.setTaxCharge(0);
-                invoice.setTotalDue(0);
+
+                double roomCharges = faker.number().numberBetween(1000, 5000);
+                double serviceCharges = faker.number().numberBetween(300, 800);
+                double total = roomCharges + serviceCharges;
+
+                invoice.setSubTotal(total);
+                invoice.setRoomCharges(roomCharges);
+                invoice.setServiceCharges(serviceCharges);
+                invoice.setTaxCharge(total * 0.1);
+                invoice.setTotalDue(total * 1.1);
 
 
                 em.persist(invoice);
