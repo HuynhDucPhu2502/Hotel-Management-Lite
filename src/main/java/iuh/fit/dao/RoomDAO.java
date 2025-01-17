@@ -1,39 +1,110 @@
 package iuh.fit.dao;
 
+import iuh.fit.models.Account;
 import iuh.fit.models.Room;
 import iuh.fit.models.RoomCategory;
 import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 public class RoomDAO {
 
-    public static List<Room> getAll(){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            Query query = em.createQuery(
-                    "select r from Room r where r.isActivate = 'ACTIVATE'"
-            );
-            return query.getResultList();
-        }catch (Exception e){
-            e.printStackTrace();
-            return List.of();
+    public static void create(Room room) {
+        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
+            try{
+
+                em.getTransaction().begin();
+                em.persist(room);
+                em.getTransaction().commit();
+
+            }catch(Exception transactionException) {
+
+                transactionException.printStackTrace();
+                em.getTransaction().rollback();
+
+            }
+        }  catch (Exception resourceException) {
+
+            resourceException.printStackTrace();
+
         }
     }
 
-    public static Room getById(String id){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            String newId = "%" + id + "%";
-            Query query = em.createQuery(
-                    "select r from Room r where r.roomID like :newId and r.isActivate = 'ACTIVATE'"
-            );
-            query.setParameter("newId", newId);
-            return (Room) query.getSingleResult();
-        }catch (Exception e){
-            e.printStackTrace();
+    public static List<Room> findAll() {
+
+        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
+
+            TypedQuery<Room> query = em.createQuery("select a from Account a", Room.class);
+            return query.getResultList();
+
+        }  catch (Exception resourceException) {
+
+            resourceException.printStackTrace();
+            return Collections.emptyList();
+
+        }
+    }
+
+    public static Room findById(String id) {
+        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
+
+            return em.find(Room.class, id);
+
+        }  catch (Exception resourceException) {
+
+            resourceException.printStackTrace();
             return null;
+
+        }
+    }
+
+    public static void update(Room room) {
+        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
+            try{
+
+                em.getTransaction().begin();
+                em.merge(room);
+                em.getTransaction().commit();
+
+            }catch(Exception transactionException) {
+
+                transactionException.printStackTrace();
+                em.getTransaction().rollback();
+
+            }
+        }  catch (Exception resourceException) {
+
+            resourceException.printStackTrace();
+
+        }
+    }
+
+    public static void delete(String id) {
+        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
+            try{
+
+                em.getTransaction().begin();
+
+                Account account = em.find(Account.class, id);
+                if (account != null) em.remove(account);
+
+                em.getTransaction().commit();
+
+            }catch(Exception transactionException) {
+
+                transactionException.printStackTrace();
+                em.getTransaction().rollback();
+
+            }
+        }  catch (Exception resourceException) {
+
+            resourceException.printStackTrace();
+
         }
     }
 
@@ -68,87 +139,6 @@ public class RoomDAO {
         }catch (Exception e){
             e.printStackTrace();
             return null;
-        }
-    }
-
-    public static void create(Room room){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            try{
-                em.getTransaction().begin();
-                em.persist(room);
-                em.getTransaction().commit();
-            }catch (Exception e){
-                em.getTransaction().rollback();
-                e.printStackTrace();
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public static void update(Room room){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            try{
-                em.getTransaction().begin();
-                em.merge(room);
-                em.getTransaction().commit();
-            }catch (Exception e){
-                em.getTransaction().rollback();
-                e.printStackTrace();
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public static void delete(Room room){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            try{
-                em.getTransaction().begin();
-                Query query = em.createQuery(
-                        "update Room r set r.isActivate = 'DEACTIVATE' where r.roomID = :id"
-                ).setParameter("id", room.getRoomID());
-                em.getTransaction().commit();
-            }catch (Exception e){
-                em.getTransaction().rollback();
-                e.printStackTrace();
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public static void delete(String id){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            try{
-                em.getTransaction().begin();
-                Query query = em.createQuery(
-                        "update Room r set r.isActivate = 'DEACTIVATE' where r.roomID = :id"
-                ).setParameter("id", id);
-                em.getTransaction().commit();
-            }catch (Exception e){
-                em.getTransaction().rollback();
-                e.printStackTrace();
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public static List<Room> findByAnyId(String id){
-        try(
-                EntityManager em = EntityManagerUtil.getEntityManager()
-                ){
-            Query query = em.createQuery("""
-                    select r from Room r
-                    where r.roomID like :id
-                    and r.isActivate = 'ACTIVATE'
-                    """);
-            query.setParameter("id", "%" + id + "%");
-            return query.getResultList();
-        }catch (Exception e){
-            e.printStackTrace();
-            return List.of();
         }
     }
 
