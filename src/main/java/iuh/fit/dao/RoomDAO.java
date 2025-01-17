@@ -39,7 +39,7 @@ public class RoomDAO {
 
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
 
-            TypedQuery<Room> query = em.createQuery("select a from Account a", Room.class);
+            TypedQuery<Room> query = em.createQuery("select r from Room r", Room.class);
             return query.getResultList();
 
         }  catch (Exception resourceException) {
