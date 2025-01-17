@@ -28,5 +28,69 @@ public class ShiftDAO {
         }
     }
 
+    public static Shift getById(String id){
+        try(
+                EntityManager em = EntityManagerUtil.getEntityManager()
+                ){
+            return em.find(Shift.class, id);
+        }catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    public static void create(Shift shift){
+        try(
+                EntityManager em = EntityManagerUtil.getEntityManager()
+                ){
+            try{
+                em.getTransaction().begin();
+                em.persist(shift);
+                em.getTransaction().commit();
+            }catch (Exception e){
+                e.printStackTrace();
+                em.getTransaction().rollback();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void update(Shift shift){
+        try(
+                EntityManager em = EntityManagerUtil.getEntityManager()
+                ){
+            try{
+                em.getTransaction().begin();
+                em.merge(shift);
+                em.getTransaction().commit();
+            }catch (Exception e){
+                e.printStackTrace();
+                em.getTransaction().rollback();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void delete(String id){
+        try(
+                EntityManager em = EntityManagerUtil.getEntityManager()
+                ){
+            try{
+                em.getTransaction().begin();
+                Shift shift = em.find(Shift.class, id);
+                em.remove(shift);
+                em.getTransaction().commit();
+            }catch (Exception e){
+                e.printStackTrace();
+                em.getTransaction().rollback();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 
 }

@@ -14,7 +14,7 @@ public class RoomDAO {
     public static List<Room> getAll(){
         try(EntityManager em = EntityManagerUtil.getEntityManager()){
             Query query = em.createQuery(
-                    "select r from Room r where r.isActivate = 'ACTIVATE'"
+                    "select r from Room r where r.isActivate = 'ACTIVE'"
             );
             return query.getResultList();
         }catch (Exception e){
@@ -25,12 +25,25 @@ public class RoomDAO {
 
     public static Room getById(String id){
         try(EntityManager em = EntityManagerUtil.getEntityManager()){
+            Query query = em.createQuery(
+                    "select r from Room r where r.roomID like :id and r.isActivate = 'ACTIVE'"
+            );
+            query.setParameter("id", id);
+            return (Room) query.getSingleResult();
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static List<Room> getLikeId(String id){
+        try(EntityManager em = EntityManagerUtil.getEntityManager()){
             String newId = "%" + id + "%";
             Query query = em.createQuery(
-                    "select r from Room r where r.roomID like :newId and r.isActivate = 'ACTIVATE'"
+                    "select r from Room r where r.roomID like :newId and r.isActivate = 'ACTIVE'"
             );
             query.setParameter("newId", newId);
-            return (Room) query.getSingleResult();
+            return query.getResultList();
         }catch (Exception e){
             e.printStackTrace();
             return null;
@@ -53,7 +66,7 @@ public class RoomDAO {
             and (r.dateOfCreation >= :lowerBoundDate or :lowerBoundDate is null)
             and (r.dateOfCreation <= :upperBoundDate or :upperBoundDate is null)
             and ((:roomCategoryID = 'ALL') OR (rc.roomCategoryID = ? OR (? = 'NULL' AND rc.roomCategoryID IS NULL)))
-            and r.isActivate = 'ACTIVATE'
+            and r.isActivate = 'ACTIVE'
             """
             );
             query.setParameter("newId", newId);
@@ -106,7 +119,7 @@ public class RoomDAO {
             try{
                 em.getTransaction().begin();
                 Query query = em.createQuery(
-                        "update Room r set r.isActivate = 'DEACTIVATE' where r.roomID = :id"
+                        "update Room r set r.isActivate = 'INACTIVE' where r.roomID = :id"
                 ).setParameter("id", room.getRoomID());
                 em.getTransaction().commit();
             }catch (Exception e){
@@ -123,7 +136,7 @@ public class RoomDAO {
             try{
                 em.getTransaction().begin();
                 Query query = em.createQuery(
-                        "update Room r set r.isActivate = 'DEACTIVATE' where r.roomID = :id"
+                        "update Room r set r.isActivate = 'INACTIVE' where r.roomID = :id"
                 ).setParameter("id", id);
                 em.getTransaction().commit();
             }catch (Exception e){
@@ -132,23 +145,6 @@ public class RoomDAO {
             }
         }catch (Exception e){
             e.printStackTrace();
-        }
-    }
-
-    public static List<Room> findByAnyId(String id){
-        try(
-                EntityManager em = EntityManagerUtil.getEntityManager()
-                ){
-            Query query = em.createQuery("""
-                    select r from Room r
-                    where r.roomID like :id
-                    and r.isActivate = 'ACTIVATE'
-                    """);
-            query.setParameter("id", "%" + id + "%");
-            return query.getResultList();
-        }catch (Exception e){
-            e.printStackTrace();
-            return List.of();
         }
     }
 
