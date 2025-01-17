@@ -22,7 +22,7 @@ public class MainTestDAO {
 //        RoomDAO.getData(em)
 //                .forEach(System.out::println);
 
-        System.out.println(ServiceCategoryDAO.findAll(em));
+        System.out.println(ServiceCategoryDAO.findAll());
 
 
         em.close();
