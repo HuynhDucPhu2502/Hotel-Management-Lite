@@ -1,6 +1,8 @@
 package iuh.fit.dao;
 
 import iuh.fit.models.HistoryCheckIn;
+import iuh.fit.models.ServiceCategory;
+import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -8,50 +10,47 @@ import jakarta.persistence.TypedQuery;
 import java.util.List;
 
 public class HistoryCheckInDAO {
-    public static boolean create(EntityManager em, HistoryCheckIn hci){
-        try{
+    public static boolean create(HistoryCheckIn hci){
+        try(EntityManager em = EntityManagerUtil.getEntityManager()){
             em.getTransaction().begin();
             em.persist(hci);
             em.getTransaction().commit();
             return true;
         }catch (Exception e){
-            em.getTransaction().rollback();
             throw new RuntimeException(e);
         }
     }
 
-    public static boolean delete(EntityManager em, String id){
-        int n = 0;
-        try{
+    public static boolean delete(String id){
+        try(EntityManager em = EntityManagerUtil.getEntityManager()){
             em.getTransaction().begin();
-            Query query = em.createQuery(
-                    "delete from HistoryCheckIn " +
-                            "where roomHistoryCheckinID = :id "
+            HistoryCheckIn hci = em.find(
+                    HistoryCheckIn.class,
+                    id
             );
-            query.setParameter("id", id);
-            n = query.executeUpdate();
+            if(hci == null)
+                return false;
+            em.remove(hci);
             em.getTransaction().commit();
-            return n > 0;
+            return true;
         }catch (Exception e){
-            em.getTransaction().rollback();
             throw new RuntimeException(e);
         }
     }
 
-    public static boolean update(EntityManager em, HistoryCheckIn newInfor){
-        try{
+    public static boolean update(HistoryCheckIn newInfor){
+        try(EntityManager em = EntityManagerUtil.getEntityManager()){
             em.getTransaction().begin();
             em.merge(newInfor);
             em.getTransaction().commit();
             return true;
         }catch (Exception e){
-            em.getTransaction().rollback();
             throw new RuntimeException(e);
         }
     }
 
-    public static List<HistoryCheckIn> findAll(EntityManager em){
-        try{
+    public static List<HistoryCheckIn> findAll(){
+        try(EntityManager em = EntityManagerUtil.getEntityManager()){
             TypedQuery<HistoryCheckIn> query = em.createQuery(
                     "select hci from HistoryCheckIn hci",
                     HistoryCheckIn.class
@@ -63,8 +62,8 @@ public class HistoryCheckInDAO {
         }
     }
 
-    public static HistoryCheckIn findById(EntityManager em, String id){
-        try {
+    public static HistoryCheckIn findById(String id){
+        try (EntityManager em = EntityManagerUtil.getEntityManager()){
             return em.find(
                     HistoryCheckIn.class,
                     id
