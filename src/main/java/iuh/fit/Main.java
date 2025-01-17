@@ -872,7 +872,7 @@ public class Main {
         System.out.println(deletedRoomCategory);
     }
 
-    private static void testCRUDShiftAndShiftAssignment(Faker faker){
+    private static void testCRUDShiftAndShiftAssignment(Faker faker) {
         Random random = new Random();
         //TEST CREATE FOR SHIFT AND SHIFT ASSIGNMENT
         // Create Shift
@@ -951,4 +951,5 @@ public class Main {
         System.out.println("Xóa Shift: " + shift.getShiftID());
         Shift deletedShift = ShiftDAO.findById("S-000011");
         System.out.println(deletedShift);
+    }
 }
