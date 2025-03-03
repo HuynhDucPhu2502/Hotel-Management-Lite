@@ -1,10 +1,8 @@
 module iuh.fit {
     // Các module Java SE tiêu chuẩn
-    requires java.desktop;
     requires java.sql;
 
     // JavaFX Modules
-    requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
 
@@ -15,9 +13,11 @@ module iuh.fit {
     // Các thư viện bên thứ ba
     requires static lombok;
     requires net.datafaker;
+    requires com.dlsc.gemsfx;
 
     // Mở các gói cụ thể để sử dụng reflection
     opens iuh.fit to javafx.fxml;
+    opens iuh.fit.controller to javafx.fxml;
     opens iuh.fit.models to jakarta.persistence, org.hibernate.orm.core;
 
 

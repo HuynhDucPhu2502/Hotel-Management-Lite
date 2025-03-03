@@ -125,6 +125,7 @@ public class Main {
     }
 
 
+    // Tạo dữ liệu HistoryCheckOut, Invoice
     private static void generateHistoryCheckoutData(Faker faker, EntityManager em) {
         List<ReservationForm> rfs = ReservationFormDAO.findAll();
 
@@ -165,7 +166,7 @@ public class Main {
         }
     }
 
-    // Tạo dữ liệu HistoryCheckIn
+    // Tạo dữ liệu HistoryCheckIn, ReservationRoomDetail
     private static void generateHistoryCheckinAndRoomReservationDetailData(Faker faker, EntityManager em) {
         List<ReservationForm> rfs = ReservationFormDAO.findAll();
 
