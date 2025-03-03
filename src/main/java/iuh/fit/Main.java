@@ -490,10 +490,16 @@ public class Main {
     // CRUD
     // ==================================================================================================================
     private static void testCRUD(Faker faker) {
+
         testCRUDCustomer(faker);
         testCRUDEmployee(faker);
         testCRUDAccount(faker);
         testCRUDReservationForm(faker);
+        testCRUDServiceCategory(faker);
+        testCRUDHistoryCheckin(faker);
+        testCRUDRoomAndRoomCategory(faker);
+        testCRUDShiftAndShiftAssignment(faker);
+
     }
 
     private static void testCRUDCustomer(Faker faker) {
@@ -702,7 +708,249 @@ public class Main {
         System.out.println("Xóa ReservationForm: " + reservationForm.getReservationID());
         ReservationForm deletedReservationForm = ReservationFormDAO.findById("RF-000016");
         System.out.println(deletedReservationForm);
+    }
+
+    private static void testCRUDServiceCategory(Faker faker) {
+        System.out.println("\n\n\nCRUD bảng ServiceCategory");
+
+        // Create ServiceCategory
+        ServiceCategory serviceCategory = new ServiceCategory();
+
+        serviceCategory.setServiceCategoryID("SC-" + String.format(
+                "%06d",
+                new Random().nextInt(100, 200))
+        );
+        serviceCategory.setServiceCategoryName(faker.name().fullName());
+        serviceCategory.setIsActivate(ObjectStatus.ACTIVE);
+
+        ServiceCategoryDAO.create(serviceCategory);
+
+        System.out.println("Tạo ServiceCategory: " + ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID()));
+
+        // READ
+        System.out.println("Đọc ServiceCategory: " + serviceCategory.getServiceCategoryID());
+        System.out.println(ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID()));
+
+        // delete
+        if(ServiceCategoryDAO.delete(serviceCategory.getServiceCategoryID()))
+            System.out.println("Xóa ServiceCategory thanh cong");
+
+        // UPDATE
+        serviceCategory.setIsActivate(ObjectStatus.INACTIVE);
+        ServiceCategoryDAO.update(serviceCategory);
+
+        System.out.println("Đọc lại ServiceCategory khi đổi status: " + serviceCategory.getServiceCategoryID());
+        ServiceCategory updatedServiceCategory = ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID());
+        System.out.println(updatedServiceCategory);
+    }
+
+    private static void testCRUDHistoryCheckin(Faker faker) {
+        List<Employee> emps = EmployeeDAO.findAll();
+        List<Customer> cus = CustomerDAO.findAll();
+        List<Room> rooms = RoomDAO.findAll();
+
+        System.out.println("\n\n\nCRUD bảng HistoryCheckin");
+
+        // Create HistoryCheckin
+
+        ReservationForm rf = new ReservationForm();
+        LocalDateTime now = LocalDateTime.now();
+
+        LocalDateTime rfDate = now.minusDays(new Random().nextInt(12,18));
+        LocalDateTime rfCheckinDate = rfDate.plusDays(new Random().nextInt(1, 2));
+        LocalDateTime rfCheckoutDate = rfDate.plusDays(new Random().nextInt(5, 8));
+
+        rf.setReservationID("RF-" + String.format(
+                "%06d",
+                new Random().nextInt(100, 200))
+        );
+        rf.setReservationStatus(ReservationStatus.CHECKED_OUT);
+
+        rf.setReservationDate(rfDate);
+        rf.setApproxcheckInDate(rfCheckinDate);
+        rf.setApproxcheckOutTime(rfCheckoutDate);
 
 
+        rf.setCustomer(cus.get(1));
+        rf.setEmployee(emps.get(1));
+        rf.setRoom(rooms.get(1));
+
+        ReservationFormDAO.create(rf);
+
+        HistoryCheckIn hci = new HistoryCheckIn();
+
+        hci.setRoomHistoryCheckinID("HCI-" + String.format(
+                "%06d",
+                new Random().nextInt(100, 200)));
+        hci.setCheckInDate(
+                rf.getApproxcheckInDate().plusHours(faker.number().numberBetween(0, 1))
+        );
+        hci.setReservationForm(rf);
+
+        HistoryCheckInDAO.create(hci);
+
+        System.out.println("Tạo HistoryCheckin: " + HistoryCheckInDAO.findById(hci.getRoomHistoryCheckinID()));
+
+        // READ
+        System.out.println("Đọc HistoryCheckin: " + hci.getRoomHistoryCheckinID());
+        System.out.println(HistoryCheckInDAO.findById(hci.getRoomHistoryCheckinID()));
+
+        // delete
+        if(HistoryCheckInDAO.delete(hci.getRoomHistoryCheckinID()))
+            System.out.println("Xóa HistoryCheckin thanh cong");
+
+        // UPDATE
+        hci.setCheckInDate(LocalDateTime.now());
+        HistoryCheckInDAO.update(hci);
+
+        System.out.println("Đọc lại HistoryCheckin khi đổi status: " + hci.getRoomHistoryCheckinID());
+        HistoryCheckIn updatedHistoryCheckIn = HistoryCheckInDAO.findById(hci.getRoomHistoryCheckinID());
+        System.out.println(updatedHistoryCheckIn);
+    }
+  
+  private static void testCRUDRoomAndRoomCategory(Faker faker) {
+        //TEST CREATE FOR ROOM AND ROOM CATEGORY
+        // Create RoomCategory
+        RoomCategory roomCategory = new RoomCategory();
+        roomCategory.setRoomCategoryID("RC-" + String.format("%06d", 11));
+        roomCategory.setRoomCategoryName(faker.team().name());
+        roomCategory.setNumberOfBed(faker.number().numberBetween(1, 4));
+        roomCategory.setHourlyPrice(faker.number().randomDouble(2, 100, 500));
+        roomCategory.setDailyPrice(faker.number().randomDouble(2, 1000, 5000));
+        roomCategory.setIsActivate(ObjectStatus.ACTIVE);
+        RoomCategoryDAO.create(roomCategory);
+
+        // Create Room
+        Room newRoom = new Room();
+        newRoom.setRoomID("R-" + String.format("%06d", 21));
+        newRoom.setRoomStatus(RoomStatus.AVAILABLE);
+        newRoom.setIsActivate(faker.options().option(ObjectStatus.class));
+        newRoom.setDateOfCreation(LocalDateTime.now());
+        newRoom.setRoomCategory(roomCategory);
+        RoomDAO.create(newRoom);
+
+        System.out.println("Tạo Room: " + newRoom.getRoomID());
+
+        //TEST CRUD FOR ROOM
+        // Read
+        System.out.println("Đọc Room: " + newRoom.getRoomID());
+        Room room = RoomDAO.findById("R-000021");
+        System.out.println(room);
+
+        // Update
+        room.setRoomStatus(RoomStatus.IN_USE);
+        RoomDAO.update(room);
+
+        System.out.println("Đọc lại Room khi đổi status: " + room.getRoomID());
+        Room updatedRoom = RoomDAO.findById("R-000021");
+        System.out.println(updatedRoom);
+
+        // Delete
+        RoomDAO.delete("R-000021");
+        System.out.println("Xóa Room: " + room.getRoomID());
+        Room deletedRoom = RoomDAO.findById("R-000021");
+        System.out.println(deletedRoom);
+
+
+        //TEST CRUD FOR ROOM CATEGORY
+        // Read
+        System.out.println("Đọc RoomCategory: " + roomCategory.getRoomCategoryID());
+        RoomCategory readRoomCategory = RoomCategoryDAO.getById("RC-000011");
+        System.out.println(readRoomCategory);
+
+        // Update
+        readRoomCategory.setRoomCategoryName("Test");
+        RoomCategoryDAO.update(readRoomCategory);
+
+        System.out.println("Đọc lại Room khi đổi status: " + readRoomCategory.getRoomCategoryID());
+        RoomCategory updateRoomCategory = RoomCategoryDAO.getById("RC-000011");
+        System.out.println(updateRoomCategory);
+
+        // Delete
+        RoomCategoryDAO.delete(updateRoomCategory.getRoomCategoryID());
+        System.out.println("Xóa RoomCategory: " + updateRoomCategory.getRoomCategoryID());
+        RoomCategory deletedRoomCategory = RoomCategoryDAO.getById(updateRoomCategory.getRoomCategoryID());
+        System.out.println(deletedRoomCategory);
+    }
+
+    private static void testCRUDShiftAndShiftAssignment(Faker faker) {
+        Random random = new Random();
+        //TEST CREATE FOR SHIFT AND SHIFT ASSIGNMENT
+        // Create Shift
+        Shift newShift = new Shift();
+        newShift.setShiftID("S-" + String.format("%06d", 11));
+        newShift.setStartTime(LocalTime.of(faker.number().numberBetween(0, 24), faker.number().numberBetween(0, 60)));
+        newShift.setEndTime(LocalTime.of(faker.number().numberBetween(0, 24), faker.number().numberBetween(0, 60)));
+        newShift.setShiftDaysSchedule(faker.options().option(ShiftDaysSchedule.class));
+        newShift.setModifiedDate(LocalDateTime.now());
+        newShift.setNumberOfHour(faker.number().numberBetween(1, 12));
+        ShiftDAO.create(newShift);
+
+        System.out.println("Tạo Shift: " + newShift.getShiftID());
+
+        //TEST CRUD FOR SHIFT
+        // Read
+        System.out.println("Đọc Shift: " + newShift.getShiftID());
+        Shift shift = ShiftDAO.findById("S-000011");
+        System.out.println(shift);
+
+        // Update
+        shift.setNumberOfHour(10);
+        ShiftDAO.update(shift);
+
+        System.out.println("Đọc lại Shift khi đổi số giờ: " + shift.getShiftID());
+        Shift updatedShift = ShiftDAO.findById("S-000011");
+        System.out.println(updatedShift);
+
+
+        //TEST CREATE FOR SHIFT ASSIGNMENT
+        // Create ShiftAssignment
+        List<Employee> employees = EmployeeDAO.findAll();
+        List<Employee> selectedEmployees = new ArrayList<>();
+        for (Employee e : employees) {
+            if (random.nextInt(2) == 1) {
+                selectedEmployees.add(e);
+            }
+        }
+
+        final int[] counter = {1};
+
+        selectedEmployees.forEach(employee -> {
+
+            ShiftAssignment shiftAssignment = new ShiftAssignment();
+            shiftAssignment.setShiftAssignmentID("SATEST-" + String.format("%06d", (counter[0])));
+            shiftAssignment.setShift(shift);
+            shiftAssignment.setEmployee(employee);
+            shiftAssignment.setDescription(faker.lorem().sentence());
+            counter[0]++;
+
+            ShiftAssignmentDAO.create(shiftAssignment, shift, employee);
+        });
+
+        //TEST READ AND UPDATE FOR SHIFT ASSIGNMENT
+        // Read
+        System.out.println("Đọc ShiftAssignment: " + "SATEST-000001");
+        ShiftAssignment shiftAssignment = ShiftAssignmentDAO.findById("SATEST-000001");
+        System.out.println(shiftAssignment);
+
+        // Update
+        shiftAssignment.setDescription("Test");
+        ShiftAssignmentDAO.update(shiftAssignment);
+        System.out.println("Đọc ShiftAssignment sau khi update: " + shiftAssignment.getShiftAssignmentID());
+        System.out.println(shiftAssignment);
+
+        //TEST DELETE FOR SHIFT AND SHIFT ASSIGNMENT
+
+        // Delete ShiftAssignment
+        ShiftAssignmentDAO.delete(shiftAssignment.getShiftAssignmentID());
+        System.out.println("Đọc ShiftAssignment sau khi delete: " + shiftAssignment.getShiftAssignmentID());
+        System.out.println(shiftAssignment);
+
+        // Delete
+        ShiftAssignmentDAO.deleteByShift(ShiftDAO.findById("S-000011"));
+        ShiftDAO.delete("S-000011");
+        System.out.println("Xóa Shift: " + shift.getShiftID());
+        Shift deletedShift = ShiftDAO.findById("S-000011");
+        System.out.println(deletedShift);
     }
 }

@@ -1,6 +1,7 @@
 package iuh.fit.dao;
 
 import iuh.fit.models.Shift;
+import iuh.fit.models.ShiftAssignment;
 import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
 
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class ShiftDAO {
 
-    public static List<Shift> getAll(){
+    public static List<Shift> findAll(){
         try(
                 EntityManager em = EntityManagerUtil.getEntityManager()
                 ){
@@ -28,5 +29,83 @@ public class ShiftDAO {
         }
     }
 
+    public static List<ShiftAssignment> findAllShiftAssignment(Shift shift){
+        try(
+                EntityManager em = EntityManagerUtil.getEntityManager()
+                ){
+
+            return (List<ShiftAssignment>) em.createQuery(
+                    "select sa from ShiftAssignment sa where sa.shift = :shift");
+
+        }catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Shift findById(String id){
+        try(
+                EntityManager em = EntityManagerUtil.getEntityManager()
+                ){
+            return em.find(Shift.class, id);
+        }catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    public static void create(Shift shift){
+        try(
+                EntityManager em = EntityManagerUtil.getEntityManager()
+                ){
+            try{
+                em.getTransaction().begin();
+                em.persist(shift);
+                em.getTransaction().commit();
+            }catch (Exception e){
+                e.printStackTrace();
+                em.getTransaction().rollback();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void update(Shift shift){
+        try(
+                EntityManager em = EntityManagerUtil.getEntityManager()
+                ){
+            try{
+                em.getTransaction().begin();
+                em.merge(shift);
+                em.getTransaction().commit();
+            }catch (Exception e){
+                e.printStackTrace();
+                em.getTransaction().rollback();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void delete(String id){
+        try(
+                EntityManager em = EntityManagerUtil.getEntityManager()
+                ){
+            try{
+                em.getTransaction().begin();
+                Shift shift = em.find(Shift.class, id);
+                em.remove(shift);
+                em.getTransaction().commit();
+            }catch (Exception e){
+                e.printStackTrace();
+                em.getTransaction().rollback();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 
 }

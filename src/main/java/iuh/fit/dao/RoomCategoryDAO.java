@@ -15,7 +15,7 @@ public class RoomCategoryDAO {
                 EntityManager em = EntityManagerUtil.getEntityManager()
                 ){
             return em.createQuery(
-                    "select rc from RoomCategory rc where rc.isActivate = 'ACTIVATE'"
+                    "select rc from RoomCategory rc where rc.isActivate = 'ACTIVE'"
             ).getResultList();
         }catch(Exception e){
             e.printStackTrace();
@@ -28,7 +28,7 @@ public class RoomCategoryDAO {
                 EntityManager em = EntityManagerUtil.getEntityManager()
                 ){
             Query query = em.createQuery(
-                    "select rc from RoomCategory rc where rc.roomCategoryID = :id and rc.isActivate = 'ACTIVATE'"
+                    "select rc from RoomCategory rc where rc.roomCategoryID = :id and rc.isActivate = 'ACTIVE'"
             ).setParameter("id", id);
 
             return (RoomCategory) query.getSingleResult();
@@ -76,22 +76,6 @@ public class RoomCategoryDAO {
         }
     }
 
-    public static void delete(RoomCategory roomCategory) {
-        try (
-                EntityManager em = EntityManagerUtil.getEntityManager()
-        ) {
-            try {
-                em.getTransaction().begin();
-                em.remove(roomCategory);
-                em.getTransaction().commit();
-            } catch (Exception e) {
-                e.printStackTrace();
-                em.getTransaction().rollback();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public static void delete(String id) {
         try (
@@ -99,8 +83,9 @@ public class RoomCategoryDAO {
         ) {
             try {
                 em.getTransaction().begin();
-                RoomCategory roomCategory = em.find(RoomCategory.class, id);
-                em.remove(roomCategory);
+                em.createQuery(
+                        "update RoomCategory rc set rc.isActivate = 'INACTIVE' where rc.roomCategoryID = :id"
+                ).setParameter("id", id).executeUpdate();
                 em.getTransaction().commit();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -110,7 +95,5 @@ public class RoomCategoryDAO {
             e.printStackTrace();
         }
     }
-
-
 
 }
