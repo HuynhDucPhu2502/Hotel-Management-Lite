@@ -1,31 +1,14 @@
 package iuh.fit.controller;
 
 import com.dlsc.gemsfx.DialogPane;
-import iuh.fit.dao.AccountDAO;
-import iuh.fit.dao.EmployeeDAO;
-import iuh.fit.dao.ShiftDAO;
-import iuh.fit.models.Account;
-import iuh.fit.models.Employee;
-import iuh.fit.models.Shift;
-import iuh.fit.models.enums.AccountStatus;
-import iuh.fit.models.enums.Position;
-import iuh.fit.security.PasswordHashing;
-import iuh.fit.utils.ErrorMessages;
 import javafx.animation.Interpolator;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -34,13 +17,11 @@ import javafx.util.Duration;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.Objects;
-import java.util.Optional;
 
 public class LoginController {
     @FXML private TextField userNameField;
     @FXML private PasswordField hiddenPasswordField;
     @FXML private TextField visiblePasswordField;
-    @FXML private Button ShowPasswordBtn;
     @FXML private Text errorMessage;
     @FXML private Button signInButton;
     @FXML private ImageView showPassButton;
@@ -50,18 +31,12 @@ public class LoginController {
     @FXML private Button confirmBtn;
     @FXML private Button resetBtn;
 
+    // Pane
     @FXML private GridPane loginGrid;
-    @FXML private GridPane forgotPasswordGrid;
     @FXML private GridPane restoreDataGrid;
 
-    @FXML private TextField employeeIDTextField;
-    @FXML private TextField fullNameTextField;
-    @FXML private TextField phoneNumberTextField;
-    @FXML private TextField cardIDTextField;
-    @FXML private TextField emailTextField;
-    @FXML private TextField usernameTextField;
 
-    private boolean isDefaultIcon = true;
+
 
     @FXML private PasswordField passRestorePasswordField;
     @FXML private TextField passRestoreTextField;
@@ -75,28 +50,104 @@ public class LoginController {
     @FXML private Button refreshPassRestoreButton;
     @FXML private Button cancelRestoreButton;
     @FXML private Button confirmPassRestoreButton;
-    @FXML private Button restoreDataButton;
 
     private Stage mainStage;
 
     @FXML
     public void initialize() {
         dialogPane.toFront();
-//        hiddenPasswordField.textProperty().bindBidirectional(visiblePasswordField.textProperty());
-//        passRestorePasswordField.textProperty().bindBidirectional(passRestoreTextField.textProperty());
 
-        ShowPasswordBtn.setOnAction(event -> {
-            PasswordVisibility();
-            changeButtonIconForShowPasswordBtn();
-        });
-
-        Image defaultIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/iuh/fit/icons/login_panel_icons/ic_show_password.png")));
-        showPassButton.setImage(defaultIcon);
+        hiddenPasswordField.textProperty().bindBidirectional(visiblePasswordField.textProperty());
+        passRestorePasswordField.textProperty().bindBidirectional(passRestoreTextField.textProperty());
 
 //        forgotPasswordBtn.setOnMouseClicked(event -> forgotPass());
 //        loginBtn.setOnMouseClicked(event -> login());
 //        confirmBtn.setOnAction(event -> changePassword());
 //        resetBtn.setOnAction(event -> resetAction());
+    }
+
+// ======================================================================================================
+//
+//    Các hàm swith màn hình, switch lên Restore Data Pane hoặc xuống Login Pane.
+//    Đã sửa đổi một chút cải thiện từ Project ban đầu.
+//
+// ======================================================================================================
+    private boolean isDefaultIcon = true;
+
+    // Hiển thị màn hình từ Login Pane lên Restore Data Pane
+    @FXML
+    public void fromLoginGridToRestoreDataGrid() {
+        switchGridPane(loginGrid, restoreDataGrid, true);
+    }
+
+    // Hiển thị màn hình từ Restore Data Pane về Login Pane
+    @FXML
+    void fromRestoreDataGridToLoginGrid() {
+        switchGridPane(restoreDataGrid, loginGrid, false);
+    }
+
+    // Hiệu ứng chuyển lên hoặc xuống
+    public void switchGridPane(GridPane gridPaneOut, GridPane gridPaneIn, boolean slideUp) {
+        gridPaneIn.setVisible(true);
+
+        double height = gridPaneOut.getHeight();
+        double fromYOut = slideUp ? 0 : 0;
+        double toYOut = slideUp ? height : -height;
+        double fromYIn = slideUp ? -height : height;
+        double toYIn = 0;
+
+        TranslateTransition slideOut = new TranslateTransition(Duration.millis(500), gridPaneOut);
+        slideOut.setFromY(fromYOut);
+        slideOut.setToY(toYOut);
+        slideOut.setInterpolator(Interpolator.EASE_BOTH);
+
+        TranslateTransition slideIn = new TranslateTransition(Duration.millis(500), gridPaneIn);
+        slideIn.setFromY(fromYIn);
+        slideIn.setToY(toYIn);
+        slideIn.setInterpolator(Interpolator.EASE_BOTH);
+
+        ParallelTransition parallelTransition = new ParallelTransition(slideOut, slideIn);
+        parallelTransition.setOnFinished(event -> {
+            gridPaneOut.setVisible(false);
+            gridPaneOut.setTranslateY(0);
+        });
+        parallelTransition.play();
+    }
+
+// ======================================================================================================
+//
+//    Các hàm liên quan đến ẩn hiện mật khẩu tại Login Pane
+//
+// ======================================================================================================
+
+    // Bật/tắt tính năng nhìn mật khẩu
+    @FXML
+    private void changePasswordViewState() {
+        if (isDefaultIcon) {
+            Image newIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/iuh/fit/icons/login_panel_icons/ic_hidden_password.png")));
+            showPassButton.setImage(newIcon);
+        } else {
+            Image defaultIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/iuh/fit/icons/login_panel_icons/ic_show_password.png")));
+            showPassButton.setImage(defaultIcon);
+        }
+
+        PasswordVisibility();
+
+        isDefaultIcon = !isDefaultIcon;
+    }
+
+    private void PasswordVisibility() {
+        if (hiddenPasswordField.isVisible()) {
+            hiddenPasswordField.setVisible(false);
+            hiddenPasswordField.setManaged(false);
+            visiblePasswordField.setVisible(true);
+            visiblePasswordField.setManaged(true);
+        } else {
+            visiblePasswordField.setVisible(false);
+            visiblePasswordField.setManaged(false);
+            hiddenPasswordField.setVisible(true);
+            hiddenPasswordField.setManaged(true);
+        }
     }
 
 //    public void setupContext(Stage mainStage) {
@@ -145,32 +196,7 @@ public class LoginController {
 //        });
 //    }
 
-    @FXML
-    private void changeButtonIconForShowPasswordBtn() {
-        if (isDefaultIcon) {
-            Image newIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/iuh/fit/icons/login_panel_icons/ic_hidden_password.png")));
-            showPassButton.setImage(newIcon);
-        } else {
-            Image defaultIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/iuh/fit/icons/login_panel_icons/ic_show_password.png")));
-            showPassButton.setImage(defaultIcon);
-        }
 
-        isDefaultIcon = !isDefaultIcon;
-    }
-
-    private void PasswordVisibility() {
-        if (hiddenPasswordField.isVisible()) {
-            hiddenPasswordField.setVisible(false);
-            hiddenPasswordField.setManaged(false);
-            visiblePasswordField.setVisible(true);
-            visiblePasswordField.setManaged(true);
-        } else {
-            visiblePasswordField.setVisible(false);
-            visiblePasswordField.setManaged(false);
-            hiddenPasswordField.setVisible(true);
-            hiddenPasswordField.setManaged(true);
-        }
-    }
 
 //    private void signIn(Stage mainStage) throws SQLException {
 //        if(!RestoreDatabase.isDatabaseExist(DBHelper.getDatabaseName())) {
@@ -281,169 +307,11 @@ public class LoginController {
 //
 //        parallelTransition.play();
 //    }
-//
-//    public void slideOutGridFromTop(GridPane gridPaneOut, GridPane gridPaneIn) {
-//        gridPaneIn.setVisible(true);
-//        gridPaneIn.setTranslateY(-gridPaneOut.getHeight());
-//        TranslateTransition slideOut = new TranslateTransition(Duration.millis(500), gridPaneOut);
-//        slideOut.setFromY(0);
-//        slideOut.setToY(gridPaneOut.getHeight());
-//        slideOut.setInterpolator(Interpolator.EASE_BOTH);
-//        TranslateTransition slideIn = new TranslateTransition(Duration.millis(500), gridPaneIn);
-//        slideIn.setFromY(-gridPaneOut.getHeight());
-//        slideIn.setToY(0);
-//        slideIn.setInterpolator(Interpolator.EASE_BOTH);
-//        ParallelTransition parallelTransition = new ParallelTransition(slideOut, slideIn);
-//        parallelTransition.setOnFinished(event -> {
-//            gridPaneOut.setVisible(false);
-//            gridPaneOut.setTranslateY(0);
-//        });
-//        parallelTransition.play();
-//    }
-//
-//    private void changePassword() {
-//        String employeeID = employeeIDTextField.getText();
-//        String fullName = fullNameTextField.getText();
-//        String phoneNumber = phoneNumberTextField.getText();
-//        String cardID = cardIDTextField.getText();
-//        String email = emailTextField.getText();
-//        String username = usernameTextField.getText();
-//
-//        if (
-//                employeeID.isBlank()
-//                || fullName.isBlank()
-//                || phoneNumber.isBlank()
-//                || cardID.isBlank()
-//                || email.isBlank()
-//                || username.isBlank()
-//        ) {
-//            dialogPane.showWarning(
-//                    "Cảnh báo",
-//                    "Bạn phải nhập đầy đủ thông tin xác nhận để có thể thay đổi mật khẩu"
-//            );
-//            return;
-//        }
-//
-//        Employee employee = EmployeeDAO.getEmployeeByEmployeeID(employeeID);
-//        Account account = AccountDAO.getAccountByEmployeeID(employeeID);
-//
-//        if (employee == null || account == null) {
-//            dialogPane.showWarning(
-//                    "Cảnh báo",
-//                    "Thông tin bạn nhập chưa chính xác.\nXin vui lòng nhập lại!!!");
-//            return;
-//        }
-//
-//
-//        if (
-//                !employee.getFullName().equals(fullName)
-//                || !employee.getPhoneNumber().equals(phoneNumber)
-//                || !employee.getIdCardNumber().equals(cardID)
-//                || !employee.getEmail().equals(email)
-//                || !account.getUserName().equals(username)
-//        ) {
-//            dialogPane.showWarning(
-//                    "Cảnh báo",
-//                    "Thông tin bạn nhập chưa chính xác.\nXin vui lòng nhập lại!!!"
-//            );
-//            return;
-//        }
-//
-//        VBox content = new VBox(10);
-//        content.setPadding(new Insets(20, 10, 10, 10));
-//        Label successLabel = new Label("Xác thực thành công");
-//        successLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
-//        PasswordField newPasswordField = new PasswordField();
-//        newPasswordField.setPromptText("Nhập mật khẩu mới");
-//        newPasswordField.setPrefWidth(250);
-//        PasswordField confirmPasswordField = new PasswordField();
-//        confirmPasswordField.setPromptText("Xác nhận mật khẩu mới");
-//        confirmPasswordField.setPrefWidth(250);
-//        content.getChildren().addAll(
-//                successLabel,
-//                new VBox(5, new Label("Mật khẩu mới:"), newPasswordField),
-//                new VBox(5, new Label("Xác nhận mật khẩu:"), confirmPasswordField)
-//        );
-//        Dialog<Void> dialog = new Dialog<>();
-//        dialog.setTitle("Cập nhật mật khẩu");
-//        dialog.getDialogPane().setContent(content);
-//        ButtonType confirmButton = new ButtonType("Xác nhận", ButtonBar.ButtonData.OK_DONE);
-//        dialog.getDialogPane().getButtonTypes().add(confirmButton);
-//        Button confirmButtonElement = (Button) dialog.getDialogPane().lookupButton(confirmButton);
-//        confirmButtonElement.addEventFilter(ActionEvent.ACTION, e -> {
-//            String newPassword = newPasswordField.getText();
-//            String confirmPassword = confirmPasswordField.getText();
-//
-//            if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
-//                Alert alert = new Alert(Alert.AlertType.WARNING);
-//                alert.setTitle("Lỗi");
-//                alert.setContentText("Vui lòng nhập đầy đủ thông tin");
-//                alert.showAndWait();
-//                e.consume();
-//                return;
-//            }
-//            if (!newPassword.equals(confirmPassword)) {
-//                Alert alert = new Alert(Alert.AlertType.WARNING);
-//                alert.setTitle("Lỗi");
-//                alert.setContentText("Mật khẩu xác nhận không khớp");
-//                alert.showAndWait();
-//                e.consume();
-//                return;
-//            }
-//
-//            if (!RegexChecker.isValidPassword(newPassword)) {
-//                Alert alert = new Alert(Alert.AlertType.WARNING);
-//                alert.setTitle("Lỗi");
-//                alert.setContentText("Mật khẩu mới không hợp lệ! Phải có ít nhất 8 ký tự, bao gồm chữ, số và ký tự đặc biệt.");
-//                alert.showAndWait();
-//                e.consume();
-//                return;
-//            }
-//            String hashedNewPassword = PasswordHashing.hashPassword(newPassword);
-//            if (hashedNewPassword.equals(account.getPassword())){
-//                Alert alert = new Alert(Alert.AlertType.WARNING);
-//                alert.setTitle("Lỗi");
-//                alert.setContentText("Mật khẩu mới phải khác mật khẩu cũ.");
-//                alert.showAndWait();
-//                e.consume();
-//                return;
-//            }
-//            account.setPassword(hashedNewPassword);
-//            AccountDAO.updateData(account);
-//            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-//            alert.setTitle("Cập nhật thành công");
-//            alert.setContentText("Cập nhật mật khẩu thành công!\n Bây giờ bạn có thể đăng nhập lại.");
-//            alert.showAndWait();
-//            resetAction();
-//        });
-//        dialog.showAndWait();
-//    }
-//
-//    private void resetAction(){
-//        employeeIDTextField.setText("");
-//        fullNameTextField.setText("");
-//        phoneNumberTextField.setText("");
-//        cardIDTextField.setText("");
-//        emailTextField.setText("");
-//        usernameTextField.setText("");
-//    }
-//
-//    @FXML
-//    void restoreData() {
-//        slideOutGridFromTop(loginGrid, restoreDataGrid);
-//    }
-//
-//    @FXML
-//    void backToLoginPanel() {
-//        slideOutGridFromTop(restoreDataGrid, loginGrid);
-//        switchFromPassPanelToRestorePanel(true, false);
-//        passRestorePasswordField.setText("");
-//        filePathRestoreTextField.setText("");
-//        errorMessage.setText("");
-//    }
-//
-//    @FXML
-//    void confirmPassRestore() {
+
+
+
+    @FXML
+    void confirmPassRestore() {
 //        final String key = "7523C62ABDB7628C5A9DAD8F97D8D8C5C040EDE36535E531A8A3748B6CAE7E00";
 //        final String resourcePath = "/iuh/fit/security/E201065D0554652615C320C00A1D5BC8EDCA469D72C2790E24152D0C1E2B6189.properties";
 //
@@ -481,61 +349,34 @@ public class LoginController {
 //                    "Vui lòng kiểm tra lại file và thử lại."
 //            ).show();
 //        }
-//    }
-//
-//
-//    private void switchFromPassPanelToRestorePanel(boolean passPanelShow, boolean restorePanelShow){
-//        passTitleText.setVisible(passPanelShow);
-//        passTitleText.setManaged(passPanelShow);
-//        filepathTitleText.setVisible(restorePanelShow);
-//        filepathTitleText.setManaged(restorePanelShow);
-//
-//        passRestorePasswordField.setVisible(passPanelShow);
-//        passRestorePasswordField.setManaged(passPanelShow);
-//        passRestoreTextField.setVisible(passPanelShow);
-//        passRestoreTextField.setManaged(passPanelShow);
-//        filePathRestoreTextField.setVisible(restorePanelShow);
-//        filePathRestoreTextField.setManaged(restorePanelShow);
-//
-//        showPassRestoreButton.setVisible(passPanelShow);
-//        showPassRestoreButton.setManaged(passPanelShow);
-//        filePathRestoreButton.setVisible(restorePanelShow);
-//        filePathRestoreButton.setManaged(restorePanelShow);
-//
-//        refreshPassRestoreButton.setVisible(passPanelShow);
-//        refreshPassRestoreButton.setManaged(passPanelShow);
-//        confirmPassRestoreButton.setVisible(passPanelShow);
-//        confirmPassRestoreButton.setManaged(passPanelShow);
-//        cancelRestoreButton.setVisible(restorePanelShow);
-//        cancelRestoreButton.setManaged(restorePanelShow);
-//        restoreDataButton.setVisible(restorePanelShow);
-//        restoreDataButton.setManaged(restorePanelShow);
-//    }
-//
-//    @FXML
-//    void refreshPassRestore() {
-//        passRestorePasswordField.setText("");
-//        passRestorePasswordField.requestFocus();
-//    }
-//
-//    @FXML
-//    void showPassRestore() {
-//        changeButtonIconForShowPasswordBtn();
-//        if(passRestorePasswordField.isVisible()){
-//            passRestoreTextField.setVisible(true);
-//            passRestoreTextField.setManaged(true);
-//            passRestorePasswordField.setVisible(false);
-//            passRestorePasswordField.setManaged(false);
-//        }else{
-//            passRestoreTextField.setVisible(false);
-//            passRestoreTextField.setManaged(false);
-//            passRestorePasswordField.setVisible(true);
-//            passRestorePasswordField.setManaged(true);
-//        }
-//    }
-//
-//    @FXML
-//    void confirmRestoreData() throws SQLException {
+    }
+
+
+
+    @FXML
+    void refreshPassRestore() {
+        passRestorePasswordField.setText("");
+        passRestorePasswordField.requestFocus();
+    }
+
+    @FXML
+    void showPassRestore() {
+        changePasswordViewState();
+        if(passRestorePasswordField.isVisible()){
+            passRestoreTextField.setVisible(true);
+            passRestoreTextField.setManaged(true);
+            passRestorePasswordField.setVisible(false);
+            passRestorePasswordField.setManaged(false);
+        }else{
+            passRestoreTextField.setVisible(false);
+            passRestoreTextField.setManaged(false);
+            passRestorePasswordField.setVisible(true);
+            passRestorePasswordField.setManaged(true);
+        }
+    }
+
+    @FXML
+    void confirmRestoreData() throws SQLException {
 //        String filePath = filePathRestoreTextField.getText();
 //        if (filePath == null || filePath.isBlank()) {
 //            showMessage(
@@ -608,30 +449,30 @@ public class LoginController {
 //                ).show();
 //            }
 //        }
-//    }
-//
-//
-//    @FXML
-//    void cancelRestore() {
-//        switchFromPassPanelToRestorePanel(true, false);
-//        filePathRestoreTextField.setText("");
-//    }
-//
-//    @FXML
-//    void getFilePath() {
-//        FileChooser fileChooser = new FileChooser();
-//        File f = fileChooser.showOpenDialog(null);
-//
-//        if(f == null) return;
-//        filePathRestoreTextField.setText(f.getAbsolutePath());
-//    }
-//
-//    private Alert showMessage(Alert.AlertType alertType, String title, String header, String content){
-//        Alert alert = new Alert(alertType);
-//        alert.setTitle(title);
-//        alert.setHeaderText(header);
-//        alert.setContentText(content);
-//        return alert;
-//    }
+    }
+
+
+    @FXML
+    void cancelRestore() {
+//        hideComponentsFromRestoreDataGrid();
+        filePathRestoreTextField.setText("");
+    }
+
+    @FXML
+    void getFilePath() {
+        FileChooser fileChooser = new FileChooser();
+        File f = fileChooser.showOpenDialog(null);
+
+        if(f == null) return;
+        filePathRestoreTextField.setText(f.getAbsolutePath());
+    }
+
+    private Alert showMessage(Alert.AlertType alertType, String title, String header, String content){
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        return alert;
+    }
 
 }
