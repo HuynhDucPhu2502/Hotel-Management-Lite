@@ -105,4 +105,22 @@ public class AccountDAO {
 
         }
     }
+
+    public static Account getLogin(String userName, String hashedPassword) {
+        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
+            TypedQuery<Account> query = em.createQuery(
+                    "SELECT a FROM Account a WHERE a.userName = :userName AND a.password = :password",
+                    Account.class
+            );
+            query.setParameter("userName", userName);
+            query.setParameter("password", hashedPassword);
+
+            List<Account> result = query.getResultList();
+            return result.isEmpty() ? null : result.get(0);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
