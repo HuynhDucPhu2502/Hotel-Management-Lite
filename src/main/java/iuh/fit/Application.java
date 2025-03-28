@@ -1,6 +1,7 @@
 package iuh.fit;
 
 import iuh.fit.controller.LoginController;
+import iuh.fit.utils.EntityManagerUtil;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -15,8 +16,11 @@ import java.util.Objects;
 public class Application extends javafx.application.Application {
     @Override
     public void start(Stage primaryStage) throws IOException, SQLException {
-        primaryStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/iuh/fit/imgs/hotel_logo.png")).toString()));
+        // Khởi động Hibernate
+        EntityManagerUtil.getEntityManager();
 
+
+        primaryStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/iuh/fit/imgs/hotel_logo.png")).toString()));
         startWithLogin(primaryStage);
     }
 
@@ -32,7 +36,7 @@ public class Application extends javafx.application.Application {
             Scene scene = new Scene(root);
 
             LoginController loginController = loader.getController();
-//            loginController.setupContext(mainStage);
+            loginController.initialize(mainStage);
 
             mainStage.setTitle("Quản Lý Khách Sạn");
             mainStage.setScene(scene);
