@@ -1,4 +1,4 @@
-package iuh.fit;
+package iuh.fit.devtools;
 
 import iuh.fit.dao.*;
 import iuh.fit.models.*;
@@ -13,10 +13,11 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Admin 1/13/2025
- **/
-public class Main {
+// =================================================================
+// Lớp này không có tác dụng gì. Đây là lớp test DAO của bài tập
+// tuần 2. Không xóa giữ lại
+// =================================================================
+public class testDAO {
     public static void main(String[] args) {
         Faker faker = new Faker();
 
