@@ -1,6 +1,11 @@
 package iuh.fit.controller;
 
 import com.dlsc.gemsfx.DialogPane;
+import iuh.fit.dao.AccountDAO;
+import iuh.fit.models.Account;
+import iuh.fit.models.enums.AccountStatus;
+import iuh.fit.security.PasswordHashing;
+import iuh.fit.utils.ErrorMessages;
 import javafx.animation.Interpolator;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
@@ -19,21 +24,23 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 public class LoginController {
-    @FXML private TextField userNameField;
-    @FXML private PasswordField hiddenPasswordField;
-    @FXML private TextField visiblePasswordField;
-    @FXML private Text errorMessage;
-    @FXML private Button signInButton;
-    @FXML private ImageView showPassButton;
-    @FXML private DialogPane dialogPane;
-    @FXML private Text forgotPasswordBtn;
-    @FXML private Label loginBtn;
-    @FXML private Button confirmBtn;
-    @FXML private Button resetBtn;
 
-    // Pane
-    @FXML private GridPane loginGrid;
-    @FXML private GridPane restoreDataGrid;
+
+    @FXML private DialogPane dialogPane;
+
+    // --- Các vùng chứa giao diện (Pane) ---
+    @FXML private GridPane loginGrid;           // Giao diện đăng nhập
+    @FXML private GridPane restoreDataGrid;     // Giao diện phục hồi dữ liệu (backup/restore)
+
+    // --- Các trường nhập liệu ---
+    @FXML private TextField userNameField;             // Trường nhập tên đăng nhập
+    @FXML private PasswordField hiddenPasswordField;   // Trường nhập mật khẩu (ẩn)
+    @FXML private TextField visiblePasswordField;      // Trường nhập mật khẩu (hiện - kiểu text)
+
+    // --- Thành phần điều khiển giao diện ---
+    @FXML private Button signInButton;                 // Nút thực hiện đăng nhập
+    @FXML private ImageView showPassButton;            // Nút chuyển đổi hiển thị mật khẩu
+    @FXML private Text errorMessage;                   // Thông báo lỗi khi đăng nhập
 
 
 
@@ -54,24 +61,19 @@ public class LoginController {
     private Stage mainStage;
 
     @FXML
-    public void initialize() {
-        dialogPane.toFront();
+    public void initialize(Stage mainStage) {
+        this.mainStage = mainStage;
 
+        dialogPane.toFront();
         hiddenPasswordField.textProperty().bindBidirectional(visiblePasswordField.textProperty());
         passRestorePasswordField.textProperty().bindBidirectional(passRestoreTextField.textProperty());
-
-//        forgotPasswordBtn.setOnMouseClicked(event -> forgotPass());
-//        loginBtn.setOnMouseClicked(event -> login());
-//        confirmBtn.setOnAction(event -> changePassword());
-//        resetBtn.setOnAction(event -> resetAction());
+        signInButton.setOnMouseClicked(event -> signIn(mainStage));
     }
 
-// ======================================================================================================
-//
-//    Các hàm swith màn hình, switch lên Restore Data Pane hoặc xuống Login Pane.
-//    Đã sửa đổi một chút cải thiện từ Project ban đầu.
-//
-// ======================================================================================================
+// =====================================================================================
+// ⏹ Chuyển đổi giao diện giữa các màn hình (Login ⇄ Restore Data)
+// ✔ Đã cải tiến logic chuyển đổi so với project ban đầu
+// =====================================================================================
     private boolean isDefaultIcon = true;
 
     // Hiển thị màn hình từ Login Pane lên Restore Data Pane
@@ -114,13 +116,9 @@ public class LoginController {
         parallelTransition.play();
     }
 
-// ======================================================================================================
-//
-//    Các hàm liên quan đến ẩn hiện mật khẩu tại Login Pane
-//
-// ======================================================================================================
-
-    // Bật/tắt tính năng nhìn mật khẩu
+// =====================================================================================
+// 🔐 Các hàm xử lý hiển thị / ẩn mật khẩu tại giao diện đăng nhập (Login Pane)
+// =====================================================================================
     @FXML
     private void changePasswordViewState() {
         if (isDefaultIcon) {
@@ -149,6 +147,49 @@ public class LoginController {
             hiddenPasswordField.setManaged(true);
         }
     }
+
+// =====================================================================================
+// 🔑 Các hàm xử lý chức năng đăng nhập (Login)
+// =====================================================================================
+    private void signIn(Stage mainStage) {
+        String userName = userNameField.getText();
+        String password = hiddenPasswordField.getText();
+
+        if (userName.isEmpty()) {
+            errorMessage.setText(ErrorMessages.LOGIN_INVALID_USERNAME);
+            return;
+        }
+
+        if (password.isEmpty()) {
+            errorMessage.setText(ErrorMessages.LOGIN_INVALID_PASSWORD);
+            return;
+        }
+
+
+        Account account = AccountDAO.getLogin(userName, PasswordHashing.hashPassword(password));
+        if (account == null) {
+            errorMessage.setText(ErrorMessages.LOGIN_INVALID_ACCOUNT);
+            return;
+        }
+
+
+        if (account.getStatus().equals(AccountStatus.LOCKED)) {
+            dialogPane.showInformation(
+                    "Thông báo",
+                    "Tài khoản bị khóa hoặc không có hiệu lực.\n" +
+                            "Vui lòng báo người quản lý khách sạn để biết thêm thông tin."
+            );
+            return;
+        }
+
+//        loadMainUI(account, currentShift, mainStage);
+
+    }
+
+
+
+
+
 
 //    public void setupContext(Stage mainStage) {
 //        this.mainStage = mainStage;
