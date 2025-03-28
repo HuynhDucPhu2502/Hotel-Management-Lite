@@ -1,9 +1,12 @@
 package iuh.fit.models;
 
+import iuh.fit.models.enums.Gender;
+import iuh.fit.models.enums.ObjectStatus;
 import iuh.fit.models.enums.Position;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,6 +30,14 @@ public class Employee extends Person {
     @OneToMany(mappedBy = "employee")
     @ToString.Exclude
     private Set<ShiftAssignment>  shiftAssignments = new HashSet<>();
+
+    public Employee(String employeeCode, String fullName, String phoneNumber, String address,
+                    Gender gender, String idCardNumber, LocalDate dob, ObjectStatus isActivate,
+                    Position position) {
+        super(null, fullName, phoneNumber, address, gender, idCardNumber, dob, isActivate);
+        this.employeeCode = employeeCode;
+        this.position = position;
+    }
 
     @Override
     public String toString() {

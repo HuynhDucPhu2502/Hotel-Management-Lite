@@ -1,29 +1,26 @@
 module iuh.fit {
-    // Các module Java SE tiêu chuẩn
-    requires java.sql;
-
-    // JavaFX Modules
+    // JavaFX
     requires javafx.fxml;
     requires javafx.web;
 
-    // Jakarta Persistence (JPA) và Hibernate ORM
+    // JPA
     requires jakarta.persistence;
     requires org.hibernate.orm.core;
 
-    // Các thư viện bên thứ ba
+    // Khác
     requires static lombok;
     requires net.datafaker;
     requires com.dlsc.gemsfx;
 
-    // Mở các gói cụ thể để sử dụng reflection
+    // Opens
     opens iuh.fit to javafx.fxml;
     opens iuh.fit.controller to javafx.fxml;
+    opens iuh.fit.devtools to javafx.fxml;
     opens iuh.fit.models to jakarta.persistence, org.hibernate.orm.core;
 
-
-    // Xuất (exports) các gói công khai
+    // Exports
     exports iuh.fit;
     exports iuh.fit.models;
+    exports iuh.fit.devtools;
 
-    uses net.datafaker.idnumbers.IdNumberGenerator;
 }
