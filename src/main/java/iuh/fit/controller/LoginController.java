@@ -10,9 +10,12 @@ import javafx.animation.Interpolator;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
@@ -42,9 +45,10 @@ public class LoginController {
     @FXML private ImageView showPassButton;            // Nút chuyển đổi hiển thị mật khẩu
     @FXML private Text errorMessage;                   // Thông báo lỗi khi đăng nhập
 
+    private Stage mainStage;
 
 
-
+    // --- Chưa thấy xài
     @FXML private PasswordField passRestorePasswordField;
     @FXML private TextField passRestoreTextField;
     @FXML private TextField filePathRestoreTextField;
@@ -58,7 +62,7 @@ public class LoginController {
     @FXML private Button cancelRestoreButton;
     @FXML private Button confirmPassRestoreButton;
 
-    private Stage mainStage;
+
 
     @FXML
     public void initialize(Stage mainStage) {
@@ -182,28 +186,40 @@ public class LoginController {
             return;
         }
 
-//        loadMainUI(account, currentShift, mainStage);
+        loadMainUI(account, mainStage);
+    }
 
+// =====================================================================================
+// Chuyển sang giao diện chính (đăng nhập thành công)
+// =====================================================================================
+    private void loadMainUI(Account account, Stage mainStage) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/iuh/fit/view/ui/MainUI.fxml"));
+            AnchorPane mainPanel = fxmlLoader.load();
+
+            MainController mainController = fxmlLoader.getController();
+            mainController.initialize(account, mainStage);
+
+            Scene scene = new Scene(mainPanel);
+
+            mainStage.setWidth(1200);
+            mainStage.setHeight(680);
+            mainStage.setScene(scene);
+            mainStage.setResizable(true);
+            mainStage.setMaximized(true);
+
+            mainStage.centerOnScreen();
+
+            mainStage.show();
+        } catch (Exception e) {
+            errorMessage.setText(e.getMessage());
+        }
     }
 
 
 
 
 
-
-//    public void setupContext(Stage mainStage) {
-//        this.mainStage = mainStage;
-//
-//        signInButton.setOnAction(event -> {
-//            try {
-//                signIn(this.mainStage);
-//            } catch (SQLException ignored) {
-//
-//            }
-//        });
-//
-//        registerEventEnterKey();
-//    }
 
 //    private void registerEventEnterKey() {
 //        userNameField.setOnKeyPressed(e -> {
@@ -238,116 +254,6 @@ public class LoginController {
 //    }
 
 
-
-//    private void signIn(Stage mainStage) throws SQLException {
-//        if(!RestoreDatabase.isDatabaseExist(DBHelper.getDatabaseName())) {
-//            errorMessage.setText(ErrorMessages.DATABASE_NOT_FOUND);
-//            return;
-//        }
-//
-//        String userName = userNameField.getText();
-//        String password = hiddenPasswordField.getText();
-//
-//        if (userName.isEmpty()) {
-//            errorMessage.setText(ErrorMessages.LOGIN_INVALID_USERNAME);
-//            return;
-//        }
-//
-//        if (password.isEmpty()) {
-//            errorMessage.setText(ErrorMessages.LOGIN_INVALID_PASSWORD);
-//            return;
-//        }
-//
-//        Account account = AccountDAO.getLogin(userName, password);
-//        if (account == null) {
-//            errorMessage.setText(ErrorMessages.LOGIN_INVALID_ACCOUNT);
-//            return;
-//        }
-//
-//        // Kiểm tra trạng thái tài khoản
-//        if (
-//                account.getAccountStatus().equals(AccountStatus.INACTIVE)
-//                || account.getAccountStatus().equals(AccountStatus.LOCKED)
-//        ) {
-//            dialogPane.showInformation(
-//                    "Thông báo",
-//                    "Tài khoản bị khóa hoặc không có hiệu lực.\n" +
-//                            "Vui lòng báo người quản lý khách sạn để biết thêm thông tin."
-//            );
-//            return;
-//        }
-//
-//        // Lấy thông tin cần thiết
-//        Position position = account.getEmployee().getPosition();
-//        Shift currentShift = ShiftDAO.getCurrentShiftForLogin(account.getEmployee());
-//
-//
-//        if (position.equals(Position.RECEPTIONIST)) {
-//            if (currentShift == null)
-//                dialogPane.showInformation(
-//                        "Thông báo",
-//                        "Nhân viên không thuộc ca làm việc hiện tại\n" +
-//                                "Không thể đăng nhập"
-//                );
-//            else {
-//                loadMainUI(account, currentShift, mainStage);
-//            }
-//        } else if (position.equals(Position.MANAGER)) {
-//            loadMainUI(account, currentShift, mainStage);
-//        }
-//    }
-//
-//    private void loadMainUI(Account account, Shift currentShift, Stage mainStage) {
-//        try {
-//            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/iuh/fit/view/ui/MainUI.fxml"));
-//            AnchorPane mainPanel = fxmlLoader.load();
-//
-//            MainController mainController = fxmlLoader.getController();
-//            mainController.initialize(account, mainStage, currentShift);
-//
-//            Scene scene = new Scene(mainPanel);
-//
-//            mainStage.setWidth(1200);
-//            mainStage.setHeight(680);
-//            mainStage.setScene(scene);
-//            mainStage.setResizable(true);
-//            mainStage.setMaximized(true);
-//
-//            mainStage.centerOnScreen();
-//
-//            mainStage.show();
-//        } catch (Exception e) {
-//            errorMessage.setText(e.getMessage());
-//        }
-//    }
-//
-//    private void forgotPass(){
-//        slideOutGridFromBot(loginGrid, forgotPasswordGrid);
-//    }
-//
-//    private void login(){
-//        slideOutGridFromTop(forgotPasswordGrid, loginGrid);
-//    }
-//
-//    public void slideOutGridFromBot(GridPane gridPaneOut, GridPane gridPaneIn) {
-//        gridPaneIn.setVisible(true);
-//        gridPaneIn.setTranslateY(gridPaneOut.getHeight());
-//        TranslateTransition slideOut = new TranslateTransition(Duration.millis(500), gridPaneOut);
-//        slideOut.setFromY(0);
-//        slideOut.setToY(-gridPaneOut.getHeight());
-//        slideOut.setInterpolator(Interpolator.EASE_BOTH);
-//        TranslateTransition slideIn = new TranslateTransition(Duration.millis(500), gridPaneIn);
-//        slideIn.setFromY(gridPaneOut.getHeight());
-//        slideIn.setToY(0);
-//        slideIn.setInterpolator(Interpolator.EASE_BOTH);
-//        ParallelTransition parallelTransition = new ParallelTransition(slideOut, slideIn);
-//        parallelTransition.setOnFinished(event -> {
-//            gridPaneOut.setVisible(false);
-//            gridPaneOut.setTranslateY(0);
-//        });
-//
-//        parallelTransition.play();
-//    }
 
 
 
