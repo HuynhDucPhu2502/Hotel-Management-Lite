@@ -15,6 +15,7 @@ module iuh.fit {
     // Opens
     opens iuh.fit to javafx.fxml;
     opens iuh.fit.controller to javafx.fxml;
+    opens iuh.fit.controller.features to javafx.fxml;
     opens iuh.fit.devtools to javafx.fxml;
     opens iuh.fit.models to jakarta.persistence, org.hibernate.orm.core;
 
