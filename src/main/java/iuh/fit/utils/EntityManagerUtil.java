@@ -9,15 +9,16 @@ import jakarta.persistence.Persistence;
  **/
 public class EntityManagerUtil {
 
-    private static final EntityManagerFactory emf =
-            Persistence.createEntityManagerFactory(GlobalConstants.PERSISTENCE_UNIT_NAME);
+    private static EntityManagerFactory emf;
 
     public static EntityManagerFactory getEntityManagerFactory() {
+        if (emf == null)
+            emf = Persistence.createEntityManagerFactory(GlobalConstants.PERSISTENCE_UNIT_NAME);
         return emf;
     }
 
     public static EntityManager getEntityManager() {
-        return emf.createEntityManager();
+        return getEntityManagerFactory().createEntityManager();
     }
 
     public static void close() {
