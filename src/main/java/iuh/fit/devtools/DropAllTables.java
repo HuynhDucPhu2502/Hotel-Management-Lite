@@ -14,14 +14,12 @@ public class DropAllTables {
 
         // Thứ tự xóa đúng: bảng phụ → bảng cha
         String[] tables = {
+                "invoices",
                 "reservation_room_details",
                 "room_usage_services",
                 "history_checkin",
                 "history_checkout",
-                "invoices",
                 "reservation_forms",
-                "shift_assignments",
-                "shifts",
                 "accounts",
                 "employees",
                 "customers",
@@ -31,6 +29,7 @@ public class DropAllTables {
                 "hotel_services",
                 "service_categories"
         };
+
 
         try {
             tx.begin();
