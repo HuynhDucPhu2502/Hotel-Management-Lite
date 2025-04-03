@@ -111,7 +111,6 @@ public class testDAO {
 
             try {
                 em.getTransaction().begin();
-                generateFakeShiftAndShiftAssignmentData(faker, em);
                 em.getTransaction().commit();
             } catch (Exception e) {
                 em.getTransaction().rollback();
@@ -429,63 +428,7 @@ public class testDAO {
         }
     }
 
-    // Tạo dữ liệu Shift, ShiftAssignment
-    private static void generateFakeShiftAndShiftAssignmentData(Faker faker, EntityManager em){
-        Random random = new Random();
-        Set<Shift> shifts = new HashSet<>();
-        List<Employee> employees = em.createQuery("SELECT e FROM Employee e", Employee.class).getResultList();
 
-        for(int i = 0; i < 10; i++){
-            Shift shift = new Shift();
-
-            shift.setShiftID("S-" + String.format("%06d", (i + 1)));
-            shift.setStartTime(LocalTime.of(faker.number().numberBetween(0, 24), faker.number().numberBetween(0, 60)));
-            shift.setEndTime(LocalTime.of(faker.number().numberBetween(0, 24), faker.number().numberBetween(0, 60)));
-            shift.setShiftDaysSchedule(faker.options().option(ShiftDaysSchedule.class));
-            shift.setModifiedDate(LocalDateTime.now());
-            shift.setNumberOfHour(faker.number().numberBetween(1, 12));
-
-            em.persist(shift);
-            shifts.add(shift);
-        }
-
-        List<Employee> selectedEmployees = new ArrayList<>();
-
-        for (Employee e : employees) {
-            if (random.nextInt(2) == 1) {
-                selectedEmployees.add(e);
-            }
-        }
-
-        selectedEmployees.forEach(employee -> {
-            // Chọn một số ca làm việc ngẫu nhiên
-            Set<Shift> selectedShifts = shifts.stream()
-                    .skip(random.nextInt(shifts.size()))
-                    .collect(Collectors.toSet());
-
-
-            final int[] counter = {0};
-
-            // Gán shifts vào employee thông qua ShiftAssignment
-            selectedShifts.forEach(shift -> {
-                ShiftAssignment shiftAssignment = new ShiftAssignment();
-                shiftAssignment.setShiftAssignmentID("SA-" + String.format("%06d", (counter[0] + 1)));
-                shiftAssignment.setShift(shift);
-                shiftAssignment.setEmployee(employee);
-                shiftAssignment.setDescription(faker.lorem().sentence());
-                counter[0]++;
-
-                // Persist đối tượng ShiftAssignment
-                shift.getShiftAssignments().add(shiftAssignment);
-                employee.getShiftAssignments().add(shiftAssignment);
-
-                em.merge(shiftAssignment);
-
-                em.merge(shift);
-                em.merge(employee);
-            });
-        });
-    }
 
     // ==================================================================================================================
     // CRUD
@@ -499,7 +442,6 @@ public class testDAO {
         testCRUDServiceCategory(faker);
         testCRUDHistoryCheckin(faker);
         testCRUDRoomAndRoomCategory(faker);
-        testCRUDShiftAndShiftAssignment(faker);
 
     }
 
@@ -872,86 +814,5 @@ public class testDAO {
         System.out.println("Xóa RoomCategory: " + updateRoomCategory.getRoomCategoryID());
         RoomCategory deletedRoomCategory = RoomCategoryDAO.getById(updateRoomCategory.getRoomCategoryID());
         System.out.println(deletedRoomCategory);
-    }
-
-    private static void testCRUDShiftAndShiftAssignment(Faker faker) {
-        Random random = new Random();
-        //TEST CREATE FOR SHIFT AND SHIFT ASSIGNMENT
-        // Create Shift
-        Shift newShift = new Shift();
-        newShift.setShiftID("S-" + String.format("%06d", 11));
-        newShift.setStartTime(LocalTime.of(faker.number().numberBetween(0, 24), faker.number().numberBetween(0, 60)));
-        newShift.setEndTime(LocalTime.of(faker.number().numberBetween(0, 24), faker.number().numberBetween(0, 60)));
-        newShift.setShiftDaysSchedule(faker.options().option(ShiftDaysSchedule.class));
-        newShift.setModifiedDate(LocalDateTime.now());
-        newShift.setNumberOfHour(faker.number().numberBetween(1, 12));
-        ShiftDAO.create(newShift);
-
-        System.out.println("Tạo Shift: " + newShift.getShiftID());
-
-        //TEST CRUD FOR SHIFT
-        // Read
-        System.out.println("Đọc Shift: " + newShift.getShiftID());
-        Shift shift = ShiftDAO.findById("S-000011");
-        System.out.println(shift);
-
-        // Update
-        shift.setNumberOfHour(10);
-        ShiftDAO.update(shift);
-
-        System.out.println("Đọc lại Shift khi đổi số giờ: " + shift.getShiftID());
-        Shift updatedShift = ShiftDAO.findById("S-000011");
-        System.out.println(updatedShift);
-
-
-        //TEST CREATE FOR SHIFT ASSIGNMENT
-        // Create ShiftAssignment
-        List<Employee> employees = EmployeeDAO.findAll();
-        List<Employee> selectedEmployees = new ArrayList<>();
-        for (Employee e : employees) {
-            if (random.nextInt(2) == 1) {
-                selectedEmployees.add(e);
-            }
-        }
-
-        final int[] counter = {1};
-
-        selectedEmployees.forEach(employee -> {
-
-            ShiftAssignment shiftAssignment = new ShiftAssignment();
-            shiftAssignment.setShiftAssignmentID("SATEST-" + String.format("%06d", (counter[0])));
-            shiftAssignment.setShift(shift);
-            shiftAssignment.setEmployee(employee);
-            shiftAssignment.setDescription(faker.lorem().sentence());
-            counter[0]++;
-
-            ShiftAssignmentDAO.create(shiftAssignment, shift, employee);
-        });
-
-        //TEST READ AND UPDATE FOR SHIFT ASSIGNMENT
-        // Read
-        System.out.println("Đọc ShiftAssignment: " + "SATEST-000001");
-        ShiftAssignment shiftAssignment = ShiftAssignmentDAO.findById("SATEST-000001");
-        System.out.println(shiftAssignment);
-
-        // Update
-        shiftAssignment.setDescription("Test");
-        ShiftAssignmentDAO.update(shiftAssignment);
-        System.out.println("Đọc ShiftAssignment sau khi update: " + shiftAssignment.getShiftAssignmentID());
-        System.out.println(shiftAssignment);
-
-        //TEST DELETE FOR SHIFT AND SHIFT ASSIGNMENT
-
-        // Delete ShiftAssignment
-        ShiftAssignmentDAO.delete(shiftAssignment.getShiftAssignmentID());
-        System.out.println("Đọc ShiftAssignment sau khi delete: " + shiftAssignment.getShiftAssignmentID());
-        System.out.println(shiftAssignment);
-
-        // Delete
-        ShiftAssignmentDAO.deleteByShift(ShiftDAO.findById("S-000011"));
-        ShiftDAO.delete("S-000011");
-        System.out.println("Xóa Shift: " + shift.getShiftID());
-        Shift deletedShift = ShiftDAO.findById("S-000011");
-        System.out.println(deletedShift);
     }
 }
