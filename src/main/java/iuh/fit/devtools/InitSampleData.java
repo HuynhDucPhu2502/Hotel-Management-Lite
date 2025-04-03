@@ -23,6 +23,8 @@ public class InitSampleData {
     public static void main(String[] args) {
         initEmployeeAndAccountData();
         initServiceCategoryAndHotelService();
+
+        EntityManagerUtil.close();
     }
 
     // =================================================================
@@ -61,7 +63,6 @@ public class InitSampleData {
             e.printStackTrace();
         } finally {
             em.close();
-            EntityManagerUtil.close();
         }
     }
 
@@ -76,10 +77,10 @@ public class InitSampleData {
             tx.begin();
 
             List<ServiceCategory> categories = List.of(
-                    new ServiceCategory("SC-000001", "Giải trí", ObjectStatus.ACTIVE),
-                    new ServiceCategory("SC-000002", "Ăn uống", ObjectStatus.ACTIVE),
-                    new ServiceCategory("SC-000003", "Chăm sóc và sức khỏe", ObjectStatus.ACTIVE),
-                    new ServiceCategory("SC-000004", "Vận chuyển", ObjectStatus.ACTIVE)
+                    new ServiceCategory("SC-000001", "Giải trí", ObjectStatus.ACTIVE, "karaoke"),
+                    new ServiceCategory("SC-000002", "Ăn uống", ObjectStatus.ACTIVE, "food"),
+                    new ServiceCategory("SC-000003", "Chăm sóc và sức khỏe", ObjectStatus.ACTIVE, "massage"),
+                    new ServiceCategory("SC-000004", "Vận chuyển", ObjectStatus.ACTIVE, "car")
             );
 
             for (ServiceCategory category : categories) {
@@ -120,7 +121,6 @@ public class InitSampleData {
             e.printStackTrace();
         } finally {
             em.close();
-            EntityManagerUtil.close();
         }
     }
 
