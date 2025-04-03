@@ -23,7 +23,7 @@ import java.util.List;
 public class RoomCategory {
 
     @Id
-    @Column(name = "room_category_id", columnDefinition = "nvarchar(15)", nullable = false)
+    @Column(name = "room_category_id", columnDefinition = "nvarchar(50)", nullable = false)
     @EqualsAndHashCode.Include
     private String roomCategoryID;
 

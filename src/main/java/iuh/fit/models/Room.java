@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Room {
     @Id
-    @Column(name = "room_id", columnDefinition = "nvarchar(15)", nullable = false)
+    @Column(name = "room_id", columnDefinition = "nvarchar(50)", nullable = false)
     @EqualsAndHashCode.Include
     private String roomID;
 
