@@ -27,9 +27,6 @@ public class Employee extends Person {
     @Column(nullable = false)
     private Position position;
 
-    @OneToMany(mappedBy = "employee")
-    @ToString.Exclude
-    private Set<ShiftAssignment>  shiftAssignments = new HashSet<>();
 
     public Employee(String employeeCode, String fullName, String phoneNumber, String address,
                     Gender gender, String idCardNumber, LocalDate dob, ObjectStatus isActivate,
