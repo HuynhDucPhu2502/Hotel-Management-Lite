@@ -9,9 +9,7 @@ import net.datafaker.Faker;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 // =================================================================
 // Lớp này không có tác dụng gì. Đây là lớp test DAO của bài tập
@@ -666,7 +664,7 @@ public class testDAO {
         serviceCategory.setServiceCategoryName(faker.name().fullName());
         serviceCategory.setIsActivate(ObjectStatus.ACTIVE);
 
-        ServiceCategoryDAO.create(serviceCategory);
+        ServiceCategoryDAO.createData(serviceCategory);
 
         System.out.println("Tạo ServiceCategory: " + ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID()));
 
@@ -675,12 +673,12 @@ public class testDAO {
         System.out.println(ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID()));
 
         // delete
-        if(ServiceCategoryDAO.delete(serviceCategory.getServiceCategoryID()))
+        if(ServiceCategoryDAO.deleteData(serviceCategory.getServiceCategoryID()))
             System.out.println("Xóa ServiceCategory thanh cong");
 
         // UPDATE
         serviceCategory.setIsActivate(ObjectStatus.INACTIVE);
-        ServiceCategoryDAO.update(serviceCategory);
+        ServiceCategoryDAO.updateData(serviceCategory);
 
         System.out.println("Đọc lại ServiceCategory khi đổi status: " + serviceCategory.getServiceCategoryID());
         ServiceCategory updatedServiceCategory = ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID());
