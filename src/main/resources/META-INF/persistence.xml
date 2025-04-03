@@ -7,20 +7,20 @@
     <persistence-unit name="mssql" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <!-- Human Resource -->
-        <class>iuh.fit.models.Person</class>
+        <class>iuh.fit.models.Invoice</class>
+        <class>iuh.fit.models.ReservationRoomDetail</class>
+        <class>iuh.fit.models.RoomUsageService</class>
+        <class>iuh.fit.models.HistoryCheckIn</class>
+        <class>iuh.fit.models.HistoryCheckOut</class>
+        <class>iuh.fit.models.ReservationForm</class>
+        <class>iuh.fit.models.Account</class>
         <class>iuh.fit.models.Employee</class>
         <class>iuh.fit.models.Customer</class>
-        <class>iuh.fit.models.Account</class>
-
-        <!-- Room -->
+        <class>iuh.fit.models.Person</class>
         <class>iuh.fit.models.Room</class>
         <class>iuh.fit.models.RoomCategory</class>
-
-        <!-- Invoices/Services -->
         <class>iuh.fit.models.HotelService</class>
         <class>iuh.fit.models.ServiceCategory</class>
-        <class>iuh.fit.models.ReservationForm</class>
 
         <properties>
             <!-- Cấu Hình Cơ Sở Dữ Liệu -->
@@ -44,7 +44,7 @@
             <!-- Cấu Hình Hibernate -->
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="true"/>
-<!--            <property name="hibernate.hbm2ddl.auto" value="update"/>-->
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
         </properties>
     </persistence-unit>
 
