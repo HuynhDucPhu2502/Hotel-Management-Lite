@@ -20,9 +20,10 @@ public class HotelService {
     @Column(name = "service_id")
     private String serviceID;
 
-    @Column(name = "service_name", unique = true, nullable = false)
+    @Column(name = "service_name", unique = true, nullable = false, columnDefinition = "nvarchar(50)")
     private String serviceName;
 
+    @Column(columnDefinition = "nvarchar(200)")
     private String description;
 
     @Column(name = "service_price", nullable = false)

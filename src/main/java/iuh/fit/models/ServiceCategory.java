@@ -17,10 +17,13 @@ public class ServiceCategory {
     @Column(name = "service_category_id")
     private String serviceCategoryID;
 
-    @Column(name = "service_category_name", unique = true, nullable = false)
+    @Column(name = "service_category_name", unique = true, nullable = false, columnDefinition = "nvarchar(50)")
     private String serviceCategoryName;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ObjectStatus isActivate;
+
+    @Column(nullable = false)
+    private String icon;
 }
