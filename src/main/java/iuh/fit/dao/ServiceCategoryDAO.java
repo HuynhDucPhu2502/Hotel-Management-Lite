@@ -10,18 +10,51 @@ import java.util.List;
 
 public class ServiceCategoryDAO {
 
-    public static boolean createData(ServiceCategory serviceCategory) {
+    // Tạo mới ServiceCategory với ID từ GlobalSequence
+    public static void createData(ServiceCategory serviceCategory) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             em.getTransaction().begin();
+
+            // Lấy ID kế tiếp từ GlobalSequence
+            String jpqlSelect = "SELECT gs.nextID FROM GlobalSequence gs WHERE gs.tableName = :tableName";
+            TypedQuery<String> querySelect = em.createQuery(jpqlSelect, String.class);
+            querySelect.setParameter("tableName", "ServiceCategory");
+            String currentNextID = querySelect.getSingleResult();
+
+            // Gán ID vào serviceCategory
+            serviceCategory.setServiceCategoryID(currentNextID);
+
+            // Tăng ID lên 1 và cập nhật GlobalSequence
+            String prefix = "SC-";
+            int nextIDNum = Integer.parseInt(currentNextID.substring(prefix.length())) + 1;
+            String newNextID = prefix + String.format("%06d", nextIDNum);
+
+            String jpqlUpdate = "UPDATE GlobalSequence gs SET gs.nextID = :newNextID WHERE gs.tableName = :tableName";
+            em.createQuery(jpqlUpdate)
+                    .setParameter("newNextID", newNextID)
+                    .setParameter("tableName", "ServiceCategory")
+                    .executeUpdate();
+
+            // Lưu ServiceCategory
             em.persist(serviceCategory);
             em.getTransaction().commit();
-            return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
         }
     }
 
+    // Cập nhật ServiceCategory
+    public static void updateData(ServiceCategory serviceCategory) {
+        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
+            em.getTransaction().begin();
+            em.merge(serviceCategory);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Xóa ServiceCategory (chuyển trạng thái INACTIVE)
     public static boolean deleteData(String serviceCategoryID) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             em.getTransaction().begin();
@@ -37,18 +70,7 @@ public class ServiceCategoryDAO {
         }
     }
 
-    public static boolean updateData(ServiceCategory serviceCategory) {
-        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
-            em.getTransaction().begin();
-            em.merge(serviceCategory);
-            em.getTransaction().commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
+    // Lấy tất cả các ServiceCategory đang hoạt động
     public static List<ServiceCategory> findAll() {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             TypedQuery<ServiceCategory> query = em.createQuery(
@@ -60,6 +82,7 @@ public class ServiceCategoryDAO {
         }
     }
 
+    // Tìm ServiceCategory theo ID
     public static ServiceCategory findById(String serviceCategoryID) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             return em.find(ServiceCategory.class, serviceCategoryID);
@@ -69,6 +92,7 @@ public class ServiceCategoryDAO {
         }
     }
 
+    // Kiểm tra ServiceCategory đang được sử dụng
     public static boolean isServiceCategoryInUse(String serviceCategoryID) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             TypedQuery<Long> query = em.createQuery(
@@ -86,11 +110,11 @@ public class ServiceCategoryDAO {
         }
     }
 
-    // Find ServiceCategories by partial ID
+    // Tìm kiếm ServiceCategory theo ID chứa từ khóa
     public static List<ServiceCategory> findDataByContainsId(String input) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             TypedQuery<ServiceCategory> query = em.createQuery(
-                    "SELECT sc FROM ServiceCategory sc WHERE LOWER(sc.serviceCategoryID) LIKE :input AND sc.isActivate = 'ACTIVATE'",
+                    "SELECT sc FROM ServiceCategory sc WHERE LOWER(sc.serviceCategoryID) LIKE :input AND sc.isActivate = 'ACTIVE'",
                     ServiceCategory.class);
             query.setParameter("input", "%" + input.toLowerCase() + "%");
             return query.getResultList();
@@ -100,11 +124,11 @@ public class ServiceCategoryDAO {
         }
     }
 
-    // Get the top 3 ServiceCategory IDs
+    // Lấy top 3 ServiceCategory ID
     public static List<String> getTopThreeID() {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             TypedQuery<String> query = em.createQuery(
-                    "SELECT sc.serviceCategoryID FROM ServiceCategory sc WHERE sc.isActivate = 'ACTIVATE' ORDER BY sc.serviceCategoryID DESC",
+                    "SELECT sc.serviceCategoryID FROM ServiceCategory sc WHERE sc.isActivate = 'ACTIVE' ORDER BY sc.serviceCategoryID DESC",
                     String.class);
             query.setMaxResults(3);
             return query.getResultList();
@@ -114,11 +138,11 @@ public class ServiceCategoryDAO {
         }
     }
 
-    // Get the next ServiceCategory ID from GlobalSequence
+    // Lấy ID tiếp theo từ GlobalSequence
     public static String getNextServiceCategoryID() {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
-            String queryStr = "SELECT gs.nextID FROM GlobalSequence gs WHERE gs.tableName = 'ServiceCategory'";
-            TypedQuery<String> query = em.createQuery(queryStr, String.class);
+            String jpql = "SELECT gs.nextID FROM GlobalSequence gs WHERE gs.tableName = 'ServiceCategory'";
+            TypedQuery<String> query = em.createQuery(jpql, String.class);
             return query.getSingleResult();
         } catch (Exception e) {
             e.printStackTrace();
@@ -126,12 +150,11 @@ public class ServiceCategoryDAO {
         }
     }
 
-    // Get list of ServiceCategory names
+    // Lấy danh sách tên ServiceCategory
     public static List<String> getServiceCategoryNames() {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             TypedQuery<String> query = em.createQuery(
-                    "SELECT sc.serviceCategoryName FROM ServiceCategory sc WHERE sc.isActivate = 'ACTIVATE'",
-                    String.class);
+                    "SELECT sc.serviceCategoryName FROM ServiceCategory sc WHERE sc.isActivate = 'ACTIVE'", String.class);
             return query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
