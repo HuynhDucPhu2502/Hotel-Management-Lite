@@ -32,7 +32,7 @@ public class HotelService {
     @Column(nullable = false)
     private ObjectStatus isActivate;
 
-    @ManyToOne()
+    @ManyToOne(cascade = {CascadeType.PERSIST})
     @JoinColumn(name = "service_category_id")
     private ServiceCategory serviceCategory;
 }
