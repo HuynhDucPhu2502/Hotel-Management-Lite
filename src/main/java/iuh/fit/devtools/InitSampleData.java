@@ -1,9 +1,6 @@
 package iuh.fit.devtools;
 
-import iuh.fit.models.Account;
-import iuh.fit.models.Employee;
-import iuh.fit.models.HotelService;
-import iuh.fit.models.ServiceCategory;
+import iuh.fit.models.*;
 import iuh.fit.models.enums.AccountStatus;
 import iuh.fit.models.enums.Gender;
 import iuh.fit.models.enums.ObjectStatus;
@@ -21,8 +18,11 @@ import java.util.List;
 // =================================================================
 public class InitSampleData {
     public static void main(String[] args) {
+        EntityManagerUtil.getEntityManagerFactory();
+
         initEmployeeAndAccountData();
         initServiceCategoryAndHotelService();
+        initGlobalSequenceData();
 
         EntityManagerUtil.close();
     }
@@ -116,6 +116,35 @@ public class InitSampleData {
 
             tx.commit();
             System.out.println("Dữ liệu đã được khởi tạo thành công!");
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
+    }
+
+    // Hàm khởi tạo dữ liệu mẫu cho GlobalSequence
+    public static void initGlobalSequenceData() {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            List<GlobalSequence> globalSequences = List.of(
+                    new GlobalSequence(0, "Employee", "EMP-000006"),
+                    new GlobalSequence(0, "Account", "ACC-000006"),
+                    new GlobalSequence(0, "ServiceCategory", "SC-000005"),
+                    new GlobalSequence(0, "HotelService", "HS-000021")
+            );
+
+            for (GlobalSequence gs : globalSequences) {
+                em.persist(gs);
+            }
+
+            tx.commit();
+            System.out.println("Dữ liệu GlobalSequence đã được khởi tạo thành công!");
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();

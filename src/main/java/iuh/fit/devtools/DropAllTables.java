@@ -27,7 +27,8 @@ public class DropAllTables {
                 "rooms",
                 "room_categories",
                 "hotel_services",
-                "service_categories"
+                "service_categories",
+                "global_sequences"
         };
 
 
