@@ -205,7 +205,7 @@ public class testDAO {
     // Tạo dữ liệu RoomUsageService
     private static void generateFakerRoomUsageService(Faker faker, EntityManager em) {
         List<ReservationForm> rfs = ReservationFormDAO.findAll();
-        List<HotelService> hs = HotelServiceDAO.findAll();
+        List<HotelService> hs = HotelServiceDAO.getHotelService();
 
         int count = 0;
         for(int i = 0; i < rfs.size(); i++) {
