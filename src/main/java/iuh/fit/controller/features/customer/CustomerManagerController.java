@@ -99,17 +99,17 @@ public class CustomerManagerController {
         customerTableView.setRowFactory(x->{
             TableRow<Customer> customerRow = new TableRow<>();
 
-//            customerRow.setOnMouseClicked(event -> {
-//                if (event.getClickCount() == 2 && !customerRow.isEmpty()) { // Kiểm tra double-click và dòng không trống
-//                    Customer rowData = customerRow.getItem();
-//                    // Thực hiện hành động khi double-click
-//                    try {
-//                        handleShowCustomerInformation(rowData);
-//                    } catch (IOException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                }
-//            });
+            customerRow.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !customerRow.isEmpty()) { // Kiểm tra double-click và dòng không trống
+                    Customer rowData = customerRow.getItem();
+                    // Thực hiện hành động khi double-click
+                    try {
+                        handleShowCustomerInformation(rowData);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
 
             return customerRow;
         });
@@ -179,14 +179,14 @@ public class CustomerManagerController {
                     handleDeleteAction(customer);
                 });
 
-//                showInfoButton.setOnAction(e -> {
-//                    Customer customer = getTableView().getItems().get(getIndex());
-//                    try {
-//                        handleShowCustomerInformation(customer);
-//                    } catch (IOException ex) {
-//                        throw new RuntimeException(ex);
-//                    }
-//                });
+                showInfoButton.setOnAction(e -> {
+                    Customer customer = getTableView().getItems().get(getIndex());
+                    try {
+                        handleShowCustomerInformation(customer);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
 
                 hBox.setAlignment(Pos.CENTER);
                 hBox.getChildren().addAll(updateButton, deleteButton, showInfoButton);
@@ -321,27 +321,27 @@ public class CustomerManagerController {
 
 
     // Chức năng 6: Xem thông tin khách hàng
-//    private void handleShowCustomerInformation(Customer customer) throws IOException {
-//        String source = "/iuh/fit/view/features/customer/CustomerInformationView.fxml";
-//
-//        FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource(source)));
-//        AnchorPane layout = loader.load();
-//
-//        CustomerInformationViewController customerInformationViewController = loader.getController();
-//        customerInformationViewController.setCustomer(customer);
-//
-//        Scene scene = new Scene(layout);
-//
-//        Stage stage = new Stage();
-//        stage.setResizable(false);
-//        stage.setScene(scene);
-//
-//        String iconPath = "/iuh/fit/icons/menu_icons/ic_customer.png";
-//        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream(iconPath))));
-//        stage.setTitle("Thông tin khách hàng");
-//
-//        stage.show();
-//    }
+    private void handleShowCustomerInformation(Customer customer) throws IOException {
+        String source = "/iuh/fit/view/features/customer/CustomerInformationView.fxml";
+
+        FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource(source)));
+        AnchorPane layout = loader.load();
+
+        CustomerInformationViewController customerInformationViewController = loader.getController();
+        customerInformationViewController.setCustomer(customer);
+
+        Scene scene = new Scene(layout);
+
+        Stage stage = new Stage();
+        stage.setResizable(false);
+        stage.setScene(scene);
+
+        String iconPath = "/iuh/fit/icons/menu_icons/ic_customer.png";
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream(iconPath))));
+        stage.setTitle("Thông tin khách hàng");
+
+        stage.show();
+    }
 
     private Customer createCustomer() {
         String id = customerIDTextField.getText();
