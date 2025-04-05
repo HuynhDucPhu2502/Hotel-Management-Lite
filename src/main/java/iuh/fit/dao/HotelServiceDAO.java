@@ -11,7 +11,6 @@ import java.util.List;
 
 public class HotelServiceDAO {
 
-    // Lấy tất cả HotelService đang hoạt động
     public static List<HotelService> getHotelService() {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             TypedQuery<HotelService> query = em.createQuery(
@@ -28,7 +27,6 @@ public class HotelServiceDAO {
         }
     }
 
-    // Lấy HotelService theo ID
     public static HotelService getDataByID(String hotelServiceId) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             TypedQuery<HotelService> query = em.createQuery(
@@ -47,7 +45,6 @@ public class HotelServiceDAO {
         }
     }
 
-    // Tạo mới HotelService với ID từ GlobalSequence
     public static boolean createData(HotelService hotelService) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             em.getTransaction().begin();
