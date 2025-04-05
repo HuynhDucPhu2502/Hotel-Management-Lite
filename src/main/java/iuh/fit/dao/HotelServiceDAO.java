@@ -181,23 +181,25 @@ public class HotelServiceDAO {
             String hotelServiceID, String serviceName,
             Double minPrice, Double maxPrice, String serviceCategory) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
-            TypedQuery<HotelService> query = em.createQuery(
-                    """
-                    SELECT hs FROM HotelService hs 
-                    WHERE (:hotelServiceID IS NULL OR hs.serviceID LIKE :hotelServiceID)
-                    AND (:serviceName IS NULL OR hs.serviceName LIKE :serviceName)
-                    AND (:minPrice IS NULL OR hs.servicePrice >= :minPrice)
-                    AND (:maxPrice IS NULL OR hs.servicePrice <= :maxPrice)
-                    AND (:serviceCategory IS NULL OR hs.serviceCategory.serviceCategoryID = :serviceCategory)
-                    AND hs.isActivate = :status
-                    """, HotelService.class);
+            String jpql = """
+                SELECT hs FROM HotelService hs 
+                WHERE (:hotelServiceID IS NULL OR hs.serviceID LIKE CONCAT('%', :hotelServiceID, '%'))
+                AND (:serviceName IS NULL OR hs.serviceName LIKE CONCAT('%', :serviceName, '%'))
+                AND (:minPrice IS NULL OR hs.servicePrice >= :minPrice)
+                AND (:maxPrice IS NULL OR hs.servicePrice <= :maxPrice)
+                AND (:serviceCategory = 'ALL' OR hs.serviceCategory.serviceCategoryID = :serviceCategory 
+                OR (:serviceCategory = 'NULL' AND hs.serviceCategory IS NULL))
+                AND hs.isActivate = :status
+                """;
 
-            query.setParameter("hotelServiceID", hotelServiceID != null ? "%" + hotelServiceID + "%" : null);
-            query.setParameter("serviceName", serviceName != null ? "%" + serviceName + "%" : null);
+            TypedQuery<HotelService> query = em.createQuery(jpql, HotelService.class);
+
+            query.setParameter("hotelServiceID", hotelServiceID);
+            query.setParameter("serviceName", serviceName);
             query.setParameter("minPrice", minPrice);
             query.setParameter("maxPrice", maxPrice);
             query.setParameter("serviceCategory", serviceCategory);
-            query.setParameter("status", ObjectStatus.ACTIVE); // Truyền enum thay vì string
+            query.setParameter("status", ObjectStatus.ACTIVE);
 
             return query.getResultList();
         } catch (Exception e) {
@@ -205,6 +207,8 @@ public class HotelServiceDAO {
             return null;
         }
     }
+
+
 
     // Kiểm tra HotelService đang được sử dụng
 //    public static boolean isHotelServiceInUse(String hotelServiceId) {

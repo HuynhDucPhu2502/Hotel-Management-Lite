@@ -110,7 +110,7 @@ public class HotelServiceManagerController {
         List<HotelService> hotelServiceList = HotelServiceDAO.getHotelService();
         items = FXCollections.observableArrayList(hotelServiceList);
 
-        List<String> comboBoxItems = ServiceCategoryDAO.findAll()
+        List<String> comboBoxItems = Objects.requireNonNull(ServiceCategoryDAO.findAll())
                 .stream()
                 .map(serviceCategory -> serviceCategory.getServiceCategoryID() + " " + serviceCategory.getServiceCategoryName())
                 .collect(Collectors.toList());
