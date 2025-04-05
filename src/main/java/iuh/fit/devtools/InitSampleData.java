@@ -198,7 +198,7 @@ public class InitSampleData {
                     new GlobalSequence(0, "Account", "ACC-000006"),
                     new GlobalSequence(0, "ServiceCategory", "SC-000005"),
                     new GlobalSequence(0, "HotelService", "HS-000021"),
-                    new GlobalSequence(0, "Customer", "HS-000031")
+                    new GlobalSequence(0, "Customer", "CUS-000031")
             );
 
             for (GlobalSequence gs : globalSequences) {
