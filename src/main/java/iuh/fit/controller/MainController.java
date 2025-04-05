@@ -5,8 +5,11 @@ import iuh.fit.controller.features.MenuController;
 
 import iuh.fit.controller.features.TopController;
 
+import iuh.fit.controller.features.service.HotelServiceManagerController;
+import iuh.fit.controller.features.service.HotelServiceSearchingController;
 import iuh.fit.models.*;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
@@ -179,9 +182,9 @@ public class MainController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             AnchorPane layout = loader.load();
 
-//            Object controller = loader.getController();
+            Object controller = loader.getController();
 
-//            switch (controller) {
+            switch (controller) {
 //                case RoomBookingController roomBookingController ->
 //                        roomBookingController.setupContext(mainController, account.getEmployee(), notificationButtonController);
 //
@@ -204,19 +207,19 @@ public class MainController {
 //
 //                case EmployeeSearchingController employeeSearchingController ->
 //                        employeeSearchingController.setupContext(this);
-//
-//                case HotelServiceSearchingController hotelServiceSearchingController ->
-//                        hotelServiceSearchingController.setupContext(this, account);
-//
+
+                case HotelServiceSearchingController hotelServiceSearchingController ->
+                        hotelServiceSearchingController.setupContext(this, account);
+
 //                case CustomerSearchingController customerSearchingController ->
 //                        customerSearchingController.setupContext(this, account);
 //
 //                case RoomSearchingController roomSearchingController ->
 //                        roomSearchingController.setupContext(this, account);
-//
-//                default -> {}
-//            }
-//
+
+                default -> {}
+            }
+
 //            if (!fxmlPath.contains("RoomBookingPanel") && !fxmlPath.contains("DashBoardPanel")) {
 //                TimelineManager.getInstance().removeTimeline("REALTIME_DASHBOARD");
 //                TimelineManager.getInstance().stopAllTimelines();
@@ -291,21 +294,21 @@ public class MainController {
 //        }
 //    }
 //
-//    public void loadPanelHotelServiceManagerController(String fxmlPath, HotelService service){
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-//            AnchorPane layout = loader.load();
-//
-//            HotelServiceManagerController controller = loader.getController();
-//
-//            ROOM_BOOKING_LOADED = fxmlPath.contains("RoomBookingPanel");
-//            mainPanel.getChildren().clear();
-//            mainPanel.getChildren().addAll(layout.getChildren());
-//            Platform.runLater(() -> controller.setInformation(service));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public void loadPanelHotelServiceManagerController(String fxmlPath, HotelService service){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            AnchorPane layout = loader.load();
+
+            HotelServiceManagerController controller = loader.getController();
+
+            ROOM_BOOKING_LOADED = fxmlPath.contains("RoomBookingPanel");
+            mainPanel.getChildren().clear();
+            mainPanel.getChildren().addAll(layout.getChildren());
+            controller.setInformation(service);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 //
 //    public void loadPanelCustomerManagerController(String fxmlPath, Customer customer){
 //        try {
