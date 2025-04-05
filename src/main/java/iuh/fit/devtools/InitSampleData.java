@@ -20,12 +20,71 @@ public class InitSampleData {
     public static void main(String[] args) {
         EntityManagerUtil.getEntityManagerFactory();
 
+        initCustomerData();
         initEmployeeAndAccountData();
         initServiceCategoryAndHotelService();
         initGlobalSequenceData();
 
         EntityManagerUtil.close();
     }
+
+    // =================================================================
+    // Hàm tạo dữ liệu khách hàng
+    // =================================================================
+    public static void initCustomerData() {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            List<Customer> customers = List.of(
+                    new Customer("CUS-000001", "Nguyen Van A", "0912345678", "123 Duong ABC, Quan 1, TP HCM", Gender.MALE, "001099012333", LocalDate.of(1990, 5, 15), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000002", "Le Thi B", "0912345679", "456 Duong XYZ, Quan 3, TP HCM", Gender.FEMALE, "001099012323", LocalDate.of(1992, 7, 22), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000003", "Tran Van C", "0912345680", "789 Duong MNO, Quan 5, TP HCM", Gender.MALE, "001099012343", LocalDate.of(1988, 3, 30), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000004", "Pham Thi D", "0912345681", "321 Duong PQR, Quan 7, TP HCM", Gender.FEMALE, "001099012546", LocalDate.of(1995, 12, 1), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000005", "Hoang Van E", "0912345682", "987 Duong STU, Quan 10, TP HCM", Gender.MALE, "001099012764", LocalDate.of(1991, 11, 20), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000006", "Nguyen Van F", "0912345683", "111 Duong DEF, Quan 1, TP HCM", Gender.MALE, "001099012765", LocalDate.of(1989, 4, 18), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000007", "Le Thi G", "0912345684", "222 Duong GHI, Quan 2, TP HCM", Gender.FEMALE, "001099012776", LocalDate.of(1993, 8, 29), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000008", "Tran Van H", "0912345685", "333 Duong JKL, Quan 3, TP HCM", Gender.MALE, "001099012787", LocalDate.of(1985, 12, 12), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000009", "Pham Thi I", "0912345686", "444 Duong MNO, Quan 4, TP HCM", Gender.FEMALE, "001099012798", LocalDate.of(1990, 1, 1), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000010", "Hoang Van J", "0912345687", "555 Duong PQR, Quan 5, TP HCM", Gender.MALE, "001099012809", LocalDate.of(1987, 5, 5), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000011", "Nguyen Van K", "0912345688", "666 Duong STU, Quan 6, TP HCM", Gender.MALE, "001099012810", LocalDate.of(1992, 11, 11), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000012", "Le Thi L", "0912345689", "777 Duong VWX, Quan 7, TP HCM", Gender.FEMALE, "001099012821", LocalDate.of(1994, 2, 15), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000013", "Tran Van M", "0912345690", "888 Duong YZA, Quan 8, TP HCM", Gender.MALE, "001099012832", LocalDate.of(1986, 9, 9), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000014", "Pham Thi N", "0912345691", "999 Duong BCD, Quan 9, TP HCM", Gender.FEMALE, "001099012843", LocalDate.of(1991, 3, 3), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000015", "Hoang Van O", "0912345692", "000 Duong EFG, Quan 10, TP HCM", Gender.MALE, "001099012854", LocalDate.of(1993, 7, 21), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000016", "Nguyen Van P", "0912345693", "123 Duong HIJ, Quan 11, TP HCM", Gender.MALE, "001099012865", LocalDate.of(1990, 4, 4), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000017", "Le Thi Q", "0912345694", "234 Duong KLM, Quan 12, TP HCM", Gender.FEMALE, "001099012876", LocalDate.of(1988, 6, 6), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000018", "Tran Van R", "0912345695", "345 Duong NOP, Quan 1, TP HCM", Gender.MALE, "001099012887", LocalDate.of(1995, 8, 8), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000019", "Pham Thi S", "0912345696", "456 Duong QRS, Quan 2, TP HCM", Gender.FEMALE, "001099012898", LocalDate.of(1994, 5, 5), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000020", "Hoang Van T", "0912345697", "567 Duong TUV, Quan 3, TP HCM", Gender.MALE, "001099012909", LocalDate.of(1990, 2, 2), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000021", "Nguyen Van U", "0912345698", "678 Duong WXY, Quan 4, TP HCM", Gender.MALE, "001099012910", LocalDate.of(1989, 11, 11), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000022", "Le Thi V", "0912345699", "789 Duong ZAB, Quan 5, TP HCM", Gender.FEMALE, "001099012921", LocalDate.of(1992, 9, 9), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000023", "Tran Van W", "0912345700", "890 Duong CDE, Quan 6, TP HCM", Gender.MALE, "001099012932", LocalDate.of(1993, 10, 10), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000024", "Pham Thi X", "0912345701", "901 Duong FGHI, Quan 7, TP HCM", Gender.FEMALE, "001099012943", LocalDate.of(1987, 12, 12), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000025", "Hoang Van Y", "0912345702", "012 Duong JKL, Quan 8, TP HCM", Gender.MALE, "001099012954", LocalDate.of(1988, 1, 1), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000026", "Nguyen Van Z", "0912345703", "123 Duong MNO, Quan 9, TP HCM", Gender.MALE, "001099012965", LocalDate.of(1991, 4, 4), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000027", "Le Thi AA", "0912345704", "234 Duong PQR, Quan 10, TP HCM", Gender.FEMALE, "001099012976", LocalDate.of(1990, 12, 12), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000028", "Tran Van AB", "0912345705", "345 Duong STU, Quan 1, TP HCM", Gender.MALE, "001099012987", LocalDate.of(1986, 7, 7), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000029", "Pham Thi AC", "0912345706", "456 Duong VWX, Quan 2, TP HCM", Gender.FEMALE, "001099012998", LocalDate.of(1994, 3, 3), ObjectStatus.ACTIVE),
+                    new Customer("CUS-000030", "Hoang Van AD", "0912345707", "567 Duong YZA, Quan 3, TP HCM", Gender.MALE, "001099013000", LocalDate.of(1992, 6, 6), ObjectStatus.ACTIVE)
+            );
+
+            for (Customer customer : customers) {
+                em.persist(customer);
+            }
+
+            tx.commit();
+            System.out.println("Dữ liệu khách hàng đã được khởi tạo thành công!");
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
+    }
+
 
     // =================================================================
     // Hàm tạo dữ liệu nhân viên và tài khoản
@@ -65,6 +124,7 @@ public class InitSampleData {
             em.close();
         }
     }
+
 
     // =================================================================
     // Hàm tạo dữ liệu cho danh mục dịch vụ và dịch vụ khách sạn
@@ -124,6 +184,7 @@ public class InitSampleData {
         }
     }
 
+
     // Hàm khởi tạo dữ liệu mẫu cho GlobalSequence
     public static void initGlobalSequenceData() {
         EntityManager em = EntityManagerUtil.getEntityManager();
@@ -136,7 +197,8 @@ public class InitSampleData {
                     new GlobalSequence(0, "Employee", "EMP-000006"),
                     new GlobalSequence(0, "Account", "ACC-000006"),
                     new GlobalSequence(0, "ServiceCategory", "SC-000005"),
-                    new GlobalSequence(0, "HotelService", "HS-000021")
+                    new GlobalSequence(0, "HotelService", "HS-000021"),
+                    new GlobalSequence(0, "Customer", "HS-000031")
             );
 
             for (GlobalSequence gs : globalSequences) {

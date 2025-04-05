@@ -28,9 +28,11 @@ public class Employee extends Person {
     private Position position;
 
 
-    public Employee(String employeeCode, String fullName, String phoneNumber, String address,
-                    Gender gender, String idCardNumber, LocalDate dob, ObjectStatus isActivate,
-                    Position position) {
+    public Employee(
+            String employeeCode, String fullName, String phoneNumber, String address,
+            Gender gender, String idCardNumber, LocalDate dob, ObjectStatus isActivate,
+            Position position
+    ) {
         super(null, fullName, phoneNumber, address, gender, idCardNumber, dob, isActivate);
         this.employeeCode = employeeCode;
         this.position = position;
