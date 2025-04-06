@@ -50,13 +50,13 @@ public class ConvertHelper {
 //                ? Gender.FEMALE : Gender.MALE;
 //    }
 //
-//    public static Position positionConverter(String input) {
-//        if (!input.matches("(MANAGER|RECEPTIONIST)"))
-//            throw new IllegalArgumentException(ErrorMessages.CONVERT_HELPER_INVALID_POSITION);
-//
-//        return input.equalsIgnoreCase("MANAGER")
-//                ? Position.MANAGER : Position.RECEPTIONIST;
-//    }
+    public static Position positionConverter(String input) {
+        if (!input.matches("(MANAGER|RECEPTIONIST)"))
+            throw new IllegalArgumentException(ErrorMessages.CONVERT_HELPER_INVALID_POSITION);
+
+        return input.equalsIgnoreCase("MANAGER")
+                ? Position.MANAGER : Position.RECEPTIONIST;
+    }
 //
 //
 //
