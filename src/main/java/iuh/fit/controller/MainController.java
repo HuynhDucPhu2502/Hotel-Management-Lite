@@ -7,6 +7,7 @@ import iuh.fit.controller.features.TopController;
 
 import iuh.fit.controller.features.customer.CustomerManagerController;
 import iuh.fit.controller.features.customer.CustomerSearchingController;
+import iuh.fit.controller.features.employee.EmployeeManagerController;
 import iuh.fit.controller.features.service.HotelServiceManagerController;
 import iuh.fit.controller.features.service.HotelServiceSearchingController;
 import iuh.fit.models.*;
@@ -202,11 +203,6 @@ public class MainController {
 //                    invoiceManagerController.setupContext(mainController, employee, notificationButtonController);
 //                }
 //
-//                case ShiftManagerController shiftManagerController -> {
-//                    Employee employee = EmployeeDAO.getEmployeeByAccountID(account.getAccountID());
-//                    shiftManagerController.setupContext(employee);
-//                    shiftManagerController.setUpCurrentShift(shift);
-//                }
 //
 //                case EmployeeInformationController employeeInformationController ->
 //                        employeeInformationController.setupContext(account.getEmployee(), mainController);
@@ -238,24 +234,24 @@ public class MainController {
         }
     }
 
-//    public void loadPanelEmployeeManagerController(String fxmlPath, Employee emp){
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-//            AnchorPane layout = loader.load();
-//
-//            EmployeeManagerController controller = loader.getController();
-//
-//            ROOM_BOOKING_LOADED = fxmlPath.contains("RoomBookingPanel");
-//
-//            mainPanel.getChildren().clear();
-//            mainPanel.getChildren().addAll(layout.getChildren());
-//
-//            Platform.runLater(() -> controller.setInformation(emp));
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public void loadPanelEmployeeManagerController(String fxmlPath, Employee emp){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            AnchorPane layout = loader.load();
+
+            EmployeeManagerController controller = loader.getController();
+
+            ROOM_BOOKING_LOADED = fxmlPath.contains("RoomBookingPanel");
+
+            mainPanel.getChildren().clear();
+            mainPanel.getChildren().addAll(layout.getChildren());
+
+            Platform.runLater(() -> controller.setInformation(emp));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 //
 //    public void loadPanelRoomManagerController(String fxmlPath, Room room){
 //        try {
