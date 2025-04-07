@@ -32,7 +32,7 @@ public class Account {
 
     @ToString.Exclude
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "employee_code", nullable = false, unique = true)
+    @JoinColumn(name = "employee_code", referencedColumnName = "employee_code", nullable = false, unique = true)
     private Employee employee;
 
 

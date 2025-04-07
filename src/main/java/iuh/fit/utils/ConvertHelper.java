@@ -69,14 +69,13 @@ public class ConvertHelper {
 //        };
 //    }
 //
-//    public static AccountStatus accountStatusConverter(String input) {
-//        return switch (input.toUpperCase()) {
-//            case "ACTIVE" -> AccountStatus.ACTIVE;
-//            case "INACTIVE" -> AccountStatus.INACTIVE;
-//            case "LOCKED" -> AccountStatus.LOCKED;
-//            default -> throw new IllegalArgumentException(ErrorMessages.CONVERT_HELPER_INVALID_ACCOUNT_STATUS);
-//        };
-//    }
+    public static AccountStatus accountStatusConverter(String input) {
+        return switch (input.toUpperCase()) {
+            case "ACTIVE" -> AccountStatus.ACTIVE;
+            case "LOCKED" -> AccountStatus.LOCKED;
+            default -> throw new IllegalArgumentException(ErrorMessages.CONVERT_HELPER_INVALID_ACCOUNT_STATUS);
+        };
+    }
 //
 //    public static RoomStatus roomStatusConverter(String input) {
 //        return switch (input.toUpperCase()) {

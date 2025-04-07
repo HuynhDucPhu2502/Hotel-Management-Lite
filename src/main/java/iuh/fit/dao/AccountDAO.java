@@ -154,9 +154,10 @@ public class AccountDAO {
     public static Account getAccountByEmployeeID(String employeeID) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             String jpql = """
-                SELECT a FROM Account a
-                WHERE a.employee.employeeCode = :employeeID
-                """;
+            SELECT a FROM Account a
+            JOIN a.employee e
+            WHERE e.employeeCode = :employeeID
+            """;
             TypedQuery<Account> query = em.createQuery(jpql, Account.class);
             query.setParameter("employeeID", employeeID);
             return query.getSingleResult();
@@ -166,14 +167,15 @@ public class AccountDAO {
         }
     }
 
+
     // Tìm tài khoản theo ID chứa từ khóa
-    public static List<Account> findDataByContainsId(String input) {
+    public static List<Account> findDataByContainsEmployeeCode(String input) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
             String jpql = """
-                SELECT a FROM Account a
-                JOIN FETCH a.employee e
-                WHERE LOWER(a.accountID) LIKE :input
-                """;
+            SELECT a FROM Account a
+            JOIN FETCH a.employee e
+            WHERE LOWER(e.employeeCode) LIKE :input
+            """;
             TypedQuery<Account> query = em.createQuery(jpql, Account.class);
             query.setParameter("input", "%" + input.toLowerCase() + "%");
             return query.getResultList();
@@ -182,4 +184,5 @@ public class AccountDAO {
             return null;
         }
     }
+
 }
