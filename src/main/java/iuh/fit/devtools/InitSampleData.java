@@ -23,6 +23,7 @@ public class InitSampleData {
         initCustomerData();
         initEmployeeAndAccountData();
         initServiceCategoryAndHotelService();
+        initRoomCategoryData();
         initGlobalSequenceData();
 
         EntityManagerUtil.close();
@@ -184,8 +185,40 @@ public class InitSampleData {
         }
     }
 
+    // =================================================================
+    // Hàm tạo dữ liệu cho loại phòng
+    // =================================================================
+    public static void initRoomCategoryData() {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        EntityTransaction tx = em.getTransaction();
 
-    // Hàm khởi tạo dữ liệu mẫu cho GlobalSequence
+        try {
+            tx.begin();
+
+            List<RoomCategory> roomCategories = List.of(
+                    new RoomCategory("RC-000001", "Phòng Thường Giường Đơn", 1, 150000.0, 800000.0, ObjectStatus.ACTIVE, null),
+                    new RoomCategory("RC-000002", "Phòng Thường Giường Đôi", 2, 200000.0, 850000.0, ObjectStatus.ACTIVE, null),
+                    new RoomCategory("RC-000003", "Phòng VIP Giường Đơn", 1, 300000.0, 1600000.0, ObjectStatus.ACTIVE, null),
+                    new RoomCategory("RC-000004", "Phòng VIP Giường Đôi", 2, 400000.0, 1800000.0, ObjectStatus.ACTIVE, null)
+            );
+
+            for (RoomCategory rc : roomCategories) {
+                em.persist(rc);
+            }
+
+            tx.commit();
+            System.out.println("Dữ liệu RoomCategory đã được khởi tạo thành công!");
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
+    }
+
+    // =================================================================
+    // Hàm tạo dữ liệu cho Global Sequence
+    // =================================================================
     public static void initGlobalSequenceData() {
         EntityManager em = EntityManagerUtil.getEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -198,7 +231,8 @@ public class InitSampleData {
                     new GlobalSequence(0, "Account", "ACC-000006"),
                     new GlobalSequence(0, "ServiceCategory", "SC-000005"),
                     new GlobalSequence(0, "HotelService", "HS-000021"),
-                    new GlobalSequence(0, "Customer", "CUS-000031")
+                    new GlobalSequence(0, "Customer", "CUS-000031"),
+                    new GlobalSequence(0, "RoomCategory", "RC-000005")
             );
 
             for (GlobalSequence gs : globalSequences) {

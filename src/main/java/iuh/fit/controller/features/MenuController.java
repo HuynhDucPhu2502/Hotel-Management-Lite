@@ -65,11 +65,6 @@ public class MenuController {
     private Button roomBtn;
 
     @FXML
-    private HBox pricingManagerContainer;
-    @FXML
-    private Button pricingManagerButton;
-
-    @FXML
     private HBox roomCategoryManagerContainer;
     @FXML
     private Button roomCategoryManagerButton;
@@ -195,7 +190,7 @@ public class MenuController {
         buttonStates.put("setting", false);
 
         employeeBtn.setOnAction(e -> dropDownMenuEvent(List.of(employeeManagerContainer, accountOfEmployeeManagerContainer, employeeSearchingContainer), arrowUpForEmpBtn, "employee"));
-        roomBtn.setOnAction(e -> dropDownMenuEvent(List.of(pricingManagerContainer, roomCategoryManagerContainer, roomManagerContainer, roomSearchingContainer, roomBookingContainer), arrowUpForRoom, "room"));
+        roomBtn.setOnAction(e -> dropDownMenuEvent(List.of(roomCategoryManagerContainer, roomManagerContainer, roomSearchingContainer, roomBookingContainer), arrowUpForRoom, "room"));
         serviceBtn.setOnAction(e -> dropDownMenuEvent(List.of(serviceCategoryManagerContainer, hotelServiceManagerContainer, hotelServiceSearchingContainer), arrowUpForService, "service"));
         customerBtn.setOnAction(e -> dropDownMenuEvent(List.of(customerManagerContainer, customerSearchingContainer), arrowUpForCustomer, "customer"));
         statisticsBtn.setOnAction(e -> dropDownMenuEvent(List.of(revenueStatisticsContainer, rateUsingRoomContainer), arrowUpForStatistics, "statistics"));
