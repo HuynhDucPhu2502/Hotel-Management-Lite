@@ -148,8 +148,6 @@ public class MenuController {
     @FXML
     private Button revenueStatisticsButton;
     @FXML
-    private HBox rateUsingRoomContainer;
-    @FXML
     private Button rateUsingRoomButton;
     @FXML
     private ImageView arrowUpForStatistics;
@@ -198,7 +196,7 @@ public class MenuController {
         roomBtn.setOnAction(e -> dropDownMenuEvent(List.of(pricingManagerContainer, roomCategoryManagerContainer, roomManagerContainer, roomSearchingContainer, roomBookingContainer), arrowUpForRoom, "room"));
         serviceBtn.setOnAction(e -> dropDownMenuEvent(List.of(serviceCategoryManagerContainer, hotelServiceManagerContainer, hotelServiceSearchingContainer), arrowUpForService, "service"));
         customerBtn.setOnAction(e -> dropDownMenuEvent(List.of(customerManagerContainer, customerSearchingContainer), arrowUpForCustomer, "customer"));
-        statisticsBtn.setOnAction(e -> dropDownMenuEvent(List.of(revenueStatisticsContainer, rateUsingRoomContainer), arrowUpForStatistics, "statistics"));
+        statisticsBtn.setOnAction(e -> dropDownMenuEvent(List.of(revenueStatisticsContainer), arrowUpForStatistics, "statistics"));
         settingBtn.setOnAction(e -> dropDownMenuEvent(List.of(backupSettingContainer), arrowUpForSetting, "setting"));
         helpBtn.setOnAction(e -> openHelpCenter());
     }
