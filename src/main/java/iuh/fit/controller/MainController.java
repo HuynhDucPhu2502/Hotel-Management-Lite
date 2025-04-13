@@ -10,6 +10,7 @@ import iuh.fit.controller.features.customer.CustomerSearchingController;
 import iuh.fit.controller.features.employee.EmployeeManagerController;
 import iuh.fit.controller.features.service.HotelServiceManagerController;
 import iuh.fit.controller.features.service.HotelServiceSearchingController;
+import iuh.fit.controller.features.statistics.StatisticalController;
 import iuh.fit.models.*;
 
 import javafx.application.Platform;
@@ -140,8 +141,12 @@ public class MainController {
         menuController.getCustomerSearchingButton().setOnAction(e -> loadPanel("/iuh/fit/view/features/customer/CustomerSearchingPanel.fxml", this, account));
         menuController.getCustomerManagerButton().setOnAction(e -> loadPanel("/iuh/fit/view/features/customer/CustomerManagerPanel.fxml", this, account));
         // Statistics
-        menuController.getRevenueStatisticsButton().setOnAction(e -> loadPanel("/iuh/fit/view/features/statistics/RevenueStatisticalPanel.fxml", this, account));
-        menuController.getRateUsingRoomButton().setOnAction(e -> loadPanel("/iuh/fit/view/features/statistics/RateUsingRoomStatisticsTab.fxml", this, account));
+        menuController.getRevenueStatisticsButton()
+                .setOnAction(e ->
+                        loadPanel("/iuh/fit/view/features/statistics/RevenueStatisticalPanel.fxml",
+                                this,
+                                account)
+                );
         // Employee Information
         menuController.getEmployeeInformationContainer().setOnMouseClicked(event -> loadPanel("/iuh/fit/view/features/employee_information/EmployeeInformationPanel.fxml", this, account));
 
@@ -162,8 +167,13 @@ public class MainController {
             menuController.getServiceCategoryManagerButton().setOnAction(event -> loadPanel("/iuh/fit/view/features/service/ServiceCategoryManagerPanel.fxml", this, account));
             menuController.getHotelServiceManagerButton().setOnAction(event -> loadPanel("/iuh/fit/view/features/service/HotelServiceManagerPanel.fxml", this, account));
             // Statistics
-            menuController.getRevenueStatisticsButton().setOnAction(e -> loadPanel("/iuh/fit/view/features/statistics/RevenueStatisticalPanel.fxml", this, account));
-            menuController.getRateUsingRoomButton().setOnAction(e -> loadPanel("/iuh/fit/view/features/statistics/RateUsingRoomStatisticsTab.fxml", this, account));
+//            menuController.getRevenueStatisticsButton()
+//                    .setOnAction(e ->
+//                            loadPanel("/iuh/fit/view/features/statistics/RevenueStatisticalPanel.fxml",
+//                                    this,
+//                                    account)
+//                    );
+
             // Settings
 
             menuController.getBackupBtn().setOnAction(event -> loadPanel("/iuh/fit/view/features/backup_restore_database/Backup_Restore_Panel.fxml", this, account));
@@ -193,6 +203,7 @@ public class MainController {
 
                 case CustomerSearchingController customerSearchingController ->
                         customerSearchingController.setupContext(this, account);
+
 
 
 //                case RoomBookingController roomBookingController ->
