@@ -1,16 +1,16 @@
 package iuh.fit.devtools;
 
 import iuh.fit.models.*;
-import iuh.fit.models.enums.AccountStatus;
-import iuh.fit.models.enums.Gender;
-import iuh.fit.models.enums.ObjectStatus;
-import iuh.fit.models.enums.Position;
+import iuh.fit.models.enums.*;
 import iuh.fit.security.PasswordHashing;
 import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.Persistence;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 // =================================================================
@@ -18,21 +18,26 @@ import java.util.List;
 // =================================================================
 public class InitSampleData {
     public static void main(String[] args) {
-        EntityManagerUtil.getEntityManagerFactory();
+        Persistence.createEntityManagerFactory("drop-data-mssql").close();
+        System.out.println("Dữ liệu cũ đã được xóa");
 
-        initCustomerData();
-        initEmployeeAndAccountData();
-        initServiceCategoryAndHotelService();
-        initGlobalSequenceData();
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("init-data-mssql");
+        EntityManager em = emf.createEntityManager();
 
-        EntityManagerUtil.close();
+
+        initCustomerData(em);
+        initEmployeeAndAccountData(em);
+        initServiceCategoryAndHotelService(em);
+        initRoomCategoryAndRoomData(em);
+        initGlobalSequenceData(em);
+
+        emf.close();
     }
 
     // =================================================================
     // Hàm tạo dữ liệu khách hàng
     // =================================================================
-    public static void initCustomerData() {
-        EntityManager em = EntityManagerUtil.getEntityManager();
+    public static void initCustomerData(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
         try {
@@ -76,12 +81,10 @@ public class InitSampleData {
             }
 
             tx.commit();
-            System.out.println("Dữ liệu khách hàng đã được khởi tạo thành công!");
+            System.out.println("Dữ liệu Customer đã được tạo thành công");
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();
-        } finally {
-            em.close();
         }
     }
 
@@ -89,8 +92,7 @@ public class InitSampleData {
     // =================================================================
     // Hàm tạo dữ liệu nhân viên và tài khoản
     // =================================================================
-    public static void initEmployeeAndAccountData() {
-        EntityManager em = EntityManagerUtil.getEntityManager();
+    public static void initEmployeeAndAccountData(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
         try {
@@ -117,11 +119,10 @@ public class InitSampleData {
             }
 
             tx.commit();
+            System.out.println("Dữ liệu Employee và Account đã được tạo thành công");
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();
-        } finally {
-            em.close();
         }
     }
 
@@ -129,8 +130,7 @@ public class InitSampleData {
     // =================================================================
     // Hàm tạo dữ liệu cho danh mục dịch vụ và dịch vụ khách sạn
     // =================================================================
-    public static void initServiceCategoryAndHotelService() {
-        EntityManager em = EntityManagerUtil.getEntityManager();
+    public static void initServiceCategoryAndHotelService(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
         try {
@@ -175,19 +175,70 @@ public class InitSampleData {
             }
 
             tx.commit();
-            System.out.println("Dữ liệu đã được khởi tạo thành công!");
+            System.out.println("Dữ liệu Service Category và Hotel Service đã được tạo thành công");
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();
-        } finally {
-            em.close();
+        }
+    }
+
+    // =================================================================
+    // Hàm tạo dữ liệu cho loại phòng
+    // =================================================================
+    public static void initRoomCategoryAndRoomData(EntityManager em) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            // Tạo danh sách RoomCategory
+            RoomCategory rc1 = new RoomCategory("RC-000001", "Phòng Thường Giường Đơn", 1, 150000.0, 800000.0, ObjectStatus.ACTIVE, null);
+            RoomCategory rc2 = new RoomCategory("RC-000002", "Phòng Thường Giường Đôi", 2, 200000.0, 850000.0, ObjectStatus.ACTIVE, null);
+            RoomCategory rc3 = new RoomCategory("RC-000003", "Phòng VIP Giường Đơn", 1, 300000.0, 1600000.0, ObjectStatus.ACTIVE, null);
+            RoomCategory rc4 = new RoomCategory("RC-000004", "Phòng VIP Giường Đôi", 2, 400000.0, 1800000.0, ObjectStatus.ACTIVE, null);
+
+            em.persist(rc1);
+            em.persist(rc2);
+            em.persist(rc3);
+            em.persist(rc4);
+
+            // Tạo danh sách Room
+            List<Room> rooms = List.of(
+                    new Room("T1101", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc1),
+                    new Room("V2102", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc4),
+                    new Room("T1203", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc1),
+                    new Room("V2304", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc4),
+                    new Room("T1105", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc1),
+                    new Room("V2206", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc4),
+                    new Room("T1307", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc1),
+                    new Room("V2408", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc4),
+                    new Room("T1109", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc1),
+                    new Room("V2210", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc4),
+                    new Room("V2311", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc2),
+                    new Room("V2312", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc2),
+                    new Room("V2313", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc2),
+                    new Room("V2314", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc1),
+                    new Room("V2315", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc1),
+                    new Room("V2316", RoomStatus.AVAILABLE, LocalDateTime.of(2024, 9, 28, 10, 0), ObjectStatus.ACTIVE, rc1)
+            );
+
+            for (Room r : rooms) {
+                em.persist(r);
+            }
+
+            tx.commit();
+            System.out.println("Dữ liệu RoomCategory và Room đã được khởi tạo thành công!");
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
         }
     }
 
 
-    // Hàm khởi tạo dữ liệu mẫu cho GlobalSequence
-    public static void initGlobalSequenceData() {
-        EntityManager em = EntityManagerUtil.getEntityManager();
+    // =================================================================
+    // Hàm tạo dữ liệu cho Global Sequence
+    // =================================================================
+    public static void initGlobalSequenceData(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
         try {
@@ -198,7 +249,8 @@ public class InitSampleData {
                     new GlobalSequence(0, "Account", "ACC-000006"),
                     new GlobalSequence(0, "ServiceCategory", "SC-000005"),
                     new GlobalSequence(0, "HotelService", "HS-000021"),
-                    new GlobalSequence(0, "Customer", "CUS-000031")
+                    new GlobalSequence(0, "Customer", "CUS-000031"),
+                    new GlobalSequence(0, "RoomCategory", "RC-000005")
             );
 
             for (GlobalSequence gs : globalSequences) {
@@ -210,8 +262,6 @@ public class InitSampleData {
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();
-        } finally {
-            em.close();
         }
     }
 

@@ -8,6 +8,7 @@ import iuh.fit.controller.features.TopController;
 import iuh.fit.controller.features.customer.CustomerManagerController;
 import iuh.fit.controller.features.customer.CustomerSearchingController;
 import iuh.fit.controller.features.employee.EmployeeManagerController;
+import iuh.fit.controller.features.room.RoomSearchingController;
 import iuh.fit.controller.features.service.HotelServiceManagerController;
 import iuh.fit.controller.features.service.HotelServiceSearchingController;
 import iuh.fit.controller.features.statistics.StatisticalController;
@@ -160,7 +161,6 @@ public class MainController {
             menuController.getAccountOfEmployeeManagerButton().setOnAction(event -> loadPanel("/iuh/fit/view/features/employee/AccountManagerPanel.fxml", this, account));
             menuController.getEmployeeSearchingButton().setOnAction(event -> loadPanel("/iuh/fit/view/features/employee/EmployeeSearchingPanel.fxml", this, account));
             // Room
-            menuController.getPricingManagerButton().setOnAction(event -> loadPanel("/iuh/fit/view/features/room/PricingManagerPanel.fxml", this, account));
             menuController.getRoomCategoryManagerButton().setOnAction(event -> loadPanel("/iuh/fit/view/features/room/RoomCategoryManagerPanel.fxml", this, account));
             menuController.getRoomManagerButton().setOnAction(event -> loadPanel("/iuh/fit/view/features/room/RoomManagerPanel.fxml", this, account));
             // Hotel Service
@@ -224,9 +224,9 @@ public class MainController {
 //                case EmployeeSearchingController employeeSearchingController ->
 //                        employeeSearchingController.setupContext(this);
 
-//
-//                case RoomSearchingController roomSearchingController ->
-//                        roomSearchingController.setupContext(this, account);
+
+                case RoomSearchingController roomSearchingController ->
+                        roomSearchingController.setupContext(this, account);
 
                 default -> {}
             }

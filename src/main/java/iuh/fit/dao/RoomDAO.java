@@ -1,180 +1,183 @@
 package iuh.fit.dao;
 
-import iuh.fit.models.Account;
 import iuh.fit.models.Room;
 import iuh.fit.models.RoomCategory;
+import iuh.fit.models.enums.ObjectStatus;
+import iuh.fit.models.enums.RoomStatus;
 import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class RoomDAO {
 
-    public static void create(Room room) {
-        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
-            try{
-
-                em.getTransaction().begin();
-                em.persist(room);
-                em.getTransaction().commit();
-
-            }catch(Exception transactionException) {
-
-                transactionException.printStackTrace();
-                em.getTransaction().rollback();
-
-            }
-        }  catch (Exception resourceException) {
-
-            resourceException.printStackTrace();
-
-        }
+    public static List<Room> getRoom() {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        TypedQuery<Room> query = em.createQuery("SELECT r FROM Room r WHERE r.isActivate = :status", Room.class);
+        query.setParameter("status", ObjectStatus.ACTIVE);
+        return query.getResultList();
     }
 
-    public static List<Room> findAll() {
-
-        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
-
-            TypedQuery<Room> query = em.createQuery("select r from Room r", Room.class);
-            return query.getResultList();
-
-        }  catch (Exception resourceException) {
-
-            resourceException.printStackTrace();
-            return Collections.emptyList();
-
-        }
+    public static Room getDataByID(String roomID) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        return em.find(Room.class, roomID);
     }
 
-    public static Room findById(String id) {
-        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
-
-            return em.find(Room.class, id);
-
-        }  catch (Exception resourceException) {
-
-            resourceException.printStackTrace();
-            return null;
-
-        }
+    public static void createData(Room room) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        em.getTransaction().begin();
+        em.persist(room);
+        em.getTransaction().commit();
     }
 
-    public static void update(Room room) {
-        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
-            try{
-
-                em.getTransaction().begin();
-                em.merge(room);
-                em.getTransaction().commit();
-
-            }catch(Exception transactionException) {
-
-                transactionException.printStackTrace();
-                em.getTransaction().rollback();
-
-            }
-        }  catch (Exception resourceException) {
-
-            resourceException.printStackTrace();
-
+    public static void deleteData(String roomID) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        em.getTransaction().begin();
+        Room room = em.find(Room.class, roomID);
+        if (room != null) {
+            room.setIsActivate(ObjectStatus.INACTIVE);
+            em.merge(room);
         }
+        em.getTransaction().commit();
     }
 
-    public static void delete(String id) {
-        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
-            try{
-
-                em.getTransaction().begin();
-
-                em.createQuery("update Room r set r.isActivate = 'INACTIVE' where r.roomID = :id")
-                        .setParameter("id", id)
-                        .executeUpdate();
-
-                em.getTransaction().commit();
-
-            }catch(Exception transactionException) {
-
-                transactionException.printStackTrace();
-                em.getTransaction().rollback();
-
-            }
-        }  catch (Exception resourceException) {
-
-            resourceException.printStackTrace();
-
+    public static void updateData(String oldRoomID, String oldCategory, Room newRoom) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        em.getTransaction().begin();
+        Room oldRoom = em.find(Room.class, oldRoomID);
+        if (oldRoom != null && oldRoom.getRoomCategory().getRoomCategoryID().equals(oldCategory)) {
+            em.remove(oldRoom);
+            em.persist(newRoom);
         }
+        em.getTransaction().commit();
     }
 
-    public static Room search(
+    public static List<Room> findDataByAnyContainsId(String input) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        TypedQuery<Room> query = em.createQuery(
+                "SELECT r FROM Room r WHERE LOWER(r.roomID) LIKE :input AND r.isActivate = :status", Room.class);
+        query.setParameter("input", "%" + input.toLowerCase() + "%");
+        query.setParameter("status", ObjectStatus.ACTIVE);
+        return query.getResultList();
+    }
+
+    public static String roomIDGenerate(int floorNumb, RoomCategory roomCategory) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        String prefix = roomCategory.getRoomCategoryName().contains("Thường") ? "T" : "V";
+        String numbOfBed = String.valueOf(roomCategory.getNumberOfBed());
+        String floorStr = String.valueOf(floorNumb);
+
+        TypedQuery<String> query = em.createQuery(
+                "SELECT r.roomID FROM Room r WHERE SUBSTRING(r.roomID, 3, 1) = :floor", String.class);
+        query.setParameter("floor", floorStr);
+
+        int maxNumb = query.getResultList().stream()
+                .map(id -> Integer.parseInt(id.substring(id.length() - 2)))
+                .max(Integer::compare).orElse(0);
+
+        if (maxNumb >= 99) throw new RuntimeException("Đã vượt quá số phòng trong tầng!");
+        int next = maxNumb + 1;
+        return String.format("%s%s%s%02d", prefix, numbOfBed, floorStr, next);
+    }
+
+    public static void updateRoomStatus(String roomID, RoomStatus newStatus) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        em.getTransaction().begin();
+        Room room = em.find(Room.class, roomID);
+        if (room != null && room.getIsActivate() == ObjectStatus.ACTIVE) {
+            room.setRoomStatus(newStatus);
+            em.merge(room);
+        }
+        em.getTransaction().commit();
+    }
+
+//    public static List<Room> getAvailableRoomsUntil(String roomID, String roomCategoryID, LocalDateTime checkout) {
+//        EntityManager em = EntityManagerUtil.getEntityManager();
+//        TypedQuery<Room> query = em.createQuery("""
+//            SELECT r FROM Room r
+//            WHERE r.roomID != :rid AND r.roomCategory.roomCategoryID = :rcid AND r.isActivate = :status
+//            AND NOT EXISTS (
+//                SELECT 1 FROM ReservationForm rf
+//                WHERE rf.room.roomID = r.roomID
+//                  AND rf.checkInDate < :checkout
+//                  AND FUNCTION('DATEADD', 'HOUR', 2, rf.checkOutDate) > CURRENT_TIMESTAMP
+//            )
+//        """, Room.class);
+//        query.setParameter("rid", roomID);
+//        query.setParameter("rcid", roomCategoryID);
+//        query.setParameter("status", ObjectStatus.ACTIVE);
+//        query.setParameter("checkout", checkout);
+//        return query.getResultList();
+//    }
+
+//    public static List<Room> getAvailableRoomsInDateRange(LocalDateTime checkIn, LocalDateTime checkOut) {
+//        EntityManager em = EntityManagerUtil.getEntityManager();
+//        TypedQuery<Room> query = em.createQuery("""
+//            SELECT r FROM Room r
+//            WHERE r.isActivate = :status AND NOT EXISTS (
+//                SELECT 1 FROM ReservationForm rf
+//                WHERE rf.room.roomID = r.roomID
+//                  AND :checkOut > rf.checkInDate
+//                  AND :checkIn < rf.checkOutDate
+//            )
+//        """, Room.class);
+//        query.setParameter("status", ObjectStatus.ACTIVE);
+//        query.setParameter("checkIn", checkIn);
+//        query.setParameter("checkOut", checkOut);
+//        return query.getResultList();
+//    }
+
+    public static Map<RoomStatus, Long> getRoomStatusCount() {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        TypedQuery<Object[]> query = em.createQuery("""
+            SELECT r.roomStatus, COUNT(r) FROM Room r GROUP BY r.roomStatus
+        """, Object[].class);
+
+        Map<RoomStatus, Long> result = new HashMap<>();
+        for (Object[] row : query.getResultList()) {
+            result.put((RoomStatus) row[0], (Long) row[1]);
+        }
+        return result;
+    }
+
+    public static List<Room> searchRooms(
             String roomID, String roomStatus,
             LocalDateTime lowerBoundDate, LocalDateTime upperBoundDate,
             String roomCategoryID
-    ){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            String newId = "%" + roomID + "%";
-            Query query = em.createQuery(
-                    """
-            select r from Room r
-            left join RoomCategory rc on r.roomCategory = rc
-            where (r.roomID like :newId or :id is null)
-            and (r.roomStatus = :roomStatus or :roomStatus is null)
-            and (r.dateOfCreation >= :lowerBoundDate or :lowerBoundDate is null)
-            and (r.dateOfCreation <= :upperBoundDate or :upperBoundDate is null)
-            and ((:roomCategoryID = 'ALL') OR (rc.roomCategoryID = ? OR (? = 'NULL' AND rc.roomCategoryID IS NULL)))
-            and r.isActivate = 'ACTIVE'
-            """
-            );
-            query.setParameter("newId", newId);
-            query.setParameter("id", roomID);
-            query.setParameter("roomStatus", roomStatus);
-            query.setParameter("lowerBoundDate", lowerBoundDate);
-            query.setParameter("upperBoundDate", upperBoundDate);
+    ) {
+        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
+            String jpql = """
+            SELECT r FROM Room r
+            WHERE (:roomID IS NULL OR r.roomID LIKE CONCAT('%', :roomID, '%'))
+            AND (:roomStatus IS NULL OR r.roomStatus = :roomStatus)
+            AND (:lowerDate IS NULL OR r.dateOfCreation >= :lowerDate)
+            AND (:upperDate IS NULL OR r.dateOfCreation <= :upperDate)
+            AND (
+                :roomCategoryID IS NULL
+                OR :roomCategoryID = 'ALL'
+                OR (r.roomCategory.roomCategoryID = :roomCategoryID)
+                OR (:roomCategoryID = 'NULL' AND r.roomCategory IS NULL)
+            )
+            AND r.isActivate = :status
+        """;
+
+            TypedQuery<Room> query = em.createQuery(jpql, Room.class);
+
+            query.setParameter("roomID", roomID);
+            query.setParameter("roomStatus", roomStatus != null ? RoomStatus.valueOf(roomStatus) : null);
+            query.setParameter("lowerDate", lowerBoundDate);
+            query.setParameter("upperDate", upperBoundDate);
             query.setParameter("roomCategoryID", roomCategoryID);
+            query.setParameter("status", ObjectStatus.ACTIVE);
 
-
-            return (Room) query.getSingleResult();
-        }catch (Exception e){
+            return query.getResultList();
+        } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return new ArrayList<>();
         }
     }
 
-    public static String generateID(int floorNumb, RoomCategory roomCategory){
-        String newRoomID = "";
-        int[] maxIDNumb = {0};
-        try(
-                EntityManager em = EntityManagerUtil.getEntityManager()
-                ){
-            Query query = em.createQuery("""
-            select r.roomID from Room r where substring(r.roomID, 3, 1) = :floorNumb
-            """);
-            query.setParameter("floorNumb", floorNumb);
-            List<String> roomIDs = query.getResultList();
-
-            roomIDs.stream()
-                    .map(roomID -> roomID.substring(roomID.length() - 2))
-                    .forEach(roomNumb -> {
-                        int numb = Integer.parseInt(roomNumb);
-                        maxIDNumb[0] = Math.max(maxIDNumb[0], numb);
-                    });
-            
-            if (maxIDNumb[0] >= 99) {
-                throw new IllegalArgumentException("Số phòng trong 1 tầng đã đạt giới hạn 99 phòng. Không thể tạo thêm phòng mới.");
-            }
-
-            int nextIDNumb = maxIDNumb[0] + 1;
-            String roomCategoryChar = roomCategory.getRoomCategoryName().contains("Phòng Thường") ? "T" : "V";
-            String numbOfBedStr = String.valueOf(roomCategory.getNumberOfBed());
-            String floorNumbStr = String.valueOf(floorNumb);
-
-            newRoomID = String.format("%s%s%s%02d", roomCategoryChar, numbOfBedStr, floorNumbStr, nextIDNumb);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        return newRoomID;
-    }
 }

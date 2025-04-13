@@ -23,6 +23,8 @@ module iuh.fit {
     opens iuh.fit.controller.features.service to javafx.fxml;
     opens iuh.fit.controller.features.customer to javafx.fxml;
     opens iuh.fit.controller.features.employee to javafx.fxml;
+    opens iuh.fit.controller.features.room to javafx.fxml;
+
     opens iuh.fit.devtools to javafx.fxml;
     opens iuh.fit.models to jakarta.persistence, org.hibernate.orm.core;
 
