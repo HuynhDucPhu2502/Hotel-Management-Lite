@@ -8,7 +8,9 @@ import iuh.fit.models.enums.Position;
 import iuh.fit.security.PasswordHashing;
 import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.Persistence;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,22 +20,26 @@ import java.util.List;
 // =================================================================
 public class InitSampleData {
     public static void main(String[] args) {
-        EntityManagerUtil.getEntityManagerFactory();
+        Persistence.createEntityManagerFactory("drop-data-mssql").close();
+        System.out.println("Dữ liệu cũ đã được xóa");
 
-        initCustomerData();
-        initEmployeeAndAccountData();
-        initServiceCategoryAndHotelService();
-        initRoomCategoryData();
-        initGlobalSequenceData();
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("init-data-mssql");
+        EntityManager em = emf.createEntityManager();
 
-        EntityManagerUtil.close();
+
+        initCustomerData(em);
+        initEmployeeAndAccountData(em);
+        initServiceCategoryAndHotelService(em);
+        initRoomCategoryData(em);
+        initGlobalSequenceData(em);
+
+        emf.close();
     }
 
     // =================================================================
     // Hàm tạo dữ liệu khách hàng
     // =================================================================
-    public static void initCustomerData() {
-        EntityManager em = EntityManagerUtil.getEntityManager();
+    public static void initCustomerData(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
         try {
@@ -77,12 +83,10 @@ public class InitSampleData {
             }
 
             tx.commit();
-            System.out.println("Dữ liệu khách hàng đã được khởi tạo thành công!");
+            System.out.println("Dữ liệu Customer đã được tạo thành công");
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();
-        } finally {
-            em.close();
         }
     }
 
@@ -90,8 +94,7 @@ public class InitSampleData {
     // =================================================================
     // Hàm tạo dữ liệu nhân viên và tài khoản
     // =================================================================
-    public static void initEmployeeAndAccountData() {
-        EntityManager em = EntityManagerUtil.getEntityManager();
+    public static void initEmployeeAndAccountData(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
         try {
@@ -118,11 +121,10 @@ public class InitSampleData {
             }
 
             tx.commit();
+            System.out.println("Dữ liệu Employee và Account đã được tạo thành công");
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();
-        } finally {
-            em.close();
         }
     }
 
@@ -130,8 +132,7 @@ public class InitSampleData {
     // =================================================================
     // Hàm tạo dữ liệu cho danh mục dịch vụ và dịch vụ khách sạn
     // =================================================================
-    public static void initServiceCategoryAndHotelService() {
-        EntityManager em = EntityManagerUtil.getEntityManager();
+    public static void initServiceCategoryAndHotelService(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
         try {
@@ -176,20 +177,17 @@ public class InitSampleData {
             }
 
             tx.commit();
-            System.out.println("Dữ liệu đã được khởi tạo thành công!");
+            System.out.println("Dữ liệu Service Category và Hotel Service đã được tạo thành công");
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();
-        } finally {
-            em.close();
         }
     }
 
     // =================================================================
     // Hàm tạo dữ liệu cho loại phòng
     // =================================================================
-    public static void initRoomCategoryData() {
-        EntityManager em = EntityManagerUtil.getEntityManager();
+    public static void initRoomCategoryData(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
         try {
@@ -211,16 +209,13 @@ public class InitSampleData {
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();
-        } finally {
-            em.close();
         }
     }
 
     // =================================================================
     // Hàm tạo dữ liệu cho Global Sequence
     // =================================================================
-    public static void initGlobalSequenceData() {
-        EntityManager em = EntityManagerUtil.getEntityManager();
+    public static void initGlobalSequenceData(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
         try {
@@ -244,8 +239,6 @@ public class InitSampleData {
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();
-        } finally {
-            em.close();
         }
     }
 
