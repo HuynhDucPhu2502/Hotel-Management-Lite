@@ -8,6 +8,7 @@ import iuh.fit.controller.features.TopController;
 import iuh.fit.controller.features.customer.CustomerManagerController;
 import iuh.fit.controller.features.customer.CustomerSearchingController;
 import iuh.fit.controller.features.employee.EmployeeManagerController;
+import iuh.fit.controller.features.room.RoomSearchingController;
 import iuh.fit.controller.features.service.HotelServiceManagerController;
 import iuh.fit.controller.features.service.HotelServiceSearchingController;
 import iuh.fit.models.*;
@@ -212,9 +213,9 @@ public class MainController {
 //                case EmployeeSearchingController employeeSearchingController ->
 //                        employeeSearchingController.setupContext(this);
 
-//
-//                case RoomSearchingController roomSearchingController ->
-//                        roomSearchingController.setupContext(this, account);
+
+                case RoomSearchingController roomSearchingController ->
+                        roomSearchingController.setupContext(this, account);
 
                 default -> {}
             }

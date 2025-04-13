@@ -47,4 +47,9 @@ public class RoomCategory {
     @ToString.Exclude
     private List<Room> rooms;
 
+    @Override
+    public String toString() {
+        return roomCategoryID + ' ' + roomCategoryName;
+    }
+
 }
