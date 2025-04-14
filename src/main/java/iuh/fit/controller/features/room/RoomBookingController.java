@@ -6,6 +6,9 @@ import iuh.fit.controller.MainController;
 //import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomAvailableItemController;
 //import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomOnUseItemController;
 //import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomOverDueController;
+import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomAvailableItemController;
+import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomOnUseItemController;
+import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomOverDueController;
 import iuh.fit.dao.RoomCategoryDAO;
 import iuh.fit.dao.RoomDAO;
 import iuh.fit.dao.RoomWithReservationDAO;
@@ -155,30 +158,31 @@ public class RoomBookingController {
 
         Room room = roomWithReservation.getRoom();
 
+
         switch (room.getRoomStatus()) {
             case AVAILABLE -> {
                 loader = new FXMLLoader(getClass().getResource(
                         "/iuh/fit/view/features/room/creating_reservation_form_panels/RoomAvailableItem.fxml"));
                 roomItem = loader.load();
 
-//                RoomAvailableItemController controller = loader.getController();
-//                controller.setupContext(mainController, employee, roomWithReservation, notificationButtonController);
+                RoomAvailableItemController controller = loader.getController();
+                controller.setupContext(mainController, employee, roomWithReservation);
             }
             case IN_USE -> {
                 loader = new FXMLLoader(getClass().getResource(
                         "/iuh/fit/view/features/room/creating_reservation_form_panels/RoomOnUseItem.fxml"));
                 roomItem = loader.load();
 
-//                RoomOnUseItemController controller = loader.getController();
-//                controller.setupContext(mainController, employee, roomWithReservation, notificationButtonController);
+                RoomOnUseItemController controller = loader.getController();
+                controller.setupContext(mainController, employee, roomWithReservation);
             }
             case OVER_DUE -> {
                 loader = new FXMLLoader(getClass().getResource(
                         "/iuh/fit/view/features/room/creating_reservation_form_panels/RoomOverDueItem.fxml"));
                 roomItem = loader.load();
 
-//                RoomOverDueController controller = loader.getController();
-//                controller.setupContext(mainController, employee, roomWithReservation, notificationButtonController);
+                RoomOverDueController controller = loader.getController();
+                controller.setupContext(mainController, employee, roomWithReservation);
             }
             default -> throw new IllegalStateException("Unexpected value: " + room.getRoomStatus());
         }
