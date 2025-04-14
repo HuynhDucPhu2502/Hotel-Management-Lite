@@ -8,6 +8,7 @@ import iuh.fit.controller.features.TopController;
 import iuh.fit.controller.features.customer.CustomerManagerController;
 import iuh.fit.controller.features.customer.CustomerSearchingController;
 import iuh.fit.controller.features.employee.EmployeeManagerController;
+import iuh.fit.controller.features.room.RoomBookingController;
 import iuh.fit.controller.features.room.RoomSearchingController;
 import iuh.fit.controller.features.service.HotelServiceManagerController;
 import iuh.fit.controller.features.service.HotelServiceSearchingController;
@@ -205,9 +206,8 @@ public class MainController {
                         customerSearchingController.setupContext(this, account);
 
 
-
-//                case RoomBookingController roomBookingController ->
-//                        roomBookingController.setupContext(mainController, account.getEmployee(), notificationButtonController);
+                case RoomBookingController roomBookingController ->
+                        roomBookingController.setupContext(mainController, account.getEmployee());
 //
 //                case InvoiceManagerController invoiceManagerController -> {
 //                    Employee employee = EmployeeDAO.getEmployeeByAccountID(account.getAccountID());

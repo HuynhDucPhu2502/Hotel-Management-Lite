@@ -13,7 +13,8 @@ import lombok.RequiredArgsConstructor;
 public enum RoomStatus {
     AVAILABLE("Phòng trống"),
     IN_USE("Đang sử dụng"),
-    UNAVAILABLE("Không sử dụng");
+    UNAVAILABLE("Không sử dụng"),
+    OVER_DUE("Quá hạn");
 
     public final String roomStatus;
 

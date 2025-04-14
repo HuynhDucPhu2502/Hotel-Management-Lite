@@ -18,21 +18,27 @@ module iuh.fit {
 
     // Opens
     opens iuh.fit to javafx.fxml;
+
     opens iuh.fit.controller to javafx.fxml;
     opens iuh.fit.controller.features to javafx.fxml;
     opens iuh.fit.controller.features.service to javafx.fxml;
     opens iuh.fit.controller.features.customer to javafx.fxml;
     opens iuh.fit.controller.features.employee to javafx.fxml;
     opens iuh.fit.controller.features.room to javafx.fxml;
+    opens iuh.fit.controller.features.room.creating_reservation_form_controllers to javafx.fxml;
+    opens iuh.fit.controller.features.statistics to javafx.fxml;
 
     opens iuh.fit.devtools to javafx.fxml;
-    opens iuh.fit.models to jakarta.persistence, org.hibernate.orm.core;
 
-    opens iuh.fit.controller.features.statistics to javafx.fxml;
-    opens iuh.fit.security to javafx.fxml;
+
+    opens iuh.fit.models to jakarta.persistence, org.hibernate.orm.core;
     opens iuh.fit.models.wrapper to javafx.fxml;
     opens iuh.fit.models.enums to javafx.fxml;
+
+    opens iuh.fit.security to javafx.fxml;
+
     opens iuh.fit.utils to javafx.fxml;
+
     opens iuh.fit.dao to javafx.fxml;
 
 

@@ -31,4 +31,10 @@ public class GlobalConstants {
     public static final String HISTORY_CHECK_IN_ID_PREFIX = "HCI";
     public static final String HISTORY_CHECK_OUT_ID_PREFIX = "HCO";
     public static final String INVOCIE_ID_PREFIX = "INV";
+
+
+    public static final String ROOM_BOOKING_ALL_BTN = "Tổng ";
+    public static final String ROOM_BOOKING_AVAIL_BTN = "Trống ";
+    public static final String ROOM_BOOKING_ON_USE_BTN = "Đang sử dụng ";
+    public static final String ROOM_BOOKING_OVER_DUE_BTN = "Quá hạn  ";
 }

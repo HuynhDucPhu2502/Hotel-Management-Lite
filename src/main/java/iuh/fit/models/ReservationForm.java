@@ -31,6 +31,8 @@ public class ReservationForm {
     @Column(name = "approx_check_out_date", nullable = false)
     private LocalDateTime approxcheckOutTime;
 
+    @Column(name = "booking_deposit", nullable = false)
+    private double bookingDeposit;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "reservation_status", nullable = false)

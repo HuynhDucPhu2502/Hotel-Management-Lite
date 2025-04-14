@@ -41,4 +41,12 @@ public class Room {
     @JoinColumn(name = "room_category_id", nullable = false)
     @ToString.Exclude
     private RoomCategory roomCategory;
+
+    public String getRoomFloorNumber() {
+        return String.valueOf(roomID.charAt(2));
+    }
+
+    public String getRoomNumber() {
+        return roomID.substring(2);
+    }
 }
