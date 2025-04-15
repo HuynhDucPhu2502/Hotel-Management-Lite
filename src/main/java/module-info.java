@@ -11,6 +11,8 @@ module iuh.fit {
     requires static lombok;
     requires net.datafaker;
     requires com.dlsc.gemsfx;
+    requires com.dlsc.unitfx;
+    requires com.calendarfx.view;
 
     // xuat exel
     requires org.apache.poi.poi;
