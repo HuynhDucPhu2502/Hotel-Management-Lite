@@ -179,6 +179,25 @@ public class CustomerDAO {
         }
     }
 
+    public static Customer getDataByIDCardNumber(String input) {
+        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
+            TypedQuery<Customer> query = em.createQuery(
+                    """
+                    SELECT c FROM Customer c 
+                    WHERE LOWER(c.idCardNumber) = :input 
+                    AND c.isActivate = :status
+                    """, Customer.class);
+            query.setParameter("input", input.toLowerCase());
+            query.setParameter("status", ObjectStatus.ACTIVE);
+
+            return query.getResultStream().findFirst().orElse(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     public static List<Customer> searchCustomer(
             String customerID, String fullName, String phoneNumber,
             String address, Gender gender, String idCardNumber, LocalDate dob

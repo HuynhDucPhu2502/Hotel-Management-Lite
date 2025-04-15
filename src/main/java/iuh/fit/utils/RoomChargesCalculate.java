@@ -70,4 +70,9 @@ public class RoomChargesCalculate {
 
         return res;
     }
+
+    public static boolean isStayDurationZeroOrNegative(LocalDateTime checkInTime, LocalDateTime checkOutTime) {
+        double value = calculateStayLengthToDouble(checkInTime, checkOutTime).get("value");
+        return value <= 0;
+    }
 }

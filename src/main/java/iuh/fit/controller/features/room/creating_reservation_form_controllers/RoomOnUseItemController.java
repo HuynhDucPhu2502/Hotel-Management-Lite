@@ -108,11 +108,11 @@ public class RoomOnUseItemController {
                     getClass().getResource("/iuh/fit/view/features/room/creating_reservation_form_panels/CreateReservationFormPanel.fxml"));
             AnchorPane layout = loader.load();
 
-//            CreateReservationFormController createReservationFormController = loader.getController();
-//            createReservationFormController.setupContext(
-//                    mainController, employee, roomWithReservation,
-//                    null, null, null, notificationButtonController
-//            );
+            CreateReservationFormController createReservationFormController = loader.getController();
+            createReservationFormController.setupContext(
+                    mainController, employee, roomWithReservation,
+                    null, null, null
+            );
 
             mainController.getMainPanel().getChildren().clear();
             mainController.getMainPanel().getChildren().addAll(layout.getChildren());
