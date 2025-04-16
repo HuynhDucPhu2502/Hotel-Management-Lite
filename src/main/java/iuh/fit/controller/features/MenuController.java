@@ -148,17 +148,6 @@ public class MenuController {
     private ImageView arrowUpForStatistics;
 
 //  =====================================================
-    // Settings
-    @FXML
-    private Button settingBtn;
-    @FXML
-    private HBox backupSettingContainer;
-    @FXML
-    private Button backupBtn;
-    @FXML
-    private ImageView arrowUpForSetting;
-
-//  =====================================================
     // Help
     @FXML
     private Button helpBtn;
@@ -192,7 +181,6 @@ public class MenuController {
         serviceBtn.setOnAction(e -> dropDownMenuEvent(List.of(serviceCategoryManagerContainer, hotelServiceManagerContainer, hotelServiceSearchingContainer), arrowUpForService, "service"));
         customerBtn.setOnAction(e -> dropDownMenuEvent(List.of(customerManagerContainer, customerSearchingContainer), arrowUpForCustomer, "customer"));
         statisticsBtn.setOnAction(e -> dropDownMenuEvent(List.of(revenueStatisticsContainer), arrowUpForStatistics, "statistics"));
-        settingBtn.setOnAction(e -> dropDownMenuEvent(List.of(backupSettingContainer), arrowUpForSetting, "setting"));
         helpBtn.setOnAction(e -> openHelpCenter());
     }
 
