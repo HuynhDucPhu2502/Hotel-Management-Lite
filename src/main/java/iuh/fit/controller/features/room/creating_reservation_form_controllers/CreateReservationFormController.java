@@ -9,24 +9,20 @@ import com.dlsc.gemsfx.daterange.DateRange;
 import com.dlsc.gemsfx.daterange.DateRangePicker;
 import com.dlsc.gemsfx.daterange.DateRangePreset;
 import iuh.fit.controller.MainController;
-//import iuh.fit.controller.features.room.ReservationFormDialogViewController;
 import iuh.fit.controller.features.room.RoomBookingController;
 import iuh.fit.controller.features.room.checking_in_reservation_list_controllers.ReservationListController;
+import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
 //import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 //import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
-//import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
 import iuh.fit.dao.CustomerDAO;
 //import iuh.fit.dao.ReservationFormDAO;
-//import iuh.fit.dao.misc.ShiftDetailDAO;
 import iuh.fit.dao.ReservationFormDAO;
 import iuh.fit.models.Customer;
 import iuh.fit.models.Employee;
-//import iuh.fit.models.ReservationForm;
 import iuh.fit.models.ReservationForm;
 import iuh.fit.models.Room;
 import iuh.fit.models.enums.RoomStatus;
 import iuh.fit.models.wrapper.RoomWithReservation;
-//import iuh.fit.utils.Calculator;
 import iuh.fit.utils.ErrorMessages;
 import iuh.fit.utils.GlobalConstants;
 import iuh.fit.utils.RegexChecker;
@@ -41,7 +37,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
-import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
@@ -52,7 +47,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 public class CreateReservationFormController {
     // ==================================================================================================================
@@ -188,7 +182,7 @@ public class CreateReservationFormController {
     }
 
     private void navigateToServiceOrderingPanel() {
-//        loadPanel("/iuh/fit/view/features/room/ordering_services_panels/ServiceOrderingPanel.fxml", RoomChangingController.class);
+        loadPanel("/iuh/fit/view/features/room/ordering_services_panels/ServiceOrderingPanel.fxml", ServiceOrderingController.class);
     }
 
     private void navigateToCheckingOutReservationFormPanel() {
@@ -207,8 +201,8 @@ public class CreateReservationFormController {
                 rlc.setupContext(mainController, employee, roomWithReservation);
 //            else if (controller instanceof RoomChangingController rcc)
 //                rcc.setupContext(mainController, employee, roomWithReservation, notificationButtonController);
-//            else if (controller instanceof ServiceOrderingController soc)
-//                soc.setupContext(mainController, employee, roomWithReservation, notificationButtonController);
+            else if (controller instanceof ServiceOrderingController soc)
+                soc.setupContext(mainController, employee, roomWithReservation);
 //            else if (controller instanceof CheckingOutReservationFormController corfc)
 //                corfc.setupContext(mainController, employee, roomWithReservation, notificationButtonController);
 

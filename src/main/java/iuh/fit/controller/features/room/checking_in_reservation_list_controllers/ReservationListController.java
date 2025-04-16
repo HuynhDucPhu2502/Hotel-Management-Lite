@@ -7,6 +7,7 @@ import iuh.fit.controller.features.room.RoomBookingController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
 //import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
 //import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
+import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
 import iuh.fit.dao.ReservationFormDAO;
 import iuh.fit.models.Employee;
 import iuh.fit.models.ReservationForm;
@@ -100,7 +101,7 @@ public class ReservationListController {
             }
             case IN_USE -> {
 //                navigateToRoomChangingBtn.setOnAction(e -> navigateToRoomChangingPanel());
-//                navigateToServiceOrderingBtn.setOnAction(e -> navigateToServiceOrderingPanel());
+                navigateToServiceOrderingBtn.setOnAction(e -> navigateToServiceOrderingPanel());
 //                navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
             }
         }
@@ -166,22 +167,22 @@ public class ReservationListController {
 //        }
 //    }
 //
-//    private void navigateToServiceOrderingPanel() {
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/ordering_services_panels/ServiceOrderingPanel.fxml"));
-//            AnchorPane layout = loader.load();
-//
-//            ServiceOrderingController serviceOrderingController = loader.getController();
-//            serviceOrderingController.setupContext(
-//                    mainController, employee, roomWithReservation, notificationButtonController
-//            );
-//
-//            mainController.getMainPanel().getChildren().clear();
-//            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private void navigateToServiceOrderingPanel() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/ordering_services_panels/ServiceOrderingPanel.fxml"));
+            AnchorPane layout = loader.load();
+
+            ServiceOrderingController serviceOrderingController = loader.getController();
+            serviceOrderingController.setupContext(
+                    mainController, employee, roomWithReservation
+            );
+
+            mainController.getMainPanel().getChildren().clear();
+            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 //
 //    private void navigateToCheckingOutReservationFormPanel() {
 //        try {
