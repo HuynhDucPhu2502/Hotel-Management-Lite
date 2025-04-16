@@ -4,11 +4,9 @@ import com.dlsc.gemsfx.DialogPane;
 import iuh.fit.controller.MainController;
 import iuh.fit.controller.features.room.RoomBookingController;
 import iuh.fit.dao.ReservationFormDAO;
+import iuh.fit.dao.ReservationRoomDetailDAO;
 import iuh.fit.dao.RoomWithReservationDAO;
-import iuh.fit.models.Customer;
-import iuh.fit.models.Employee;
-import iuh.fit.models.ReservationForm;
-import iuh.fit.models.Room;
+import iuh.fit.models.*;
 import iuh.fit.models.enums.RoomStatus;
 import iuh.fit.models.wrapper.RoomWithReservation;
 import iuh.fit.utils.RoomChargesCalculate;
@@ -42,7 +40,7 @@ public class ReservationFormDetailsController {
 
     @FXML
     private Label customerIDLabel, customerFullnameLabel, cusomerPhoneNumberLabel,
-            customerEmailLabel, customerIDCardNumberLabel;
+            customerIDCardNumberLabel;
 
     @FXML
     private Label employeeFullNameLabel, employeePositionLabel, employeeIDLabel,
@@ -99,8 +97,8 @@ public class ReservationFormDetailsController {
 
         checkInBtn.setDisable(!now.isAfter(checkInTime) || !now.isBefore(checkInTimePlus2Hours));
         earlyCheckInBtn.setDisable(!(now.isAfter(earlyCheckInStart) && now.isBefore(earlyCheckInEnd)));
-//        checkInBtn.setOnAction(e -> handleCheckIn());
-//        earlyCheckInBtn.setOnAction(e -> handleEarlyCheckin());
+        checkInBtn.setOnAction(e -> handleCheckIn());
+        earlyCheckInBtn.setOnAction(e -> handleEarlyCheckin());
         deleteReservationFormBtn.setOnAction(e -> handleDeleteAction());
 
         reservationFormBtn.setText("Phiếu đặt phòng " + reservationForm.getReservationID());
@@ -221,40 +219,40 @@ public class ReservationFormDetailsController {
     // ==================================================================================================================
     // 6. Xử lý chức năng CheckIn
     // ==================================================================================================================
-//    private void handleCheckIn() {
-//        try {
-//            RoomReservationDetailDAO.roomCheckingIn(
-//                    reservationForm.getReservationID(),
-//                    employee.getEmployeeID()
-//            );
-//
-//            roomWithReservation = RoomWithReservationDAO
-//                    .getRoomWithReservationByID(reservationForm.getReservationID(), roomWithReservation.getRoom().getRoomID());
-//
-//            navigateToReservationListPanel("Check-in thành công tại phòng đã đặt.");
-//        } catch (Exception e) {
-//            navigateToReservationListPanel(e.getMessage());
-//        }
-//    }
-//
-//    private void handleEarlyCheckin() {
-//        if (roomWithReservation.getRoom().getRoomStatus() == RoomStatus.AVAILABLE) {
-//            try {
-//                RoomReservationDetailDAO.roomEarlyCheckingIn(
-//                        reservationForm.getReservationID(),
-//                        employee.getEmployeeID()
-//                );
-//
-//                roomWithReservation = RoomWithReservationDAO
-//                        .getRoomWithReservationByID(reservationForm.getReservationID(), roomWithReservation.getRoom().getRoomID());
-//
-//                navigateToReservationListPanel("Check-in thành công tại phòng đã đặt.");
-//            } catch (Exception e) {
-//                navigateToReservationListPanel(e.getMessage());
-//            }
-//        } else {
-//            navigateToReservationListPanel("Phòng đang được sử dụng.");
-//        }
-//    }
+    private void handleCheckIn() {
+        try {
+            ReservationRoomDetailDAO.roomCheckingIn(
+                    reservationForm.getReservationID(),
+                    employee.getEmployeeCode()
+            );
+
+            roomWithReservation = RoomWithReservationDAO
+                    .getRoomWithReservationByID(reservationForm.getReservationID(), roomWithReservation.getRoom().getRoomID());
+
+            navigateToReservationListPanel("Check-in thành công tại phòng đã đặt.");
+        } catch (Exception e) {
+            navigateToReservationListPanel(e.getMessage());
+        }
+    }
+
+    private void handleEarlyCheckin() {
+        if (roomWithReservation.getRoom().getRoomStatus() == RoomStatus.AVAILABLE) {
+            try {
+                ReservationRoomDetailDAO.roomEarlyCheckingIn(
+                        reservationForm.getReservationID(),
+                        employee.getEmployeeCode()
+                );
+
+                roomWithReservation = RoomWithReservationDAO
+                        .getRoomWithReservationByID(reservationForm.getReservationID(), roomWithReservation.getRoom().getRoomID());
+
+                navigateToReservationListPanel("Check-in thành công tại phòng đã đặt.");
+            } catch (Exception e) {
+                navigateToReservationListPanel(e.getMessage());
+            }
+        } else {
+            navigateToReservationListPanel("Phòng đang được sử dụng.");
+        }
+    }
 
 }

@@ -251,7 +251,9 @@ public class InitSampleData {
                     new GlobalSequence(0, "HotelService", "HS-000021"),
                     new GlobalSequence(0, "Customer", "CUS-000031"),
                     new GlobalSequence(0, "RoomCategory", "RC-000005"),
-                    new GlobalSequence(0, "ReservationForm", "RF-000001")
+                    new GlobalSequence(0, "ReservationForm", "RF-000001"),
+                    new GlobalSequence(0, "ReservationRoomDetail", "RRD-000001"),
+                    new GlobalSequence(0, "HistoryCheckin", "HCI-000001")
             );
 
             for (GlobalSequence gs : globalSequences) {

@@ -52,20 +52,14 @@ public class ReservationForm {
 
     @OneToOne(
             mappedBy = "reservationForm",
-            cascade = {
-                    CascadeType.MERGE,
-                    CascadeType.PERSIST
-            },
+            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private HistoryCheckOut historyCheckOut;
 
     @OneToOne(
             mappedBy = "reservationForm",
-            cascade = {
-                    CascadeType.MERGE,
-                    CascadeType.PERSIST
-            },
+            cascade = CascadeType.ALL,
             orphanRemoval = true
     )
     private HistoryCheckIn historyCheckIn;

@@ -15,6 +15,7 @@ import iuh.fit.controller.features.service.HotelServiceSearchingController;
 import iuh.fit.controller.features.statistics.StatisticalController;
 import iuh.fit.models.*;
 
+import iuh.fit.models.enums.Position;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -111,23 +112,20 @@ public class MainController {
     }
 
     private void setupMenuButtons() {
-//        Position position = account.getEmployee().getPosition();
+        Position position = account.getEmployee().getPosition();
         informationBtn = menuController.getInformationBtn();
         handleTooltips();
 
         // Tắt các button menu không thuộc về lễ tân
-//        if (position.equals(Position.RECEPTIONIST)) {
-//            menuController.getEmployeeManagerButton().setDisable(true);
-//            menuController.getAccountOfEmployeeManagerButton().setDisable(true);
-//            menuController.getShiftManagerButton().setDisable(true);
-//            menuController.getEmployeeSearchingButton().setDisable(true);
-//            menuController.getPricingManagerButton().setDisable(true);
-//            menuController.getRoomCategoryManagerButton().setDisable(true);
-//            menuController.getRoomManagerButton().setDisable(true);
-//            menuController.getServiceCategoryManagerButton().setDisable(true);
-//            menuController.getHotelServiceManagerButton().setDisable(true);
-//            menuController.getBackupBtn().setDisable(true);
-//        }
+        if (position.equals(Position.RECEPTIONIST)) {
+            menuController.getEmployeeManagerButton().setDisable(true);
+            menuController.getAccountOfEmployeeManagerButton().setDisable(true);
+            menuController.getEmployeeSearchingButton().setDisable(true);
+            menuController.getRoomCategoryManagerButton().setDisable(true);
+            menuController.getRoomManagerButton().setDisable(true);
+            menuController.getServiceCategoryManagerButton().setDisable(true);
+            menuController.getHotelServiceManagerButton().setDisable(true);
+        }
 
         // xử lý sự kiện hiện giao diện cho cả lễ tân và quản lý
         // Dashboard
