@@ -20,7 +20,6 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextFlow?>
 
 <AnchorPane minHeight="1000.0" minWidth="1200.0" stylesheets="@../../../../styles/Button.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController">
    <children>
@@ -434,35 +433,7 @@
                                                 <TextField fx:id="customerIDCardNumberTextField" layoutX="-62.0" layoutY="13.0" style="-fx-border-color: gray; -fx-border-radius: 5; -fx-background-color: white;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                              </children>
                                           </AnchorPane>
-                                          <AnchorPane GridPane.columnIndex="3">
-                                             <children>
-                                                <HBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                   <children>
-                                                      <Button fx:id="createCustomerNavigateLabel" mnemonicParsing="false" style="-fx-background-color: transparent;">
-                                                         <graphic>
-                                                            <TextFlow>
-                                                               <children>
-                                                                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Không tìm thấy khách hàng? ">
-                                                                     <font>
-                                                                        <Font size="16.0" />
-                                                                     </font>
-                                                                  </Text>
-                                                                  <Text fill="BLUE" stroke="BLACK" strokeType="OUTSIDE" strokeWidth="0.0" text=" Tạo khách hàng" wrappingWidth="296.640625">
-                                                                     <font>
-                                                                        <Font size="16.0" />
-                                                                     </font>
-                                                                  </Text>
-                                                               </children>
-                                                            </TextFlow>
-                                                         </graphic>
-                                                         <cursor>
-                                                            <Cursor fx:constant="HAND" />
-                                                         </cursor>
-                                                      </Button>
-                                                   </children>
-                                                </HBox>
-                                             </children>
-                                          </AnchorPane>
+                                          <AnchorPane GridPane.columnIndex="3" />
                                           <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
                                              <children>
                                                 <TextField fx:id="customerFullnameTextField" editable="false" layoutX="8.0" layoutY="1.0" style="-fx-background-color: rgb(211, 211, 211);" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

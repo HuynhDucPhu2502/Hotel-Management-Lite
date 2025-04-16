@@ -14,6 +14,7 @@ module iuh.fit {
     requires com.dlsc.unitfx;
     requires com.calendarfx.view;
 
+
     // xuat exel
     requires org.apache.poi.poi;
     requires org.apache.poi.ooxml;
@@ -28,6 +29,7 @@ module iuh.fit {
     opens iuh.fit.controller.features.employee to javafx.fxml;
     opens iuh.fit.controller.features.room to javafx.fxml;
     opens iuh.fit.controller.features.room.creating_reservation_form_controllers to javafx.fxml;
+    opens iuh.fit.controller.features.room.checking_in_reservation_list_controllers to javafx.fxml;
     opens iuh.fit.controller.features.statistics to javafx.fxml;
 
     opens iuh.fit.devtools to javafx.fxml;

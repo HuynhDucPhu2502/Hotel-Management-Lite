@@ -73,6 +73,21 @@ public class ReservationForm {
     @OneToMany(mappedBy = "reservationForm")
     private Set<RoomUsageService> roomUsageService;
 
+    public ReservationForm(LocalDateTime reservationDate,
+                           LocalDateTime approxcheckInDate,
+                           LocalDateTime approxcheckOutTime,
+                           Room room,
+                           Customer customer,
+                           Employee employee) {
+        this.reservationDate = reservationDate;
+        this.approxcheckInDate = approxcheckInDate;
+        this.approxcheckOutTime = approxcheckOutTime;
+        this.room = room;
+        this.customer = customer;
+        this.employee = employee;
+    }
+
+
     @Override
     public String toString() {
         return "ReservationForm{" +
