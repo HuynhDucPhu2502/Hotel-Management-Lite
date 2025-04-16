@@ -236,23 +236,27 @@ public class ReservationFormDetailsController {
     }
 
     private void handleEarlyCheckin() {
-        if (roomWithReservation.getRoom().getRoomStatus() == RoomStatus.AVAILABLE) {
-            try {
-                ReservationRoomDetailDAO.roomEarlyCheckingIn(
-                        reservationForm.getReservationID(),
-                        employee.getEmployeeCode()
-                );
+        try {
+            String result = ReservationRoomDetailDAO.roomEarlyCheckingIn(
+                    reservationForm.getReservationID(),
+                    employee.getEmployeeCode()
+            );
 
+            if ("ROOM_CHECKING_IN_SUCCESS".equals(result)) {
                 roomWithReservation = RoomWithReservationDAO
                         .getRoomWithReservationByID(reservationForm.getReservationID(), roomWithReservation.getRoom().getRoomID());
-
                 navigateToReservationListPanel("Check-in thành công tại phòng đã đặt.");
-            } catch (Exception e) {
-                navigateToReservationListPanel(e.getMessage());
+            } else if ("ROOM_CHECKING_IN_TIME_INVALID".equals(result)) {
+                navigateToReservationListPanel("Không nằm trong khoảng thời gian nhận phòng sớm.");
+            } else if ("ROOM_CHECKING_IN_INVALID_RESERVATION".equals(result)) {
+                navigateToReservationListPanel("Phiếu đặt phòng không hợp lệ hoặc đã nhận phòng.");
+            } else {
+                navigateToReservationListPanel("Đã xảy ra lỗi không xác định.");
             }
-        } else {
-            navigateToReservationListPanel("Phòng đang được sử dụng.");
+        } catch (Exception e) {
+            navigateToReservationListPanel(e.getMessage());
         }
     }
+
 
 }

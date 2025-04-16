@@ -163,17 +163,22 @@ public class ReservationRoomDetailDAO {
 
         em.getTransaction().begin();
 
+        // HistoryCheckIn
         String nextHCI = em.createQuery("SELECT gs.nextID FROM GlobalSequence gs WHERE gs.tableName = 'HistoryCheckin'", String.class).getSingleResult();
         int nextHCINum = Integer.parseInt(nextHCI.substring(4)) + 1;
         String newHCIID = "HCI-" + String.format("%06d", nextHCINum);
 
-        HistoryCheckIn checkIn = new HistoryCheckIn(nextHCI, now, form);
+        HistoryCheckIn checkIn = new HistoryCheckIn();
+        checkIn.setRoomHistoryCheckinID(nextHCI);
+        checkIn.setCheckInDate(now);
+        checkIn.setReservationForm(form);
+
         em.persist(checkIn);
-        form.setHistoryCheckIn(checkIn);
-
         em.createQuery("UPDATE GlobalSequence gs SET gs.nextID = :newID WHERE gs.tableName = 'HistoryCheckin'")
-                .setParameter("newID", newHCIID).executeUpdate();
+                .setParameter("newID", newHCIID)
+                .executeUpdate();
 
+        // ReservationRoomDetail
         String nextRRD = em.createQuery("SELECT gs.nextID FROM GlobalSequence gs WHERE gs.tableName = 'ReservationRoomDetail'", String.class).getSingleResult();
         int nextRRDNum = Integer.parseInt(nextRRD.substring(4)) + 1;
         String newRRDID = "RRD-" + String.format("%06d", nextRRDNum);
@@ -183,16 +188,21 @@ public class ReservationRoomDetailDAO {
         rrd.setDateChanged(now);
         rrd.setRoom(form.getRoom());
         rrd.setReservationForm(form);
+
         em.persist(rrd);
-
         em.createQuery("UPDATE GlobalSequence gs SET gs.nextID = :newID WHERE gs.tableName = 'ReservationRoomDetail'")
-                .setParameter("newID", newRRDID).executeUpdate();
+                .setParameter("newID", newRRDID)
+                .executeUpdate();
 
+        // Update trạng thái
+        form.setHistoryCheckIn(checkIn);
         form.setApproxcheckInDate(now);
-        form.setBookingDeposit(form.getBookingDeposit() + 50000);
+        form.setBookingDeposit(form.getBookingDeposit() - 50000);
         form.getRoom().setRoomStatus(RoomStatus.IN_USE);
 
         em.getTransaction().commit();
+
         return "ROOM_CHECKING_IN_SUCCESS";
     }
+
 }
