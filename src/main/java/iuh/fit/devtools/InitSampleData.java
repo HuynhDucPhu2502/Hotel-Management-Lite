@@ -11,6 +11,7 @@ import jakarta.persistence.Persistence;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 // =================================================================
@@ -30,9 +31,171 @@ public class InitSampleData {
         initServiceCategoryAndHotelService(em);
         initRoomCategoryAndRoomData(em);
         initGlobalSequenceData(em);
+        initReservationFormData(em);
+        initInvoiceData(em);
+        initRoomUsageServiceData(em);
 
         emf.close();
     }
+
+    public static void initRoomUsageServiceData(EntityManager em) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            // Lấy danh sách ReservationForm và HotelService từ cơ sở dữ liệu
+            List<ReservationForm> reservationForms = em.createQuery("SELECT rf FROM ReservationForm rf", ReservationForm.class)
+                    .getResultList();
+            List<HotelService> hotelServices = em.createQuery("SELECT hs FROM HotelService hs", HotelService.class)
+                    .getResultList();
+
+            if (reservationForms.isEmpty() || hotelServices.isEmpty()) {
+                System.out.println("Không tìm thấy ReservationForm hoặc HotelService trong cơ sở dữ liệu.");
+                tx.rollback();
+                return;
+            }
+
+            List<RoomUsageService> roomUsageServices = new ArrayList<>();
+
+            // Tạo 30 bản ghi RoomUsageService
+            for (int i = 0; i < 30; i++) {
+                ReservationForm reservationForm = reservationForms.get(i % reservationForms.size());
+                HotelService hotelService = hotelServices.get(i % hotelServices.size());
+
+                // Giả lập dữ liệu
+                double unitPrice = 50000.0 + (i * 1000.0); // Giá dịch vụ tăng dần từ 50,000
+                int quantity = 1 + (i % 5); // Số lượng từ 1 đến 5, tuần hoàn
+                LocalDateTime dayAdded = LocalDateTime.now().minusDays(10).plusDays(i); // Ngày thêm, tăng dần
+
+                // Tạo mã theo định dạng RUS-XXXXXX
+                String id = String.format("RUS-%06d", i + 1);
+
+                RoomUsageService roomUsageService = new RoomUsageService(
+                        id,
+                        unitPrice,
+                        quantity,
+                        dayAdded,
+                        hotelService,
+                        reservationForm
+                );
+
+                roomUsageServices.add(roomUsageService);
+                em.persist(roomUsageService);
+            }
+
+            tx.commit();
+            System.out.println("Dữ liệu RoomUsageService đã được tạo thành công");
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        }
+    }
+    public static void initReservationFormData(EntityManager em) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            List<Customer> customers = em.createQuery("SELECT c FROM Customer c", Customer.class).getResultList();
+            List<Employee> employees = em.createQuery("SELECT e FROM Employee e", Employee.class).getResultList();
+            List<Room> rooms = em.createQuery("SELECT r FROM Room r", Room.class).getResultList();
+
+            List<ReservationForm> forms = new ArrayList<>();
+
+            for (int i = 0; i < 30; i++) {
+                Customer customer = customers.get(i % customers.size());
+                Employee employee = employees.get(i % employees.size());
+                Room room = rooms.get(i % rooms.size());
+
+                LocalDateTime reservationDate = LocalDateTime.now().minusDays(15).plusDays(i);
+                LocalDateTime approxCheckInDate = reservationDate.plusDays(3);
+                LocalDateTime approxCheckOutTime = approxCheckInDate.plusDays(2);
+
+                // Gán ID thủ công dạng RF-XXXXXX
+                String id = String.format("RF-%06d", i + 1);
+
+                ReservationForm form = new ReservationForm(
+                        id,
+                        reservationDate,
+                        approxCheckInDate,
+                        approxCheckOutTime,
+                        0,
+                        ReservationStatus.RESERVATION,
+                        room,
+                        customer,
+                        employee
+                );
+
+                forms.add(form);
+                em.persist(form);
+            }
+
+            tx.commit();
+            System.out.println("Dữ liệu ReservationForm đã được tạo thành công");
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        }
+    }
+    public static void initInvoiceData(EntityManager em) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            // Lấy danh sách ReservationForm từ cơ sở dữ liệu
+            List<ReservationForm> reservationForms = em.createQuery("SELECT rf FROM ReservationForm rf", ReservationForm.class)
+                    .getResultList();
+
+            if (reservationForms.isEmpty()) {
+                System.out.println("Không tìm thấy ReservationForm nào trong cơ sở dữ liệu.");
+                tx.rollback();
+                return;
+            }
+
+            List<Invoice> invoices = new ArrayList<>();
+
+            // Tạo 30 bản ghi Invoice
+            for (int i = 0; i < 30; i++) {
+                ReservationForm reservationForm = reservationForms.get(i % reservationForms.size());
+
+                // Giả lập dữ liệu cho roomCharges và serviceCharges
+                double roomCharges = 500000.0 + (i * 10000.0); // Tăng dần từ 500,000
+                double serviceCharges = 100000.0 + (i * 5000.0); // Tăng dần từ 100,000
+                double subTotal = roomCharges + serviceCharges;
+                double taxCharge = subTotal * 0.1;
+                double totalDue = subTotal + taxCharge;
+
+                // Tạo ngày lập hóa đơn
+                LocalDateTime invoiceDate = LocalDateTime.now().minusDays(10).plusDays(i);
+
+                // Gán ID thủ công dạng INV-XXXXXX
+                String id = String.format("INV-%06d", i + 1);
+
+                Invoice invoice = new Invoice(
+                        id,
+                        invoiceDate,
+                        roomCharges,
+                        serviceCharges,
+                        subTotal,
+                        taxCharge,
+                        totalDue,
+                        reservationForm
+                );
+
+                invoices.add(invoice);
+                em.persist(invoice);
+            }
+
+            tx.commit();
+            System.out.println("Dữ liệu Invoice đã được tạo thành công");
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        }
+    }
+
 
     // =================================================================
     // Hàm tạo dữ liệu khách hàng
