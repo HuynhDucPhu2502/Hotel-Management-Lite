@@ -12,6 +12,7 @@ import iuh.fit.models.wrapper.ServiceDisplayOnTable;
 import iuh.fit.security.PreferencesKey;
 import iuh.fit.utils.EditDateRangePicker;
 //import iuh.fit.utils.ExportFileHelper;
+import iuh.fit.utils.ExportFileHelper;
 import iuh.fit.utils.QuarterChecker;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -102,9 +103,9 @@ public class ServiceRevenueStatisticsTabController implements Initializable {
         loadDataToEmployeeNameCombobox();
         loadDataToComboboxOfYear();
         loadDataToComboboxOfQuarter();
-//        loadDataToCategoryServiceCombobox();
+        loadDataToCategoryServiceCombobox();
         dateRangeAction();
-//        statisByDateRangeOption();
+        statisByDateRangeOption();
         paginationOnAction();
     }
 
@@ -298,85 +299,85 @@ public class ServiceRevenueStatisticsTabController implements Initializable {
 
     @FXML
     void exportExcelFile() throws IOException {
-//        TableView<ServiceDisplayOnTable> clone = cloneTableView(serviceDataTableView);
-//        clone.getItems().setAll(currentData);
-//        if (clone.getItems().isEmpty()){
-//            showMessages("Cảnh báo",
-//                    "Không có dữ liệu để xuất file excel!!!",
-//                    "Hãy chọn OK để để hủy.",
-//                    Alert.AlertType.WARNING);
-//            return;
-//        }
-//
-//        boolean forEmployee = employeeNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_EMPLOYEE_NAME);
-//        boolean forService = serviceCategoryNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_SERVICE_CATEGORY);
-//        boolean yearCBBChecked = filterByYearCheckBox.isSelected();
-//        boolean allOfTimeChecked = filterAllTheTimeCheckbox.isSelected();
-//        int numOfInvoice = getNumOfInvoice(FXCollections.observableArrayList(currentData));
-//        double totalMoney = calculateTotalMoney(FXCollections.observableArrayList(currentData));
-//        if(yearCBBChecked && quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
-//            ExportFileHelper.exportServiceExcelFile(
-//                    clone,
-//                    ExportExcelCategory.ALL_OF_YEAR,
-//                    forEmployee,
-//                    forService,
-//                    serviceTabDateRangePicker.getValue(),
-//                    numOfInvoice, totalMoney);
-//        } else if(yearCBBChecked && !quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
-//            ExportFileHelper.exportServiceExcelFile(
-//                    clone,
-//                    ExportExcelCategory.QUARTER,
-//                    forEmployee,
-//                    forService,
-//                    serviceTabDateRangePicker.getValue(),
-//                    numOfInvoice, totalMoney);
-//        } else if(allOfTimeChecked){
-//            ExportFileHelper.exportServiceExcelFile(
-//                    clone,
-//                    ExportExcelCategory.ALL_OF_TIME,
-//                    forEmployee,
-//                    forService,
-//                    serviceTabDateRangePicker.getValue(),
-//                    numOfInvoice, totalMoney);
-//        } else {
-//            LocalDateTime startDate = serviceTabDateRangePicker.getValue().getStartDate().atTime(0, 0,0);
-//            LocalDateTime endDate = serviceTabDateRangePicker.getValue().getEndDate().atTime(23, 59,59);
-//            if(isAMonth(startDate, endDate))
-//                ExportFileHelper.exportServiceExcelFile(
-//                        clone,
-//                        ExportExcelCategory.ALL_OF_MONTH,
-//                        forEmployee,
-//                        forService,
-//                        serviceTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//            else if(isADay(startDate, endDate))
-//                ExportFileHelper.exportServiceExcelFile(
-//                        clone,
-//                        ExportExcelCategory.DAY_OF_MONTH,
-//                        forEmployee,
-//                        forService,
-//                        serviceTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//            else if(isManyYear(startDate, endDate))
-//                ExportFileHelper.exportServiceExcelFile(
-//                        clone,
-//                        ExportExcelCategory.MANY_YEAR,
-//                        forEmployee,
-//                        forService,
-//                        serviceTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//            else ExportFileHelper.exportServiceExcelFile(
-//                        clone,
-//                        ExportExcelCategory.DATE_RANGE,
-//                        forEmployee,
-//                        forService,
-//                        serviceTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//        }
+        TableView<ServiceDisplayOnTable> clone = cloneTableView(serviceDataTableView);
+        clone.getItems().setAll(currentData);
+        if (clone.getItems().isEmpty()){
+            showMessages("Cảnh báo",
+                    "Không có dữ liệu để xuất file excel!!!",
+                    "Hãy chọn OK để để hủy.",
+                    Alert.AlertType.WARNING);
+            return;
+        }
+
+        boolean forEmployee = employeeNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_EMPLOYEE_NAME);
+        boolean forService = serviceCategoryNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_SERVICE_CATEGORY);
+        boolean yearCBBChecked = filterByYearCheckBox.isSelected();
+        boolean allOfTimeChecked = filterAllTheTimeCheckbox.isSelected();
+        int numOfInvoice = getNumOfInvoice(FXCollections.observableArrayList(currentData));
+        double totalMoney = calculateTotalMoney(FXCollections.observableArrayList(currentData));
+        if(yearCBBChecked && quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
+            ExportFileHelper.exportServiceExcelFile(
+                    clone,
+                    ExportExcelCategory.ALL_OF_YEAR,
+                    forEmployee,
+                    forService,
+                    serviceTabDateRangePicker.getValue(),
+                    numOfInvoice, totalMoney);
+        } else if(yearCBBChecked && !quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
+            ExportFileHelper.exportServiceExcelFile(
+                    clone,
+                    ExportExcelCategory.QUARTER,
+                    forEmployee,
+                    forService,
+                    serviceTabDateRangePicker.getValue(),
+                    numOfInvoice, totalMoney);
+        } else if(allOfTimeChecked){
+            ExportFileHelper.exportServiceExcelFile(
+                    clone,
+                    ExportExcelCategory.ALL_OF_TIME,
+                    forEmployee,
+                    forService,
+                    serviceTabDateRangePicker.getValue(),
+                    numOfInvoice, totalMoney);
+        } else {
+            LocalDateTime startDate = serviceTabDateRangePicker.getValue().getStartDate().atTime(0, 0,0);
+            LocalDateTime endDate = serviceTabDateRangePicker.getValue().getEndDate().atTime(23, 59,59);
+            if(isAMonth(startDate, endDate))
+                ExportFileHelper.exportServiceExcelFile(
+                        clone,
+                        ExportExcelCategory.ALL_OF_MONTH,
+                        forEmployee,
+                        forService,
+                        serviceTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+            else if(isADay(startDate, endDate))
+                ExportFileHelper.exportServiceExcelFile(
+                        clone,
+                        ExportExcelCategory.DAY_OF_MONTH,
+                        forEmployee,
+                        forService,
+                        serviceTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+            else if(isManyYear(startDate, endDate))
+                ExportFileHelper.exportServiceExcelFile(
+                        clone,
+                        ExportExcelCategory.MANY_YEAR,
+                        forEmployee,
+                        forService,
+                        serviceTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+            else ExportFileHelper.exportServiceExcelFile(
+                        clone,
+                        ExportExcelCategory.DATE_RANGE,
+                        forEmployee,
+                        forService,
+                        serviceTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+        }
     }
 
     // set action for pagination page, change data on table when choose another page
@@ -885,13 +886,17 @@ public class ServiceRevenueStatisticsTabController implements Initializable {
     }
 
     // set data to combox of category service
-//    private void loadDataToCategoryServiceCombobox() {
-//        List<ServiceCategory> serviceCategoryList = ServiceCategoryDAO.getServiceCategory();
-//        ObservableList<String> categoryNames = FXCollections.observableArrayList(NONE_VALUE_SERVICE_CATEGORY);
-//        serviceCategoryList.forEach(c -> categoryNames.add(c.getServiceCategoryName()));
-//        serviceCategoryNameCombobox.setItems(categoryNames);
-//        serviceCategoryNameCombobox.setValue(categoryNames.getFirst());
-//    }
+    private void loadDataToCategoryServiceCombobox() {
+        List<ServiceCategory> serviceCategoryList = ServiceCategoryDAO.findAll();
+        ObservableList<String> categoryNames = FXCollections.observableArrayList(NONE_VALUE_SERVICE_CATEGORY);
+        if(serviceCategoryList != null){
+            serviceCategoryList.forEach(c -> categoryNames.add(c.getServiceCategoryName()));
+            serviceCategoryNameCombobox.setItems(categoryNames);
+            serviceCategoryNameCombobox.setValue(categoryNames.getFirst());
+        }else {
+            System.out.println("empty cate");
+        }
+    }
 
     private void loadDataToComboboxOfQuarter() {
         ObservableList<String> quarter = FXCollections.observableArrayList();

@@ -8,7 +8,7 @@ public class DBHelper {
 
     private static final String USER_NAME = "sa";
     private static final String USER_PASSWORD = "sapassword";
-    private static String DATABASE_NAME = "HotelDatabase";
+    private static String DATABASE_NAME = "NewHotelDatabase";
     private static final String DATABASE_URL =
             """
             jdbc:sqlserver://localhost;

@@ -22,6 +22,9 @@ module iuh.fit {
     // Opens
     opens iuh.fit to javafx.fxml;
 
+    // open excel
+    requires java.desktop;
+
     opens iuh.fit.controller to javafx.fxml;
     opens iuh.fit.controller.features to javafx.fxml;
     opens iuh.fit.controller.features.service to javafx.fxml;

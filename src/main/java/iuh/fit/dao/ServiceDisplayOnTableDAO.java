@@ -13,11 +13,20 @@ import java.util.List;
 public class ServiceDisplayOnTableDAO {
     public static List<ServiceDisplayOnTable> getAllData(){
         List<ServiceDisplayOnTable> data = new ArrayList<>();
-        String SqlQuery = "SELECT rs.hotelServiceId, h.serviceName, sc.serviceCategoryName, e.fullName, rs.dateAdded, rs.quantity, rs.unitPrice\n" +
-                "FROM ReservationForm r join RoomUsageService rs ON r.reservationFormID = rs.reservationFormID\n" +
-                "join HotelService h ON rs.hotelServiceId = h.hotelServiceId\n" +
-                "join ServiceCategory sc ON h.serviceCategoryID = sc.serviceCategoryID\n" +
-                "join Employee e ON rs.employeeID = e.employeeID ";
+        String SqlQuery = "SELECT " +
+                "rus.room_usage_service_id, " +
+                "hs.service_name, " +
+                "sc.service_category_name, " +
+                "p.full_name, " +
+                "rus.day_added, " +
+                "rus.quantity, " +
+                "rus.unit_price " +
+                "FROM reservation_forms rf " +
+                "JOIN room_usage_services rus ON rf.reservation_id = rus.reservation_id " +
+                "JOIN hotel_services hs ON rus.service_id = hs.service_id " +
+                "JOIN service_categories sc ON hs.service_category_id = sc.service_category_id " +
+                "JOIN employees e ON rf.employee_code = e.employee_code " +
+                "JOIN persons p ON e.person_id = p.person_id";
 
         try (
                 Connection connection = DBHelper.getConnection();
@@ -51,12 +60,21 @@ public class ServiceDisplayOnTableDAO {
 
     public static List<ServiceDisplayOnTable> getDataThreeYearsLatest(){
         List<ServiceDisplayOnTable> data = new ArrayList<>();
-        String SqlQuery = "SELECT rs.hotelServiceId, h.serviceName, sc.serviceCategoryName, e.fullName, rs.dateAdded, rs.quantity, rs.unitPrice\n" +
-                "FROM ReservationForm r join RoomUsageService rs ON r.reservationFormID = rs.reservationFormID\n" +
-                "join HotelService h ON rs.hotelServiceId = h.hotelServiceId\n" +
-                "join ServiceCategory sc ON h.serviceCategoryID = sc.serviceCategoryID\n" +
-                "join Employee e ON rs.employeeID = e.employeeID " +
-                "WHERE DATEPART(YEAR, rs.dateAdded) >= DATEPART(YEAR, GETDATE()) - 2 ";
+        String SqlQuery = "SELECT " +
+                "rus.room_usage_service_id, " +
+                "hs.service_name, " +
+                "sc.service_category_name, " +
+                "p.full_name, " +
+                "rus.day_added, " +
+                "rus.quantity, " +
+                "rus.unit_price " +
+                "FROM reservation_forms rf " +
+                "JOIN room_usage_services rus ON rf.reservation_id = rus.reservation_id " +
+                "JOIN hotel_services hs ON rus.service_id = hs.service_id " +
+                "JOIN service_categories sc ON hs.service_category_id = sc.service_category_id " +
+                "JOIN employees e ON rf.employee_code = e.employee_code " +
+                "JOIN persons p ON e.person_id = p.person_id\n" +
+                "WHERE DATEPART(YEAR, rus.day_added) >= DATEPART(YEAR, GETDATE()) - 2 ";
 
         try (
                 Connection connection = DBHelper.getConnection();

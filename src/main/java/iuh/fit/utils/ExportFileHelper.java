@@ -18,7 +18,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-//import java.awt.*;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -51,7 +51,7 @@ public class ExportFileHelper {
                 contentRow.createCell(5).setCellValue(inv.getDeposit());
                 contentRow.createCell(6).setCellValue(inv.getServiceCharge());
                 contentRow.createCell(7).setCellValue(inv.getRoomCharge());
-                contentRow.createCell(9).setCellValue(inv.getNetDue());
+                contentRow.createCell(8).setCellValue(inv.getNetDue());
             }
 
             Row statisticRow = sheet.createRow(tableView.getItems().size()+1);
@@ -168,7 +168,6 @@ public class ExportFileHelper {
 
         }
     }
-
 
     public static void exportInvoiceExcelFile(TableView<InvoiceDisplayOnTable> tableView, ExportExcelCategory type, boolean forEmployee, DateRange date, int numOfInvoice, double totalMoney){
         FileChooser fileChooser = new FileChooser();
@@ -1225,22 +1224,18 @@ public class ExportFileHelper {
         }
     }
 
-
-
-
-
     private static void openExcelFile(String filePath) {
-//        try {
-//            File file = new File(filePath);
-//            if (file.exists()) {
-//                if (Desktop.isDesktopSupported()) {
-//                    Desktop desktop = Desktop.getDesktop();
-//                    desktop.open(file);
-//                } else System.out.println("Desktop không hỗ trợ mở file.");
-//            } else System.out.println("File không tồn tại.");
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            File file = new File(filePath);
+            if (file.exists()) {
+                if (Desktop.isDesktopSupported()) {
+                    Desktop desktop = Desktop.getDesktop();
+                    desktop.open(file);
+                } else System.out.println("Desktop không hỗ trợ mở file.");
+            } else System.out.println("File không tồn tại.");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
