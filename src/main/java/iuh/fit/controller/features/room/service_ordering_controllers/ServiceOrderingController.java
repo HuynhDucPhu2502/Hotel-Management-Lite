@@ -6,8 +6,10 @@ import iuh.fit.controller.MainController;
 import iuh.fit.controller.features.room.RoomBookingController;
 import iuh.fit.controller.features.room.checking_in_reservation_list_controllers.ReservationListController;
 //import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
+import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
 import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
+import iuh.fit.dao.HistoryCheckInDAO;
 import iuh.fit.dao.HotelServiceDAO;
 import iuh.fit.dao.RoomUsageServiceDAO;
 import iuh.fit.dao.ServiceCategoryDAO;
@@ -23,20 +25,15 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 public class ServiceOrderingController {
     // ==================================================================================================================
@@ -141,7 +138,7 @@ public class ServiceOrderingController {
         navigateToReservationListBtn.setOnAction(e -> navigateToReservationListPanel());
         navigateToCreateReservationFormBtn.setOnAction(e -> navigateToCreateReservationFormPanel());
         navigateToRoomChangingBtn.setOnAction(e -> navigateToRoomChangingPanel());
-//        navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
+        navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
 
         // Current Panel Button
         serviceCategoryCBox.setOnAction(e -> filterServicesByCategory());
@@ -266,22 +263,22 @@ public class ServiceOrderingController {
         }
     }
 
-//    private void navigateToCheckingOutReservationFormPanel() {
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/checking_out_panels/CheckingOutReservationFormPanel.fxml"));
-//            AnchorPane layout = loader.load();
-//
-//            CheckingOutReservationFormController checkingOutReservationFormController = loader.getController();
-//            checkingOutReservationFormController.setupContext(
-//                    mainController, employee, roomWithReservation, notificationButtonController
-//            );
-//
-//            mainController.getMainPanel().getChildren().clear();
-//            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private void navigateToCheckingOutReservationFormPanel() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/checking_out_panels/CheckingOutReservationFormPanel.fxml"));
+            AnchorPane layout = loader.load();
+
+            CheckingOutReservationFormController checkingOutReservationFormController = loader.getController();
+            checkingOutReservationFormController.setupContext(
+                    mainController, employee, roomWithReservation
+            );
+
+            mainController.getMainPanel().getChildren().clear();
+            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     // ==================================================================================================================
     // 4.  Đẩy dữ liệu lên giao diện
@@ -292,11 +289,11 @@ public class ServiceOrderingController {
         Room reservationFormRoom = roomWithReservation.getRoom();
         Customer reservationFormCustomer = roomWithReservation.getReservationForm().getCustomer();
 
-//        LocalDateTime actualCheckInDate = HistoryCheckinDAO.getActualCheckInDate(reservationForm.getReservationID());
+        LocalDateTime actualCheckInDate = HistoryCheckInDAO.getActualCheckInDate(reservationForm.getReservationID());
 
         roomNumberLabel.setText(reservationFormRoom.getRoomNumber());
         roomCategoryLabel.setText(reservationFormRoom.getRoomCategory().getRoomCategoryName());
-//        checkInDateLabel.setText(dateTimeFormatter.format(actualCheckInDate != null ? actualCheckInDate : reservationForm.getCheckInDate()));
+        checkInDateLabel.setText(dateTimeFormatter.format(actualCheckInDate != null ? actualCheckInDate : reservationForm.getApproxcheckInDate()));
         checkOutDateLabel.setText(dateTimeFormatter.format(reservationForm.getApproxcheckOutTime()));
         stayLengthLabel.setText(RoomChargesCalculate.calculateStayLengthToString(
                 reservationForm.getApproxcheckInDate(),

@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 public class Invoice {
     @Id
     @EqualsAndHashCode.Include
+    @Column(name = "invoice_id")
     private String invoiceID;
 
     @Column(name = "invoice_date", nullable = false)

@@ -11,8 +11,8 @@ import com.dlsc.gemsfx.daterange.DateRangePreset;
 import iuh.fit.controller.MainController;
 import iuh.fit.controller.features.room.RoomBookingController;
 import iuh.fit.controller.features.room.checking_in_reservation_list_controllers.ReservationListController;
+import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
-//import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
 import iuh.fit.dao.CustomerDAO;
 import iuh.fit.dao.ReservationFormDAO;
@@ -185,7 +185,7 @@ public class CreateReservationFormController {
     }
 
     private void navigateToCheckingOutReservationFormPanel() {
-//        loadPanel("/iuh/fit/view/features/room/checking_out_panels/CheckingOutReservationFormPanel.fxml", CheckingOutReservationFormController.class);
+        loadPanel("/iuh/fit/view/features/room/checking_out_panels/CheckingOutReservationFormPanel.fxml", CheckingOutReservationFormController.class);
     }
 
     private <T> void loadPanel(String path, Class<T> ignoredControllerClass) {
@@ -202,8 +202,8 @@ public class CreateReservationFormController {
                 rcc.setupContext(mainController, employee, roomWithReservation);
             else if (controller instanceof ServiceOrderingController soc)
                 soc.setupContext(mainController, employee, roomWithReservation);
-//            else if (controller instanceof CheckingOutReservationFormController corfc)
-//                corfc.setupContext(mainController, employee, roomWithReservation, notificationButtonController);
+            else if (controller instanceof CheckingOutReservationFormController corfc)
+                corfc.setupContext(mainController, employee, roomWithReservation);
 
             mainController.getMainPanel().getChildren().setAll(layout.getChildren());
         } catch (Exception e) {

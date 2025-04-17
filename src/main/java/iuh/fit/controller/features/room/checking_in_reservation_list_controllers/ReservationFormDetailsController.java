@@ -7,7 +7,6 @@ import iuh.fit.dao.ReservationFormDAO;
 import iuh.fit.dao.ReservationRoomDetailDAO;
 import iuh.fit.dao.RoomWithReservationDAO;
 import iuh.fit.models.*;
-import iuh.fit.models.enums.RoomStatus;
 import iuh.fit.models.wrapper.RoomWithReservation;
 import iuh.fit.utils.RoomChargesCalculate;
 import javafx.fxml.FXML;
@@ -242,16 +241,17 @@ public class ReservationFormDetailsController {
                     employee.getEmployeeCode()
             );
 
-            if ("ROOM_CHECKING_IN_SUCCESS".equals(result)) {
-                roomWithReservation = RoomWithReservationDAO
-                        .getRoomWithReservationByID(reservationForm.getReservationID(), roomWithReservation.getRoom().getRoomID());
-                navigateToReservationListPanel("Check-in thành công tại phòng đã đặt.");
-            } else if ("ROOM_CHECKING_IN_TIME_INVALID".equals(result)) {
-                navigateToReservationListPanel("Không nằm trong khoảng thời gian nhận phòng sớm.");
-            } else if ("ROOM_CHECKING_IN_INVALID_RESERVATION".equals(result)) {
-                navigateToReservationListPanel("Phiếu đặt phòng không hợp lệ hoặc đã nhận phòng.");
-            } else {
-                navigateToReservationListPanel("Đã xảy ra lỗi không xác định.");
+            switch (result) {
+                case "ROOM_CHECKING_IN_SUCCESS" -> {
+                    roomWithReservation = RoomWithReservationDAO
+                            .getRoomWithReservationByID(reservationForm.getReservationID(), roomWithReservation.getRoom().getRoomID());
+                    navigateToReservationListPanel("Check-in thành công tại phòng đã đặt.");
+                }
+                case "ROOM_CHECKING_IN_TIME_INVALID" ->
+                        navigateToReservationListPanel("Không nằm trong khoảng thời gian nhận phòng sớm.");
+                case "ROOM_CHECKING_IN_INVALID_RESERVATION" ->
+                        navigateToReservationListPanel("Phiếu đặt phòng không hợp lệ hoặc đã nhận phòng.");
+                default -> navigateToReservationListPanel("Đã xảy ra lỗi không xác định.");
             }
         } catch (Exception e) {
             navigateToReservationListPanel(e.getMessage());

@@ -5,7 +5,7 @@ import iuh.fit.controller.MainController;
 
 import iuh.fit.controller.features.room.RoomBookingController;
 import iuh.fit.controller.features.room.checking_in_reservation_list_controllers.ReservationListController;
-//import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
+import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
 import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
 import iuh.fit.dao.HistoryCheckInDAO;
@@ -22,20 +22,15 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 public class RoomChangingController {
     // ==================================================================================================================
@@ -184,7 +179,7 @@ public class RoomChangingController {
         navigateToReservationListBtn.setOnAction(e -> navigateToReservationListPanel());
         navigateToCreateReservationFormBtn.setOnAction(e -> navigateToCreateReservationFormPanel());
         navigateToServiceOrderingBtn.setOnAction(e -> navigateToServiceOrderingPanel());
-//        navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
+        navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
 
         // Current Panel Button
         floorNumberCBox.setOnAction(e -> filterAvailableRoomsByFloor());
@@ -269,22 +264,22 @@ public class RoomChangingController {
         }
     }
 
-//    private void navigateToCheckingOutReservationFormPanel() {
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/checking_out_panels/CheckingOutReservationFormPanel.fxml"));
-//            AnchorPane layout = loader.load();
-//
-//            CheckingOutReservationFormController checkingOutReservationFormController = loader.getController();
-//            checkingOutReservationFormController.setupContext(
-//                    mainController, employee, roomWithReservation, notificationButtonController
-//            );
-//
-//            mainController.getMainPanel().getChildren().clear();
-//            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private void navigateToCheckingOutReservationFormPanel() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/checking_out_panels/CheckingOutReservationFormPanel.fxml"));
+            AnchorPane layout = loader.load();
+
+            CheckingOutReservationFormController checkingOutReservationFormController = loader.getController();
+            checkingOutReservationFormController.setupContext(
+                    mainController, employee, roomWithReservation
+            );
+
+            mainController.getMainPanel().getChildren().clear();
+            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     // ==================================================================================================================
     // 4.  Đẩy dữ liệu lên giao diện
