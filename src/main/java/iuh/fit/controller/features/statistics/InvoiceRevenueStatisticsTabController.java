@@ -10,6 +10,7 @@ import iuh.fit.models.wrapper.InvoiceDisplayOnTable;
 import iuh.fit.security.PreferencesKey;
 import iuh.fit.utils.EditDateRangePicker;
 //import iuh.fit.utils.ExportFileHelper;
+import iuh.fit.utils.ExportFileHelper;
 import iuh.fit.utils.QuarterChecker;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -254,77 +255,77 @@ public class InvoiceRevenueStatisticsTabController implements Initializable {
 
     @FXML
     void exportExcelFile() {
-//        TableView<InvoiceDisplayOnTable> clone = cloneTableView(invoiceDataTableView);
-//        clone.getItems().setAll(currentData);
-//        if (clone.getItems().isEmpty()){
-//            showMessages("Cảnh báo",
-//                    "Không có dữ liệu để xuất file excel!!!",
-//                    "Hãy chọn OK để để hủy.",
-//                    Alert.AlertType.WARNING);
-//            return;
-//        }
-//
-//        boolean forEmployee = employeeNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_EMPLOYEE_NAME);
-//        boolean yearCBBChecked = filterByYearCheckBox.isSelected();
-//        boolean allOfTimeChecked = filterAllTheTimeCheckbox.isSelected();
-//        int numOfInvoice = getNumOfInvoice(FXCollections.observableArrayList(currentData));
-//        double totalMoney = calculateTotalMoney(FXCollections.observableArrayList(currentData));
-//        if(yearCBBChecked && quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
-//            ExportFileHelper.exportInvoiceExcelFile(
-//                    clone,
-//                    ExportExcelCategory.ALL_OF_YEAR,
-//                    forEmployee,
-//                    invoiceTabDateRangePicker.getValue(),
-//                    numOfInvoice, totalMoney);
-//        } else if(yearCBBChecked && !quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
-//            ExportFileHelper.exportInvoiceExcelFile(
-//                    clone,
-//                    ExportExcelCategory.QUARTER,
-//                    forEmployee,
-//                    invoiceTabDateRangePicker.getValue(),
-//                    numOfInvoice, totalMoney);
-//        } else if(allOfTimeChecked){
-//            ExportFileHelper.exportInvoiceExcelFile(
-//                    clone,
-//                    ExportExcelCategory.ALL_OF_TIME,
-//                    forEmployee,
-//                    invoiceTabDateRangePicker.getValue(),
-//                    numOfInvoice, totalMoney);
-//        } else {
-//            LocalDateTime startDate = invoiceTabDateRangePicker.getValue().getStartDate().atTime(0, 0,0);
-//            LocalDateTime endDate = invoiceTabDateRangePicker.getValue().getEndDate().atTime(23, 59,59);
-//            if(isAMonth(startDate, endDate))
-//                ExportFileHelper.exportInvoiceExcelFile(
-//                        clone,
-//                        ExportExcelCategory.ALL_OF_MONTH,
-//                        forEmployee,
-//                        invoiceTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//            else if(isADay(startDate, endDate))
-//                ExportFileHelper.exportInvoiceExcelFile(
-//                        clone,
-//                        ExportExcelCategory.DAY_OF_MONTH,
-//                        forEmployee,
-//                        invoiceTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//            else if(isManyYear(startDate, endDate))
-//                ExportFileHelper.exportInvoiceExcelFile(
-//                        clone,
-//                        ExportExcelCategory.MANY_YEAR,
-//                        forEmployee,
-//                        invoiceTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//            else ExportFileHelper.exportInvoiceExcelFile(
-//                        clone,
-//                        ExportExcelCategory.DATE_RANGE,
-//                        forEmployee,
-//                        invoiceTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//        }
+        TableView<InvoiceDisplayOnTable> clone = cloneTableView(invoiceDataTableView);
+        clone.getItems().setAll(currentData);
+        if (clone.getItems().isEmpty()){
+            showMessages("Cảnh báo",
+                    "Không có dữ liệu để xuất file excel!!!",
+                    "Hãy chọn OK để để hủy.",
+                    Alert.AlertType.WARNING);
+            return;
+        }
+
+        boolean forEmployee = employeeNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_EMPLOYEE_NAME);
+        boolean yearCBBChecked = filterByYearCheckBox.isSelected();
+        boolean allOfTimeChecked = filterAllTheTimeCheckbox.isSelected();
+        int numOfInvoice = getNumOfInvoice(FXCollections.observableArrayList(currentData));
+        double totalMoney = calculateTotalMoney(FXCollections.observableArrayList(currentData));
+        if(yearCBBChecked && quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
+            ExportFileHelper.exportInvoiceExcelFile(
+                    clone,
+                    ExportExcelCategory.ALL_OF_YEAR,
+                    forEmployee,
+                    invoiceTabDateRangePicker.getValue(),
+                    numOfInvoice, totalMoney);
+        } else if(yearCBBChecked && !quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
+            ExportFileHelper.exportInvoiceExcelFile(
+                    clone,
+                    ExportExcelCategory.QUARTER,
+                    forEmployee,
+                    invoiceTabDateRangePicker.getValue(),
+                    numOfInvoice, totalMoney);
+        } else if(allOfTimeChecked){
+            ExportFileHelper.exportInvoiceExcelFile(
+                    clone,
+                    ExportExcelCategory.ALL_OF_TIME,
+                    forEmployee,
+                    invoiceTabDateRangePicker.getValue(),
+                    numOfInvoice, totalMoney);
+        } else {
+            LocalDateTime startDate = invoiceTabDateRangePicker.getValue().getStartDate().atTime(0, 0,0);
+            LocalDateTime endDate = invoiceTabDateRangePicker.getValue().getEndDate().atTime(23, 59,59);
+            if(isAMonth(startDate, endDate))
+                ExportFileHelper.exportInvoiceExcelFile(
+                        clone,
+                        ExportExcelCategory.ALL_OF_MONTH,
+                        forEmployee,
+                        invoiceTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+            else if(isADay(startDate, endDate))
+                ExportFileHelper.exportInvoiceExcelFile(
+                        clone,
+                        ExportExcelCategory.DAY_OF_MONTH,
+                        forEmployee,
+                        invoiceTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+            else if(isManyYear(startDate, endDate))
+                ExportFileHelper.exportInvoiceExcelFile(
+                        clone,
+                        ExportExcelCategory.MANY_YEAR,
+                        forEmployee,
+                        invoiceTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+            else ExportFileHelper.exportInvoiceExcelFile(
+                        clone,
+                        ExportExcelCategory.DATE_RANGE,
+                        forEmployee,
+                        invoiceTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+        }
     }
 
 
