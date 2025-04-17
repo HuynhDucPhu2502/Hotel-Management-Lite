@@ -16,6 +16,7 @@ import iuh.fit.models.wrapper.RoomWithReservation;
 //import iuh.fit.utils.GlobalMessage;
 import iuh.fit.utils.RoomChargesCalculate;
 //import iuh.fit.utils.RoomManagementService;
+import iuh.fit.utils.RoomManagementService;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -329,59 +330,59 @@ public class CheckingOutReservationFormController {
     // 5. Xử lý sự kiện checkout
     // ==================================================================================================================
     private void handleCheckOut() {
-//        try {
-//            DialogPane.Dialog<ButtonType> confirmDialog = dialogPane.showConfirmation(
-//                    "XÁC NHẬN CHECK-OUT",
-//                    "Bạn có chắc chắn muốn thực hiện check-out cho phòng này không?"
-//            );
-//
-//            confirmDialog.onClose(buttonType -> {
-//                if (buttonType == ButtonType.YES) {
-//                    try {
-//                        RoomManagementService.handleCheckOut(roomWithReservation, employee);
-//
-//                        dialogPane.showInformation("THÀNH CÔNG", "Check-out và tạo hóa đơn thành công!");
-//
-//                        navigateToRoomBookingPanel();
-//                    } catch (Exception ex) {
-//                        ex.printStackTrace();
-//                        dialogPane.showInformation("LỖI", ex.getMessage());
-//                    }
-//                }
-//            });
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            dialogPane.showInformation("LỖI", "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại!");
-//        }
+        try {
+            DialogPane.Dialog<ButtonType> confirmDialog = dialogPane.showConfirmation(
+                    "XÁC NHẬN CHECK-OUT",
+                    "Bạn có chắc chắn muốn thực hiện check-out cho phòng này không?"
+            );
+
+            confirmDialog.onClose(buttonType -> {
+                if (buttonType == ButtonType.YES) {
+                    try {
+                        RoomManagementService.handleCheckOut(roomWithReservation, employee);
+
+                        dialogPane.showInformation("THÀNH CÔNG", "Check-out và tạo hóa đơn thành công!");
+
+                        navigateToRoomBookingPanel();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        dialogPane.showInformation("LỖI", ex.getMessage());
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            dialogPane.showInformation("LỖI", "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại!");
+        }
     }
 
     private void handleCheckOutEarly() {
-//        try {
-//            DialogPane.Dialog<ButtonType> confirmDialog = dialogPane.showConfirmation(
-//                    "XÁC NHẬN CHECK-OUT",
-//                    "Bạn có chắc chắn muốn thực hiện check-out SỚM cho phòng này không?"
-//            );
-//
-//            confirmDialog.onClose(buttonType -> {
-//                if (buttonType == ButtonType.YES) {
-//                    try {
-//                        RoomManagementService.handleCheckoutEarly(roomWithReservation, employee);
-//
-//                        dialogPane.showInformation("THÀNH CÔNG", "Check-out và tạo hóa đơn thành công!");
-//
-//                        navigateToRoomBookingPanel();
-//                    } catch (Exception ex) {
-//                        ex.printStackTrace();
-//                        dialogPane.showInformation("LỖI", ex.getMessage());
-//                    }
-//                }
-//            });
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            dialogPane.showInformation("LỖI", "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại!");
-//        }
+        try {
+            DialogPane.Dialog<ButtonType> confirmDialog = dialogPane.showConfirmation(
+                    "XÁC NHẬN CHECK-OUT",
+                    "Bạn có chắc chắn muốn thực hiện check-out SỚM cho phòng này không?"
+            );
+
+            confirmDialog.onClose(buttonType -> {
+                if (buttonType == ButtonType.YES) {
+                    try {
+                        RoomManagementService.handleCheckoutEarly(roomWithReservation, employee);
+
+                        dialogPane.showInformation("THÀNH CÔNG", "Check-out và tạo hóa đơn thành công!");
+
+                        navigateToRoomBookingPanel();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        dialogPane.showInformation("LỖI", ex.getMessage());
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            dialogPane.showInformation("LỖI", "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại!");
+        }
     }
 
     // ==================================================================================================================

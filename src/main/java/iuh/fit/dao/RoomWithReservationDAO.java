@@ -21,19 +21,12 @@ public class RoomWithReservationDAO {
             FROM Room r
             LEFT JOIN r.roomCategory rc
             LEFT JOIN ReservationForm rf ON rf.room = r
-            LEFT JOIN rf.historyCheckOut hco
+                AND rf.historyCheckOut IS NULL
+                AND rf.approxcheckInDate <= :now
+                AND rf.approxcheckOutTime >= :now
             WHERE r.isActivate = :activeStatus
               AND rc.isActivate = :activeStatus
               AND r.roomStatus <> :unavailableStatus
-              AND (
-                  rf IS NULL
-                  OR (
-                      rf.historyCheckIn IS NOT NULL
-                      AND hco IS NULL
-                      AND rf.approxcheckInDate <= :now
-                      AND rf.approxcheckOutTime >= :now
-                  )
-              )
         """;
 
         TypedQuery<RoomWithReservation> query = em.createQuery(jpql, RoomWithReservation.class);
@@ -61,8 +54,7 @@ public class RoomWithReservationDAO {
               AND (
                   rf IS NULL
                   OR (
-                      rf.historyCheckIn IS NOT NULL
-                      AND hco IS NULL
+                      hco IS NULL
                       AND rf.approxcheckInDate <= :now
                       AND rf.approxcheckOutTime >= :now
                   )
