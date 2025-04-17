@@ -253,7 +253,8 @@ public class InitSampleData {
                     new GlobalSequence(0, "RoomCategory", "RC-000005"),
                     new GlobalSequence(0, "ReservationForm", "RF-000001"),
                     new GlobalSequence(0, "ReservationRoomDetail", "RRD-000001"),
-                    new GlobalSequence(0, "HistoryCheckin", "HCI-000001")
+                    new GlobalSequence(0, "HistoryCheckin", "HCI-000001"),
+                    new GlobalSequence(0, "RoomUsageService", "RUS-000001")
             );
 
             for (GlobalSequence gs : globalSequences) {

@@ -1,75 +1,59 @@
 package iuh.fit.dao;
 
+import iuh.fit.models.Employee;
+import iuh.fit.models.HotelService;
+import iuh.fit.models.ReservationForm;
 import iuh.fit.models.RoomUsageService;
-import iuh.fit.models.ServiceCategory;
 import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class RoomUsageServiceDAO {
-    public static boolean create(RoomUsageService rus){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            em.getTransaction().begin();
-            em.persist(rus);
-            em.getTransaction().commit();
-            return true;
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
+
+    public static List<RoomUsageService> getByReservationFormID(String reservationFormID) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+
+        TypedQuery<RoomUsageService> query = em.createQuery("""
+            SELECT r FROM RoomUsageService r
+            WHERE r.reservationForm.reservationID = :reservationFormID
+              AND r.hotelService.isActivate = iuh.fit.models.enums.ObjectStatus.ACTIVE
+              AND r.hotelService.serviceCategory.isActivate = iuh.fit.models.enums.ObjectStatus.ACTIVE
+        """, RoomUsageService.class);
+
+        query.setParameter("reservationFormID", reservationFormID);
+        return query.getResultList();
     }
 
-    public static boolean delete(String id){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            em.getTransaction().begin();
-            RoomUsageService rus = em.find(
-                    RoomUsageService.class,
-                    id
-            );
-            if(rus == null)
-                return false;
-            em.remove(rus);
-            em.getTransaction().commit();
-            return true;
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
-    }
+    public static String serviceOrdering(RoomUsageService roomUsageService) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        ReservationForm form = em.find(ReservationForm.class, roomUsageService.getReservationForm().getReservationID());
 
-    public static boolean update(RoomUsageService newInfor){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            em.getTransaction().begin();
-            em.merge(newInfor);
-            em.getTransaction().commit();
-            return true;
-        }catch (Exception e){
-            throw new RuntimeException(e);
+        if (form == null || form.getApproxcheckOutTime().isBefore(LocalDateTime.now())) {
+            return "ROOM_SERVICE_ORDERING_RESERVATION_NOT_FOUND_OR_EXPIRED";
         }
-    }
 
-    public static List<RoomUsageService> findAll(){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            TypedQuery<RoomUsageService> query = em.createQuery(
-                    "select rus from RoomUsageService rus",
-                    RoomUsageService.class
-            );
-
-            return query.getResultList();
-        }catch (Exception e){
-            throw new RuntimeException(e);
+        if (roomUsageService.getQuantity() <= 0) {
+            return "SERVICE_ORDERING_INVALID_QUANTITY";
         }
-    }
 
-    public static RoomUsageService findById(String id){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()) {
-            return em.find(
-                    RoomUsageService.class,
-                    id
-            );
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
+        String nextID = em.createQuery("SELECT gs.nextID FROM GlobalSequence gs WHERE gs.tableName = 'RoomUsageService'", String.class).getSingleResult();
+        int nextNum = Integer.parseInt(nextID.substring(4)) + 1;
+        String newNextID = "RUS-" + String.format("%06d", nextNum);
+
+        em.getTransaction().begin();
+        roomUsageService.setRoomUsageServiceID(nextID);
+        em.persist(roomUsageService);
+
+        em.createQuery("UPDATE GlobalSequence gs SET gs.nextID = :newID WHERE gs.tableName = 'RoomUsageService'")
+                .setParameter("newID", newNextID)
+                .executeUpdate();
+
+        em.getTransaction().commit();
+
+        return "SERVICE_ORDERING_SUCCESS";
     }
 }

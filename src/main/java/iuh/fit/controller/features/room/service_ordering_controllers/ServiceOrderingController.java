@@ -180,13 +180,13 @@ public class ServiceOrderingController {
     }
 
     private void loadTable() {
-//        List<RoomUsageService> roomUsageServices = RoomUsageServiceDAO.getByReservationFormID(roomWithReservation.getReservationForm().getReservationID());
-//        ObservableList<RoomUsageService> data = FXCollections.observableArrayList(roomUsageServices);
-//
-//        Platform.runLater(() -> {
-//            roomUsageServiceTableView.setItems(data);
-//            roomUsageServiceTableView.refresh();
-//        });
+        List<RoomUsageService> roomUsageServices = RoomUsageServiceDAO.getByReservationFormID(roomWithReservation.getReservationForm().getReservationID());
+        ObservableList<RoomUsageService> data = FXCollections.observableArrayList(roomUsageServices);
+
+        Platform.runLater(() -> {
+            roomUsageServiceTableView.setItems(data);
+            roomUsageServiceTableView.refresh();
+        });
     }
 
 
@@ -363,29 +363,29 @@ public class ServiceOrderingController {
     // 5.  Setup table lịch sử dùng dịch vụ
     // ==================================================================================================================
     private void setupRoomUsageServiceTableView() {
-//        roomUsageServiceIDColumn.setCellValueFactory(new PropertyValueFactory<>("roomUsageServiceId"));
-//        serviceNameColumn.setCellValueFactory(data -> {
-//            HotelService service = data.getValue().getHotelService();
-//            String serviceName = (service != null && service.getServiceName() != null) ? service.getServiceName() : "KHÔNG CÓ";
-//            return new SimpleStringProperty(serviceName);
-//        });
-//        quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-//        unitPriceColumn.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
-//        totalPriceColumn.setCellValueFactory(data -> {
-//            double totalPrice = data.getValue().getQuantity() * data.getValue().getUnitPrice();
-//            return new SimpleDoubleProperty(totalPrice).asObject();
-//        });
-//        dateAddedColumn.setCellValueFactory(data -> {
-//            LocalDateTime dateAdded = data.getValue().getDateAdded();
-//            String formattedDate = (dateAdded != null) ? dateAdded.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")) : "Không có";
-//            return new SimpleStringProperty(formattedDate);
-//        });
-//
-//        employeeAddedColumn.setCellValueFactory(data -> {
-//            Employee employee = data.getValue().getEmployee();
-//            String employeeName = (employee != null && employee.getFullName() != null) ? employee.getFullName() : "Không có";
-//            return new SimpleStringProperty(employeeName);
-//        });
+        roomUsageServiceIDColumn.setCellValueFactory(new PropertyValueFactory<>("roomUsageServiceID"));
+        serviceNameColumn.setCellValueFactory(data -> {
+            HotelService service = data.getValue().getHotelService();
+            String serviceName = (service != null && service.getServiceName() != null) ? service.getServiceName() : "KHÔNG CÓ";
+            return new SimpleStringProperty(serviceName);
+        });
+        quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        unitPriceColumn.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
+        totalPriceColumn.setCellValueFactory(data -> {
+            double totalPrice = data.getValue().getQuantity() * data.getValue().getUnitPrice();
+            return new SimpleDoubleProperty(totalPrice).asObject();
+        });
+        dateAddedColumn.setCellValueFactory(data -> {
+            LocalDateTime dateAdded = data.getValue().getDayAdded();
+            String formattedDate = (dateAdded != null) ? dateAdded.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")) : "Không có";
+            return new SimpleStringProperty(formattedDate);
+        });
+
+        employeeAddedColumn.setCellValueFactory(data -> {
+            Employee employee = data.getValue().getReservationForm().getEmployee();
+            String employeeName = (employee != null && employee.getFullName() != null) ? employee.getFullName() : "Không có";
+            return new SimpleStringProperty(employeeName);
+        });
     }
 
     // ==================================================================================================================
@@ -414,22 +414,27 @@ public class ServiceOrderingController {
     }
 
     private void handleServiceOrderingDAO(HotelService service, int quantity, Spinner<Integer> amountField) {
-//        try {
-//            RoomUsageService roomUsageService = new RoomUsageService(
-//                    quantity,
-//                    service.getServicePrice(),
-//                    service,
-//                    roomWithReservation.getReservationForm(),
-//                    employee,
-//                    LocalDateTime.now()
-//            );
-//            RoomUsageServiceDAO.serviceOrdering(roomUsageService);
-//            amountField.getValueFactory().setValue(1);
-//
-//        } catch (Exception e) {
-//            dialogPane.showInformation("LỖI", e.getMessage());
-//        }
+        try {
+            RoomUsageService roomUsageService = new RoomUsageService();
+            roomUsageService.setQuantity(quantity);
+            roomUsageService.setUnitPrice(service.getServicePrice());
+            roomUsageService.setDayAdded(LocalDateTime.now());
+            roomUsageService.setHotelService(service);
+            roomUsageService.setReservationForm(roomWithReservation.getReservationForm());
+
+            String result = RoomUsageServiceDAO.serviceOrdering(roomUsageService);
+
+            if (result.equals("SERVICE_ORDERING_SUCCESS")) {
+                amountField.getValueFactory().setValue(1);
+            } else {
+                dialogPane.showWarning("Lỗi", result);
+            }
+
+        } catch (Exception e) {
+            dialogPane.showWarning("LỖI", e.getMessage());
+        }
     }
+
 
 
     // ==================================================================================================================
