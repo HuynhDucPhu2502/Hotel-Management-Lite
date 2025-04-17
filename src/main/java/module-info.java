@@ -34,6 +34,8 @@ module iuh.fit {
     opens iuh.fit.controller.features.room.creating_reservation_form_controllers to javafx.fxml;
     opens iuh.fit.controller.features.room.checking_in_reservation_list_controllers to javafx.fxml;
     opens iuh.fit.controller.features.room.service_ordering_controllers to javafx.fxml;
+    opens iuh.fit.controller.features.room.room_changing_controllers to javafx.fxml;
+    opens iuh.fit.controller.features.room.checking_out_controllers to javafx.fxml;
     opens iuh.fit.controller.features.statistics to javafx.fxml;
 
     opens iuh.fit.devtools to javafx.fxml;

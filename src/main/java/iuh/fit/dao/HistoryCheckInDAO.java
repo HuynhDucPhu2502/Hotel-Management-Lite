@@ -1,75 +1,71 @@
 package iuh.fit.dao;
 
 import iuh.fit.models.HistoryCheckIn;
-import iuh.fit.models.ServiceCategory;
+import iuh.fit.models.ReservationForm;
 import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class HistoryCheckInDAO {
-    public static boolean create(HistoryCheckIn hci){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            em.getTransaction().begin();
-            em.persist(hci);
-            em.getTransaction().commit();
-            return true;
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
+
+    public static List<HistoryCheckIn> getAll() {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+
+        TypedQuery<HistoryCheckIn> query = em.createQuery("""
+            SELECT h FROM HistoryCheckIn h
+            JOIN FETCH h.reservationForm rf
+            JOIN FETCH rf.room r
+            JOIN FETCH rf.customer c
+            JOIN FETCH rf.employee e
+            JOIN FETCH r.roomCategory
+        """, HistoryCheckIn.class);
+
+        return query.getResultList();
     }
 
-    public static boolean delete(String id){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            em.getTransaction().begin();
-            HistoryCheckIn hci = em.find(
-                    HistoryCheckIn.class,
-                    id
-            );
-            if(hci == null)
-                return false;
-            em.remove(hci);
-            em.getTransaction().commit();
-            return true;
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
+    public static HistoryCheckIn getByID(String historyCheckInID) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+        return em.find(HistoryCheckIn.class, historyCheckInID);
     }
 
-    public static boolean update(HistoryCheckIn newInfor){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            em.getTransaction().begin();
-            em.merge(newInfor);
-            em.getTransaction().commit();
-            return true;
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
+    public static String getNextID() {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+
+        String nextID = em.createQuery("""
+            SELECT gs.nextID FROM GlobalSequence gs
+            WHERE gs.tableName = 'HistoryCheckin'
+        """, String.class).getSingleResult();
+
+        int numeric = Integer.parseInt(nextID.substring(4)) + 1;
+        String newNextID = "HCI-" + String.format("%06d", numeric);
+
+        em.getTransaction().begin();
+        em.createQuery("""
+            UPDATE GlobalSequence gs
+            SET gs.nextID = :newID
+            WHERE gs.tableName = 'HistoryCheckin'
+        """)
+                .setParameter("newID", newNextID)
+                .executeUpdate();
+        em.getTransaction().commit();
+
+        return nextID;
     }
 
-    public static List<HistoryCheckIn> findAll(){
-        try(EntityManager em = EntityManagerUtil.getEntityManager()){
-            TypedQuery<HistoryCheckIn> query = em.createQuery(
-                    "select hci from HistoryCheckIn hci",
-                    HistoryCheckIn.class
-            );
+    public static LocalDateTime getActualCheckInDate(String reservationFormID) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
 
-            return query.getResultList();
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
-    }
+        TypedQuery<LocalDateTime> query = em.createQuery("""
+            SELECT h.checkInDate FROM HistoryCheckIn h
+            WHERE h.reservationForm.reservationID = :reservationFormID
+        """, LocalDateTime.class);
 
-    public static HistoryCheckIn findById(String id){
-        try (EntityManager em = EntityManagerUtil.getEntityManager()){
-            return em.find(
-                    HistoryCheckIn.class,
-                    id
-            );
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
+        query.setParameter("reservationFormID", reservationFormID);
+
+        List<LocalDateTime> result = query.getResultList();
+        return result.isEmpty() ? null : result.get(0);
     }
 }

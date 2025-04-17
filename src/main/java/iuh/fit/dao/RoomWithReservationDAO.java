@@ -25,7 +25,15 @@ public class RoomWithReservationDAO {
             WHERE r.isActivate = :activeStatus
               AND rc.isActivate = :activeStatus
               AND r.roomStatus <> :unavailableStatus
-              AND (rf IS NULL OR (hco IS NULL AND rf.approxcheckInDate <= :now AND rf.approxcheckOutTime >= :now))
+              AND (
+                  rf IS NULL
+                  OR (
+                      rf.historyCheckIn IS NOT NULL
+                      AND hco IS NULL
+                      AND rf.approxcheckInDate <= :now
+                      AND rf.approxcheckOutTime >= :now
+                  )
+              )
         """;
 
         TypedQuery<RoomWithReservation> query = em.createQuery(jpql, RoomWithReservation.class);
@@ -50,7 +58,15 @@ public class RoomWithReservationDAO {
               AND r.isActivate = :activeStatus
               AND rc.isActivate = :activeStatus
               AND r.roomStatus <> :unavailableStatus
-              AND (rf IS NULL OR (hco IS NULL AND rf.approxcheckInDate <= :now AND rf.approxcheckOutTime >= :now))
+              AND (
+                  rf IS NULL
+                  OR (
+                      rf.historyCheckIn IS NOT NULL
+                      AND hco IS NULL
+                      AND rf.approxcheckInDate <= :now
+                      AND rf.approxcheckOutTime >= :now
+                  )
+              )
         """;
 
         TypedQuery<RoomWithReservation> query = em.createQuery(jpql, RoomWithReservation.class);

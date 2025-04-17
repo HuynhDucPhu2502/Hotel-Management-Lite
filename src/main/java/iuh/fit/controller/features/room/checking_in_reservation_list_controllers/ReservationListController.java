@@ -3,10 +3,9 @@ package iuh.fit.controller.features.room.checking_in_reservation_list_controller
 import com.dlsc.gemsfx.DialogPane;
 import iuh.fit.controller.MainController;
 import iuh.fit.controller.features.room.RoomBookingController;
-//import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
+import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
-//import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
-//import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
+import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
 import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
 import iuh.fit.dao.ReservationFormDAO;
 import iuh.fit.models.Employee;
@@ -21,6 +20,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.*;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,6 +46,10 @@ public class ReservationListController {
     @FXML
     private GridPane reservationFormGidPane;
 
+    // ==================================================================================================================
+    // 5. Khác
+    // ==================================================================================================================
+    @Getter
     @FXML
     private DialogPane dialogPane;
 
@@ -95,14 +99,14 @@ public class ReservationListController {
                 navigateToRoomCheckingOutBtn.setDisable(true);
             }
             case OVER_DUE -> {
-//                navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
+                navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
                 navigateToServiceOrderingBtn.setDisable(true);
                 navigateToRoomChangingBtn.setDisable(true);
             }
             case IN_USE -> {
-//                navigateToRoomChangingBtn.setOnAction(e -> navigateToRoomChangingPanel());
+                navigateToRoomChangingBtn.setOnAction(e -> navigateToRoomChangingPanel());
                 navigateToServiceOrderingBtn.setOnAction(e -> navigateToServiceOrderingPanel());
-//                navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
+                navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
             }
         }
 
@@ -150,23 +154,23 @@ public class ReservationListController {
         }
     }
 
-//    private void navigateToRoomChangingPanel() {
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/changing_room_panels/RoomChangingPanel.fxml"));
-//            AnchorPane layout = loader.load();
-//
-//            RoomChangingController roomChangingController = loader.getController();
-//            roomChangingController.setupContext(
-//                    mainController, employee, roomWithReservation, notificationButtonController
-//            );
-//
-//            mainController.getMainPanel().getChildren().clear();
-//            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
+    private void navigateToRoomChangingPanel() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/changing_room_panels/RoomChangingPanel.fxml"));
+            AnchorPane layout = loader.load();
+
+            RoomChangingController roomChangingController = loader.getController();
+            roomChangingController.setupContext(
+                    mainController, employee, roomWithReservation
+            );
+
+            mainController.getMainPanel().getChildren().clear();
+            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void navigateToServiceOrderingPanel() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/ordering_services_panels/ServiceOrderingPanel.fxml"));
@@ -183,23 +187,23 @@ public class ReservationListController {
             e.printStackTrace();
         }
     }
-//
-//    private void navigateToCheckingOutReservationFormPanel() {
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/checking_out_panels/CheckingOutReservationFormPanel.fxml"));
-//            AnchorPane layout = loader.load();
-//
-//            CheckingOutReservationFormController checkingOutReservationFormController = loader.getController();
-//            checkingOutReservationFormController.setupContext(
-//                    mainController, employee, roomWithReservation, notificationButtonController
-//            );
-//
-//            mainController.getMainPanel().getChildren().clear();
-//            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+
+    private void navigateToCheckingOutReservationFormPanel() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/checking_out_panels/CheckingOutReservationFormPanel.fxml"));
+            AnchorPane layout = loader.load();
+
+            CheckingOutReservationFormController checkingOutReservationFormController = loader.getController();
+            checkingOutReservationFormController.setupContext(
+                    mainController, employee, roomWithReservation
+            );
+
+            mainController.getMainPanel().getChildren().clear();
+            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     // ==================================================================================================================
     // 4. Chức năng hiển thị phiếu đặt phòng
@@ -257,10 +261,4 @@ public class ReservationListController {
         }
     }
 
-    // ==================================================================================================================
-    // 5. Khác
-    // ==================================================================================================================
-    public DialogPane getDialogPane() {
-        return dialogPane;
-    }
 }
