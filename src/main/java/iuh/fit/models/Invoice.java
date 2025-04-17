@@ -21,8 +21,6 @@ public class Invoice {
     @Id
     @EqualsAndHashCode.Include
     @Column(name = "invoice_id", nullable = false)
-    @Column(name = "invoice_id")
-
     private String invoiceID;
 
     @Column(name = "invoice_date", nullable = false)
