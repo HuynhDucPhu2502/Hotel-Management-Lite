@@ -5,8 +5,7 @@ import iuh.fit.controller.MainController;
 import iuh.fit.controller.features.room.RoomBookingController;
 //import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
-//import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
-//import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
+import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
 import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
 import iuh.fit.dao.ReservationFormDAO;
 import iuh.fit.models.Employee;
@@ -100,7 +99,7 @@ public class ReservationListController {
                 navigateToRoomChangingBtn.setDisable(true);
             }
             case IN_USE -> {
-//                navigateToRoomChangingBtn.setOnAction(e -> navigateToRoomChangingPanel());
+                navigateToRoomChangingBtn.setOnAction(e -> navigateToRoomChangingPanel());
                 navigateToServiceOrderingBtn.setOnAction(e -> navigateToServiceOrderingPanel());
 //                navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
             }
@@ -150,23 +149,23 @@ public class ReservationListController {
         }
     }
 
-//    private void navigateToRoomChangingPanel() {
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/changing_room_panels/RoomChangingPanel.fxml"));
-//            AnchorPane layout = loader.load();
-//
-//            RoomChangingController roomChangingController = loader.getController();
-//            roomChangingController.setupContext(
-//                    mainController, employee, roomWithReservation, notificationButtonController
-//            );
-//
-//            mainController.getMainPanel().getChildren().clear();
-//            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
+    private void navigateToRoomChangingPanel() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/changing_room_panels/RoomChangingPanel.fxml"));
+            AnchorPane layout = loader.load();
+
+            RoomChangingController roomChangingController = loader.getController();
+            roomChangingController.setupContext(
+                    mainController, employee, roomWithReservation
+            );
+
+            mainController.getMainPanel().getChildren().clear();
+            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void navigateToServiceOrderingPanel() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/ordering_services_panels/ServiceOrderingPanel.fxml"));

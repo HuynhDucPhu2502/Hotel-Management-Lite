@@ -22,6 +22,20 @@ public class ReservationRoomDetailDAO {
         return query.getResultList();
     }
 
+    public static List<ReservationRoomDetail> getByReservationFormID(String reservationFormID) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+
+        TypedQuery<ReservationRoomDetail> query = em.createQuery("""
+            SELECT r FROM ReservationRoomDetail r
+            WHERE r.reservationForm.reservationID = :reservationFormID
+              AND r.room.isActivate = iuh.fit.models.enums.ObjectStatus.ACTIVE
+              AND r.reservationForm.employee.isActivate = iuh.fit.models.enums.ObjectStatus.ACTIVE
+        """, ReservationRoomDetail.class);
+
+        query.setParameter("reservationFormID", reservationFormID);
+        return query.getResultList();
+    }
+
     public static void createData(ReservationRoomDetail detail) {
         EntityManager em = EntityManagerUtil.getEntityManager();
         String nextID = em.createQuery("SELECT gs.nextID FROM GlobalSequence gs WHERE gs.tableName = 'ReservationRoomDetail'", String.class).getSingleResult();

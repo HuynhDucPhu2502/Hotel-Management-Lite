@@ -13,9 +13,8 @@ import iuh.fit.controller.features.room.RoomBookingController;
 import iuh.fit.controller.features.room.checking_in_reservation_list_controllers.ReservationListController;
 import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
 //import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
-//import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
+import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
 import iuh.fit.dao.CustomerDAO;
-//import iuh.fit.dao.ReservationFormDAO;
 import iuh.fit.dao.ReservationFormDAO;
 import iuh.fit.models.Customer;
 import iuh.fit.models.Employee;
@@ -178,7 +177,7 @@ public class CreateReservationFormController {
     }
 
     private void navigateToRoomChangingPanel() {
-//        loadPanel("/iuh/fit/view/features/room/changing_room_panels/RoomChangingPanel.fxml", RoomChangingController.class);
+        loadPanel("/iuh/fit/view/features/room/changing_room_panels/RoomChangingPanel.fxml", RoomChangingController.class);
     }
 
     private void navigateToServiceOrderingPanel() {
@@ -199,8 +198,8 @@ public class CreateReservationFormController {
                 rbc.setupContext(mainController, employee);
             else if (controller instanceof  ReservationListController rlc)
                 rlc.setupContext(mainController, employee, roomWithReservation);
-//            else if (controller instanceof RoomChangingController rcc)
-//                rcc.setupContext(mainController, employee, roomWithReservation, notificationButtonController);
+            else if (controller instanceof RoomChangingController rcc)
+                rcc.setupContext(mainController, employee, roomWithReservation);
             else if (controller instanceof ServiceOrderingController soc)
                 soc.setupContext(mainController, employee, roomWithReservation);
 //            else if (controller instanceof CheckingOutReservationFormController corfc)
