@@ -10,6 +10,7 @@ import iuh.fit.models.wrapper.RoomDisplayOnTable;
 import iuh.fit.security.PreferencesKey;
 import iuh.fit.utils.EditDateRangePicker;
 //import iuh.fit.utils.ExportFileHelper;
+import iuh.fit.utils.ExportFileHelper;
 import iuh.fit.utils.QuarterChecker;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -92,11 +93,11 @@ public class RoomRevenueStatisticsTabController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         EditDateRangePicker.editDateRangePicker(roomTabDateRangePicker);
         roomDataTableView.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-//        loadDataToRoomCategoryNameCombobox();
+        loadDataToRoomCategoryNameCombobox();
         loadDataToComboboxOfYear();
         loadDataToComboboxOfQuarter();
         dateRangeAction();
-//        statisByDateRangeOption();
+        statisByDateRangeOption();
         paginationOnAction();
     }
 
@@ -256,77 +257,77 @@ public class RoomRevenueStatisticsTabController implements Initializable {
 
     @FXML
     void exportExcelFile() throws IOException {
-//        TableView<RoomDisplayOnTable> clone = cloneTableView(roomDataTableView);
-//        clone.getItems().setAll(currentData);
-//        if (clone.getItems().isEmpty()){
-//            showMessages("Cảnh báo",
-//                    "Không có dữ liệu để xuất file excel!!!",
-//                    "Hãy chọn OK để để hủy.",
-//                    Alert.AlertType.WARNING);
-//            return;
-//        }
-//
-//        boolean forRoomCategory = roomCategoryNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_ROOM_CATEGORY_NAME);
-//        boolean yearCBBChecked = filterByYearCheckBox.isSelected();
-//        boolean allOfTimeChecked = filterAllTheTimeCheckbox.isSelected();
-//        int numOfInvoice = getNumOfInvoice(FXCollections.observableArrayList(currentData));
-//        double totalMoney = calculateTotalMoney(FXCollections.observableArrayList(currentData));
-//        if(yearCBBChecked && quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
-//            ExportFileHelper.exportRoomExcelFile(
-//                    clone,
-//                    ExportExcelCategory.ALL_OF_YEAR,
-//                    forRoomCategory,
-//                    roomTabDateRangePicker.getValue(),
-//                    numOfInvoice, totalMoney);
-//        } else if(yearCBBChecked && !quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
-//            ExportFileHelper.exportRoomExcelFile(
-//                    clone,
-//                    ExportExcelCategory.QUARTER,
-//                    forRoomCategory,
-//                    roomTabDateRangePicker.getValue(),
-//                    numOfInvoice, totalMoney);
-//        } else if(allOfTimeChecked){
-//            ExportFileHelper.exportRoomExcelFile(
-//                    clone,
-//                    ExportExcelCategory.ALL_OF_TIME,
-//                    forRoomCategory,
-//                    roomTabDateRangePicker.getValue(),
-//                    numOfInvoice, totalMoney);
-//        } else {
-//            LocalDateTime startDate = roomTabDateRangePicker.getValue().getStartDate().atTime(0, 0,0);
-//            LocalDateTime endDate = roomTabDateRangePicker.getValue().getEndDate().atTime(23, 59,59);
-//            if(isAMonth(startDate, endDate))
-//                ExportFileHelper.exportRoomExcelFile(
-//                        clone,
-//                        ExportExcelCategory.ALL_OF_MONTH,
-//                        forRoomCategory,
-//                        roomTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//            else if(isADay(startDate, endDate))
-//                ExportFileHelper.exportRoomExcelFile(
-//                        clone,
-//                        ExportExcelCategory.DAY_OF_MONTH,
-//                        forRoomCategory,
-//                        roomTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//            else if(isManyYear(startDate, endDate))
-//                ExportFileHelper.exportRoomExcelFile(
-//                        clone,
-//                        ExportExcelCategory.MANY_YEAR,
-//                        forRoomCategory,
-//                        roomTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//            else ExportFileHelper.exportRoomExcelFile(
-//                        clone,
-//                        ExportExcelCategory.DATE_RANGE,
-//                        forRoomCategory,
-//                        roomTabDateRangePicker.getValue(),
-//                        numOfInvoice,
-//                        totalMoney);
-//        }
+        TableView<RoomDisplayOnTable> clone = cloneTableView(roomDataTableView);
+        clone.getItems().setAll(currentData);
+        if (clone.getItems().isEmpty()){
+            showMessages("Cảnh báo",
+                    "Không có dữ liệu để xuất file excel!!!",
+                    "Hãy chọn OK để để hủy.",
+                    Alert.AlertType.WARNING);
+            return;
+        }
+
+        boolean forRoomCategory = roomCategoryNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_ROOM_CATEGORY_NAME);
+        boolean yearCBBChecked = filterByYearCheckBox.isSelected();
+        boolean allOfTimeChecked = filterAllTheTimeCheckbox.isSelected();
+        int numOfInvoice = getNumOfInvoice(FXCollections.observableArrayList(currentData));
+        double totalMoney = calculateTotalMoney(FXCollections.observableArrayList(currentData));
+        if(yearCBBChecked && quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
+            ExportFileHelper.exportRoomExcelFile(
+                    clone,
+                    ExportExcelCategory.ALL_OF_YEAR,
+                    forRoomCategory,
+                    roomTabDateRangePicker.getValue(),
+                    numOfInvoice, totalMoney);
+        } else if(yearCBBChecked && !quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
+            ExportFileHelper.exportRoomExcelFile(
+                    clone,
+                    ExportExcelCategory.QUARTER,
+                    forRoomCategory,
+                    roomTabDateRangePicker.getValue(),
+                    numOfInvoice, totalMoney);
+        } else if(allOfTimeChecked){
+            ExportFileHelper.exportRoomExcelFile(
+                    clone,
+                    ExportExcelCategory.ALL_OF_TIME,
+                    forRoomCategory,
+                    roomTabDateRangePicker.getValue(),
+                    numOfInvoice, totalMoney);
+        } else {
+            LocalDateTime startDate = roomTabDateRangePicker.getValue().getStartDate().atTime(0, 0,0);
+            LocalDateTime endDate = roomTabDateRangePicker.getValue().getEndDate().atTime(23, 59,59);
+            if(isAMonth(startDate, endDate))
+                ExportFileHelper.exportRoomExcelFile(
+                        clone,
+                        ExportExcelCategory.ALL_OF_MONTH,
+                        forRoomCategory,
+                        roomTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+            else if(isADay(startDate, endDate))
+                ExportFileHelper.exportRoomExcelFile(
+                        clone,
+                        ExportExcelCategory.DAY_OF_MONTH,
+                        forRoomCategory,
+                        roomTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+            else if(isManyYear(startDate, endDate))
+                ExportFileHelper.exportRoomExcelFile(
+                        clone,
+                        ExportExcelCategory.MANY_YEAR,
+                        forRoomCategory,
+                        roomTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+            else ExportFileHelper.exportRoomExcelFile(
+                        clone,
+                        ExportExcelCategory.DATE_RANGE,
+                        forRoomCategory,
+                        roomTabDateRangePicker.getValue(),
+                        numOfInvoice,
+                        totalMoney);
+        }
     }
 
     // set action for pagination page, change data on table when choose another page
@@ -828,13 +829,13 @@ public class RoomRevenueStatisticsTabController implements Initializable {
     }
 
     // set data to combox of employee name
-//    private void loadDataToRoomCategoryNameCombobox() {
-//        List<RoomCategory> employeeList = RoomCategoryDAO.getRoomCategory();
-//        ObservableList<String> roomCategoryName = FXCollections.observableArrayList(NONE_VALUE_ROOM_CATEGORY_NAME);
-//        employeeList.forEach(e -> roomCategoryName.add(e.getRoomCategoryName()));
-//        roomCategoryNameCombobox.setItems(roomCategoryName);
-//        roomCategoryNameCombobox.setValue(roomCategoryName.getFirst());
-//    }
+    private void loadDataToRoomCategoryNameCombobox() {
+        List<RoomCategory> employeeList = RoomCategoryDAO.getRoomCategory();
+        ObservableList<String> roomCategoryName = FXCollections.observableArrayList(NONE_VALUE_ROOM_CATEGORY_NAME);
+        employeeList.forEach(e -> roomCategoryName.add(e.getRoomCategoryName()));
+        roomCategoryNameCombobox.setItems(roomCategoryName);
+        roomCategoryNameCombobox.setValue(roomCategoryName.getFirst());
+    }
 
     // show num of invoice on text
     private void setNumOfInvoice(String num){
