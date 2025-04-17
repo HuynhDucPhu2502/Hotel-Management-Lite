@@ -13,11 +13,14 @@ import java.util.List;
 public class InvoiceDisplayOnTableDAO {
     public static List<InvoiceDisplayOnTable> getAllData(){
         List<InvoiceDisplayOnTable> data = new ArrayList<>();
-        String SqlQuery = "select i.invoiceID, c.fullName, r.roomID, e.fullName, i.invoiceDate, rs.roomBookingDeposit, i.servicesCharge, i.roomCharge, i.netDue\n" +
-                "from Invoice i join ReservationForm rs on i.reservationFormID = rs.reservationFormID\n" +
-                "join Customer c on c.customerID = rs.customerID\n" +
-                "join Employee e on e.employeeID = rs.employeeID\n" +
-                "join Room r on r.roomID = rs.roomID ";
+        String SqlQuery = "SELECT i.invoice_id, cp.full_name AS customer_name, r.room_id, ep.full_name AS employee_name, i.invoice_date, rs.booking_deposit, i.service_charges, i.room_charges, i.total_due\n" +
+                "FROM invoices i\n" +
+                "JOIN reservation_forms rs ON i.reservation_id = rs.reservation_id\n" +
+                "JOIN customers c ON c.customer_code = rs.customer_code\n" +
+                "JOIN persons cp ON c.person_id = cp.person_id\n" +  // Join để lấy full_name của khách hàng
+                "JOIN employees e ON e.employee_code = rs.employee_code\n" +
+                "JOIN persons ep ON e.person_id = ep.person_id\n" +  // Join để lấy full_name của nhân viên
+                "JOIN rooms r ON r.room_id = rs.room_id";
 
         try (
                 Connection connection = DBHelper.getConnection();
@@ -52,12 +55,15 @@ public class InvoiceDisplayOnTableDAO {
 
     public static List<InvoiceDisplayOnTable> getDataThreeYearsLatest(){
         List<InvoiceDisplayOnTable> data = new ArrayList<>();
-        String SqlQuery = "select i.invoiceID, c.fullName, r.roomID, e.fullName, i.invoiceDate, rs.roomBookingDeposit, i.servicesCharge, i.roomCharge, i.netDue\n" +
-                "from Invoice i join ReservationForm rs on i.reservationFormID = rs.reservationFormID\n" +
-                "join Customer c on c.customerID = rs.customerID\n" +
-                "join Employee e on e.employeeID = rs.employeeID\n" +
-                "join Room r on r.roomID = rs.roomID\n" +
-                "WHERE DATEPART(YEAR, i.invoiceDate) >= DATEPART(YEAR, GETDATE()) - 2 ";
+        String SqlQuery = "SELECT i.invoice_id, cp.full_name AS customer_name, r.room_id, ep.full_name AS employee_name, i.invoice_date, rs.booking_deposit, i.service_charges, i.room_charges, i.total_due\n" +
+                "FROM invoices i\n" +
+                "JOIN reservation_forms rs ON i.reservation_id = rs.reservation_id\n" +
+                "JOIN customers c ON c.customer_code = rs.customer_code\n" +
+                "JOIN persons cp ON c.person_id = cp.person_id\n" +  // Join để lấy full_name của khách hàng
+                "JOIN employees e ON e.employee_code = rs.employee_code\n" +
+                "JOIN persons ep ON e.person_id = ep.person_id\n" +  // Join để lấy full_name của nhân viên
+                "JOIN rooms r ON r.room_id = rs.room_id\n" +
+                "WHERE DATEPART(YEAR, i.invoice_date) >= DATEPART(YEAR, GETDATE()) - 2 ";
 
         try (
                 Connection connection = DBHelper.getConnection();
