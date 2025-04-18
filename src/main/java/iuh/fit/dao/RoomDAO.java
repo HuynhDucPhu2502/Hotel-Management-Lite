@@ -94,24 +94,34 @@ public class RoomDAO {
         em.getTransaction().commit();
     }
 
-//    public static List<Room> getAvailableRoomsUntil(String roomID, String roomCategoryID, LocalDateTime checkout) {
-//        EntityManager em = EntityManagerUtil.getEntityManager();
-//        TypedQuery<Room> query = em.createQuery("""
-//            SELECT r FROM Room r
-//            WHERE r.roomID != :rid AND r.roomCategory.roomCategoryID = :rcid AND r.isActivate = :status
-//            AND NOT EXISTS (
-//                SELECT 1 FROM ReservationForm rf
-//                WHERE rf.room.roomID = r.roomID
-//                  AND rf.checkInDate < :checkout
-//                  AND FUNCTION('DATEADD', 'HOUR', 2, rf.checkOutDate) > CURRENT_TIMESTAMP
-//            )
-//        """, Room.class);
-//        query.setParameter("rid", roomID);
-//        query.setParameter("rcid", roomCategoryID);
-//        query.setParameter("status", ObjectStatus.ACTIVE);
-//        query.setParameter("checkout", checkout);
-//        return query.getResultList();
-//    }
+    public static List<Room> getAvailableRoomsUntil(String roomID, String roomCategoryID, LocalDateTime checkout) {
+        EntityManager em = EntityManagerUtil.getEntityManager();
+
+        LocalDateTime checkoutPlus2Hours = checkout.plusHours(2);
+
+        String jpql = """
+        SELECT r FROM Room r
+        WHERE r.roomID != :rid
+          AND r.roomCategory.roomCategoryID = :rcid
+          AND r.isActivate = :status
+          AND NOT EXISTS (
+            SELECT 1 FROM ReservationForm rf
+            WHERE rf.room.roomID = r.roomID
+              AND rf.approxcheckInDate < :checkout
+              AND rf.approxcheckOutTime > :now
+          )
+    """;
+
+        TypedQuery<Room> query = em.createQuery(jpql, Room.class);
+        query.setParameter("rid", roomID);
+        query.setParameter("rcid", roomCategoryID);
+        query.setParameter("status", ObjectStatus.ACTIVE);
+        query.setParameter("checkout", checkout);
+        query.setParameter("now", checkoutPlus2Hours);
+
+        return query.getResultList();
+    }
+
 
 //    public static List<Room> getAvailableRoomsInDateRange(LocalDateTime checkIn, LocalDateTime checkOut) {
 //        EntityManager em = EntityManagerUtil.getEntityManager();

@@ -8,14 +8,20 @@ import iuh.fit.controller.features.TopController;
 import iuh.fit.controller.features.customer.CustomerManagerController;
 import iuh.fit.controller.features.customer.CustomerSearchingController;
 import iuh.fit.controller.features.employee.EmployeeManagerController;
+import iuh.fit.controller.features.employee.EmployeeSearchingController;
+import iuh.fit.controller.features.invoice.InvoiceManagerController;
 import iuh.fit.controller.features.room.RoomBookingController;
+import iuh.fit.controller.features.room.RoomManagerController;
 import iuh.fit.controller.features.room.RoomSearchingController;
+import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
 import iuh.fit.controller.features.service.HotelServiceManagerController;
 import iuh.fit.controller.features.service.HotelServiceSearchingController;
 import iuh.fit.controller.features.statistics.StatisticalController;
+import iuh.fit.dao.EmployeeDAO;
 import iuh.fit.models.*;
 
 import iuh.fit.models.enums.Position;
+import iuh.fit.utils.TimelineManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -82,7 +88,6 @@ public class MainController {
 
             menuController = loader.getController();
 
-//            menuController.loadData(account);
             setupMenuButtons();
 
             menuBar.getChildren().clear();
@@ -140,21 +145,12 @@ public class MainController {
         // Customer
         menuController.getCustomerSearchingButton().setOnAction(e -> loadPanel("/iuh/fit/view/features/customer/CustomerSearchingPanel.fxml", this, account));
         menuController.getCustomerManagerButton().setOnAction(e -> loadPanel("/iuh/fit/view/features/customer/CustomerManagerPanel.fxml", this, account));
-        // Statistics
-        menuController.getRevenueStatisticsButton()
-                .setOnAction(e ->
-                        loadPanel("/iuh/fit/view/features/statistics/RevenueStatisticalPanel.fxml",
-                                this,
-                                account)
-                );
+
         // Employee Information
         menuController.getEmployeeInformationContainer().setOnMouseClicked(event -> loadPanel("/iuh/fit/view/features/employee_information/EmployeeInformationPanel.fxml", this, account));
 
-        informationBtn.setOnAction(event -> loadPanelInformation("/iuh/fit/view/features/InformationPanel.fxml"));
-
-
         // Thêm các sự kiện xử lý giao diện cho quản lý
-//        if (position.equals(Position.MANAGER)) {
+        if (position.equals(Position.MANAGER)) {
             // Employee
             menuController.getEmployeeManagerButton().setOnAction(event -> loadPanel("/iuh/fit/view/features/employee/EmployeeManagerPanel.fxml", this, account));
             menuController.getAccountOfEmployeeManagerButton().setOnAction(event -> loadPanel("/iuh/fit/view/features/employee/AccountManagerPanel.fxml", this, account));
@@ -166,16 +162,13 @@ public class MainController {
             menuController.getServiceCategoryManagerButton().setOnAction(event -> loadPanel("/iuh/fit/view/features/service/ServiceCategoryManagerPanel.fxml", this, account));
             menuController.getHotelServiceManagerButton().setOnAction(event -> loadPanel("/iuh/fit/view/features/service/HotelServiceManagerPanel.fxml", this, account));
             // Statistics
-//            menuController.getRevenueStatisticsButton()
-//                    .setOnAction(e ->
-//                            loadPanel("/iuh/fit/view/features/statistics/RevenueStatisticalPanel.fxml",
-//                                    this,
-//                                    account)
-//                    );
-
-            // Settings
-
-//        }
+            menuController.getRevenueStatisticsButton()
+                    .setOnAction(e ->
+                            loadPanel("/iuh/fit/view/features/statistics/RevenueStatisticalPanel.fxml",
+                                    this,
+                                    account)
+                    );
+        }
     }
 
     private void handleTooltips() {
@@ -205,21 +198,17 @@ public class MainController {
 
                 case RoomBookingController roomBookingController ->
                         roomBookingController.setupContext(mainController, account.getEmployee());
-//
-//                case InvoiceManagerController invoiceManagerController -> {
-//                    Employee employee = EmployeeDAO.getEmployeeByAccountID(account.getAccountID());
-//                    invoiceManagerController.setupContext(mainController, employee, notificationButtonController);
-//                }
-//
-//
-//                case EmployeeInformationController employeeInformationController ->
-//                        employeeInformationController.setupContext(account.getEmployee(), mainController);
-//
-//                case DashboardController dashboardController ->
-//                    dashboardController.setupContext(account, mainController);
-//
-//                case EmployeeSearchingController employeeSearchingController ->
-//                        employeeSearchingController.setupContext(this);
+
+                case InvoiceManagerController invoiceManagerController -> {
+                    Employee employee = account.getEmployee();
+                    invoiceManagerController.setupContext(mainController, employee);
+                }
+
+                case DashboardController dashboardController ->
+                    dashboardController.setupContext(account, mainController);
+
+                case EmployeeSearchingController employeeSearchingController ->
+                        employeeSearchingController.setupContext(this);
 
 
                 case RoomSearchingController roomSearchingController ->
@@ -228,10 +217,10 @@ public class MainController {
                 default -> {}
             }
 
-//            if (!fxmlPath.contains("RoomBookingPanel") && !fxmlPath.contains("DashBoardPanel")) {
-//                TimelineManager.getInstance().removeTimeline("REALTIME_DASHBOARD");
-//                TimelineManager.getInstance().stopAllTimelines();
-//            }
+            if (!fxmlPath.contains("RoomBookingPanel") && !fxmlPath.contains("DashBoardPanel")) {
+                TimelineManager.getInstance().removeTimeline("REALTIME_DASHBOARD");
+                TimelineManager.getInstance().stopAllTimelines();
+            }
 
             ROOM_BOOKING_LOADED = fxmlPath.contains("RoomBookingPanel");
 
@@ -260,26 +249,26 @@ public class MainController {
             e.printStackTrace();
         }
     }
-//
-//    public void loadPanelRoomManagerController(String fxmlPath, Room room){
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-//            AnchorPane layout = loader.load();
-//
-//            RoomManagerController controller = loader.getController();
-//
-//            ROOM_BOOKING_LOADED = fxmlPath.contains("RoomBookingPanel");
-//
-//            mainPanel.getChildren().clear();
-//            mainPanel.getChildren().addAll(layout.getChildren());
-//
-//            Platform.runLater(() -> controller.setInformation(room));
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
+
+    public void loadPanelRoomManagerController(String fxmlPath, Room room){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            AnchorPane layout = loader.load();
+
+            RoomManagerController controller = loader.getController();
+
+            ROOM_BOOKING_LOADED = fxmlPath.contains("RoomBookingPanel");
+
+            mainPanel.getChildren().clear();
+            mainPanel.getChildren().addAll(layout.getChildren());
+
+            Platform.runLater(() -> controller.setInformation(room));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 //    public void loadPanelCreateReservationFormController(String fxmlPath, MainController mainController, Account account, RoomWithReservation room){
 //        try {
 //            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
@@ -294,14 +283,14 @@ public class MainController {
 //            MainController.setRoomBookingLoaded(false);
 //            Platform.runLater(() -> controller.setupContext(
 //                    mainController, account.getEmployee(), room,
-//                    null, null, null, notificationButtonController
+//                    null, null, null
 //            ));
 //
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
 //    }
-//
+
     public void loadPanelHotelServiceManagerController(String fxmlPath, HotelService service){
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));

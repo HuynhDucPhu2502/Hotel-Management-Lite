@@ -1,9 +1,12 @@
 package iuh.fit.devtools;
 
+import iuh.fit.dao.CustomerDAO;
+import iuh.fit.dao.EmployeeDAO;
 import iuh.fit.models.*;
 import iuh.fit.models.enums.*;
 import iuh.fit.security.PasswordHashing;
 import iuh.fit.utils.EntityManagerUtil;
+import iuh.fit.utils.RoomChargesCalculate;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
@@ -11,6 +14,7 @@ import jakarta.persistence.Persistence;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 // =================================================================
@@ -30,8 +34,127 @@ public class InitSampleData {
         initServiceCategoryAndHotelService(em);
         initRoomCategoryAndRoomData(em);
         initGlobalSequenceData(em);
+        initAllReservationRelatedData(em);
+        initTestReservationForms(em);
 
         emf.close();
+    }
+
+    // =================================================================
+    // Hàm tạo reservation form, history check in, history check out,
+    // reservation room detail, room usage service, invoice
+    // =================================================================
+    public static void initAllReservationRelatedData(EntityManager em) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            List<Customer> customers = em.createQuery("SELECT c FROM Customer c", Customer.class).getResultList();
+            List<Employee> employees = em.createQuery("SELECT e FROM Employee e", Employee.class).getResultList();
+            List<Room> rooms = em.createQuery("SELECT r FROM Room r", Room.class).getResultList();
+            List<HotelService> hotelServices = em.createQuery("SELECT hs FROM HotelService hs", HotelService.class).getResultList();
+
+            if (customers.isEmpty() || employees.isEmpty() || rooms.isEmpty() || hotelServices.isEmpty()) {
+                System.out.println("Không tìm đủ dữ liệu liên quan trong DB.");
+                tx.rollback();
+                return;
+            }
+
+            for (int i = 0; i < 30; i++) {
+                Customer customer = customers.get(i % customers.size());
+                Employee employee = employees.get(i % employees.size());
+                Room room = rooms.get(i % rooms.size());
+
+                LocalDateTime reservationDate = LocalDateTime.now().minusDays(15).plusDays(i);
+                LocalDateTime approxCheckInDate = reservationDate.plusDays(3);
+                LocalDateTime approxCheckOutTime = approxCheckInDate.plusDays(2);
+
+                String rfID = String.format("RF-%06d", i + 1);
+                ReservationForm form = new ReservationForm(
+                        rfID,
+                        reservationDate,
+                        approxCheckInDate,
+                        approxCheckOutTime,
+                            RoomChargesCalculate.calculateRoomCharges(approxCheckInDate, approxCheckOutTime, room) * 0.1,
+                        ReservationStatus.RESERVATION,
+                        room,
+                        customer,
+                        employee
+                );
+                em.persist(form);
+
+                // HistoryCheckIn
+                String hciID = String.format("HCI-%06d", i + 1);
+                HistoryCheckIn hci = new HistoryCheckIn();
+                hci.setRoomHistoryCheckinID(hciID);
+                hci.setCheckInDate(approxCheckInDate);
+                hci.setReservationForm(form);
+                form.setHistoryCheckIn(hci);
+                em.persist(hci);
+
+                // HistoryCheckOut
+                String hcoID = String.format("HCO-%06d", i + 1);
+                HistoryCheckOut hco = new HistoryCheckOut();
+                hco.setRoomHistoryCheckOutID(hcoID);
+                hco.setDateOfCheckingOut(approxCheckOutTime);
+                hco.setReservationForm(form);
+                form.setHistoryCheckOut(hco);
+                em.persist(hco);
+
+                // ReservationRoomDetail
+                String rrdID = String.format("RRD-%06d", i + 1);
+                ReservationRoomDetail rrd = new ReservationRoomDetail();
+                rrd.setReservationRoomDetailID(rrdID);
+                rrd.setDateChanged(approxCheckInDate);
+                rrd.setRoom(room);
+                rrd.setReservationForm(form);
+                em.persist(rrd);
+
+                // RoomUsageService
+                String rusID = String.format("RUS-%06d", i + 1);
+                HotelService service = hotelServices.get(i % hotelServices.size());
+                RoomUsageService rus = new RoomUsageService();
+                rus.setRoomUsageServiceID(rusID);
+                rus.setUnitPrice(50000.0 + i * 1000);
+                rus.setQuantity(1 + (i % 5));
+                rus.setDayAdded(LocalDateTime.now().minusDays(10).plusDays(i));
+                rus.setHotelService(service);
+                rus.setReservationForm(form);
+                em.persist(rus);
+
+                // Invoice
+                String invID = String.format("INV-%06d", i + 1);
+                double roomCharges = RoomChargesCalculate.calculateRoomCharges(
+                        approxCheckInDate, approxCheckOutTime, room
+                );
+                // Lấy lại từ bộ nhớ thay vì gọi DAO tính toán do em chưa commit()
+                double serviceCharges = rus.getQuantity() * rus.getUnitPrice();
+                double subTotal = roomCharges + serviceCharges;
+                double taxCharge = subTotal * 0.1;
+                double totalDue = subTotal + taxCharge;
+                LocalDateTime invoiceDate = LocalDateTime.now().minusDays(10).plusDays(i);
+
+                Invoice invoice = new Invoice(
+                        invID,
+                        invoiceDate,
+                        roomCharges,
+                        serviceCharges,
+                        subTotal,
+                        taxCharge,
+                        totalDue,
+                        form
+                );
+                em.persist(invoice);
+            }
+
+            tx.commit();
+            System.out.println("Dữ liệu Reservation + HistoryCheckIn + HistoryCheckOut + RRD + RUS + Invoice đã được tạo thành công");
+
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        }
     }
 
     // =================================================================
@@ -99,6 +222,7 @@ public class InitSampleData {
             tx.begin();
 
             List<Employee> employees = List.of(
+                    new Employee("EMP-000000", "ADMIN", "", "", Gender.MALE, "123456789", LocalDate.of(1900, 1, 1), ObjectStatus.ACTIVE, Position.MANAGER),
                     new Employee("EMP-000001", "Huynh Duc Phu", "0912345678", "123 Ho Chi Minh", Gender.MALE, "001099012345", LocalDate.of(1985, 6, 15), ObjectStatus.ACTIVE, Position.MANAGER),
                     new Employee("EMP-000002", "Nguyen Xuan Chuc", "0908765432", "456 Hue", Gender.MALE, "002199012346", LocalDate.of(1990, 4, 22), ObjectStatus.ACTIVE, Position.RECEPTIONIST),
                     new Employee("EMP-000003", "Le Tran Gia Huy", "0987654321", "789 Ho Chi Minh", Gender.MALE, "003299012347", LocalDate.of(1992, 8, 19), ObjectStatus.ACTIVE, Position.MANAGER),
@@ -236,6 +360,78 @@ public class InitSampleData {
 
 
     // =================================================================
+    // Hàm tạo dữ liệu test cho chức năng đặt phòng
+    // =================================================================
+    public static void initTestReservationForms(EntityManager em) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            Employee emp1 = EmployeeDAO.getEmployeeByEmployeeCode("EMP-000001");
+            Employee emp2 = EmployeeDAO.getEmployeeByEmployeeCode("EMP-000001");
+            Customer cus1 = CustomerDAO.findById("CUS-000001");
+            Customer cus2 = CustomerDAO.findById("CUS-000002");
+            Room room1 = em.find(Room.class, "T1101");
+            Room room2 = em.find(Room.class, "T1105");
+
+            // Phiếu 1: Chưa checkin
+            ReservationForm rf1 = new ReservationForm(
+                    "RF-000031",
+                    LocalDateTime.now(),
+                    LocalDateTime.now(),
+                    LocalDateTime.now().plusDays(3),
+                    500000.0,
+                    ReservationStatus.RESERVATION,
+                    room1,
+                    cus1,
+                    emp1
+            );
+            em.persist(rf1);
+
+            // Phiếu 2: Đã checkin
+            ReservationForm rf2 = new ReservationForm(
+                    "RF-000032",
+                    LocalDateTime.now().minusDays(2),
+                    LocalDateTime.now().minusDays(1),
+                    LocalDateTime.now().plusDays(3),
+                    500000.0,
+                    ReservationStatus.RESERVATION,
+                    room2,
+                    cus2,
+                    emp2
+            );
+            em.persist(rf2);
+
+            HistoryCheckIn hci = new HistoryCheckIn();
+            hci.setRoomHistoryCheckinID("HCI-000031");
+            hci.setCheckInDate(LocalDateTime.now().minusDays(1));
+            hci.setReservationForm(rf2);
+            rf2.setHistoryCheckIn(hci);
+            em.persist(hci);
+
+            ReservationRoomDetail rrd = new ReservationRoomDetail();
+            rrd.setReservationRoomDetailID("RRD-000031");
+            rrd.setDateChanged(LocalDateTime.now().minusDays(1));
+            rrd.setRoom(room2);
+            rrd.setReservationForm(rf2);
+            em.persist(rrd);
+
+            // Cập nhật trạng thái phòng
+            room2.setRoomStatus(RoomStatus.IN_USE);
+
+            tx.commit();
+            System.out.println("Tạo thành công dữ liệu cho chức năng đặt phòng:");
+            System.out.println("+ 1 phiếu đặt phòng đến thời gian nhưng chưa checkin");
+            System.out.println("+ 1 phiếu đặt phòng đã checkin");
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        }
+    }
+
+
+    // =================================================================
     // Hàm tạo dữ liệu cho Global Sequence
     // =================================================================
     public static void initGlobalSequenceData(EntityManager em) {
@@ -251,9 +447,12 @@ public class InitSampleData {
                     new GlobalSequence(0, "HotelService", "HS-000021"),
                     new GlobalSequence(0, "Customer", "CUS-000031"),
                     new GlobalSequence(0, "RoomCategory", "RC-000005"),
-                    new GlobalSequence(0, "ReservationForm", "RF-000001"),
-                    new GlobalSequence(0, "ReservationRoomDetail", "RRD-000001"),
-                    new GlobalSequence(0, "HistoryCheckin", "HCI-000001")
+                    new GlobalSequence(0, "ReservationForm", "RF-000033"),
+                    new GlobalSequence(0, "ReservationRoomDetail", "RRD-000032"),
+                    new GlobalSequence(0, "HistoryCheckin", "HCI-000032"),
+                    new GlobalSequence(0, "HistoryCheckout", "HCO-000031"),
+                    new GlobalSequence(0, "RoomUsageService", "RUS-000031"),
+                    new GlobalSequence(0, "Invoice", "INV-000031")
             );
 
             for (GlobalSequence gs : globalSequences) {

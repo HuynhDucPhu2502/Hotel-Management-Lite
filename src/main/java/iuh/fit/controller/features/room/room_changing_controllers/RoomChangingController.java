@@ -1,23 +1,20 @@
-package iuh.fit.controller.features.room.service_ordering_controllers;
+package iuh.fit.controller.features.room.room_changing_controllers;
 
 import com.dlsc.gemsfx.DialogPane;
 import iuh.fit.controller.MainController;
 
 import iuh.fit.controller.features.room.RoomBookingController;
 import iuh.fit.controller.features.room.checking_in_reservation_list_controllers.ReservationListController;
-//import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
-import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
+import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
 import iuh.fit.dao.HistoryCheckInDAO;
-import iuh.fit.dao.HotelServiceDAO;
-import iuh.fit.dao.RoomUsageServiceDAO;
-import iuh.fit.dao.ServiceCategoryDAO;
+import iuh.fit.dao.ReservationRoomDetailDAO;
+import iuh.fit.dao.RoomDAO;
 import iuh.fit.models.*;
 import iuh.fit.models.wrapper.RoomWithReservation;
 import iuh.fit.utils.RoomChargesCalculate;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -28,25 +25,23 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class ServiceOrderingController {
+public class RoomChangingController {
     // ==================================================================================================================
     // 1. Các biến
     // ==================================================================================================================
-    @FXML
-    private Button backBtn, bookingRoomNavigateLabel;
-
-    @FXML
-    private Button navigateToCreateReservationFormBtn,
-            navigateToReservationListBtn, navigateToRoomChangingBtn,
-            navigateToRoomCheckingOutBtn;
-
+   @FXML
+   private Button backBtn, bookingRoomNavigateLabel;
+   @FXML
+   private Button navigateToCreateReservationFormBtn,
+           navigateToReservationListBtn, navigateToServiceOrderingBtn,
+           navigateToRoomCheckingOutBtn;
 
     @FXML
     private Label roomNumberLabel, roomCategoryLabel,
@@ -58,48 +53,43 @@ public class ServiceOrderingController {
             cusomerPhoneNumberLabel, customerIDCardNumberLabel;
 
     @FXML
-    private ComboBox<String> serviceCategoryCBox;
-
+    private Text roomAvailableTitle;
 
     private final DateTimeFormatter dateTimeFormatter =
             DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm", Locale.forLanguageTag("vi-VN"));
 
-
     @FXML
-    private TableView<RoomUsageService> roomUsageServiceTableView;
+    private TableView<ReservationRoomDetail> roomReservationDetailTableView;
     @FXML
-    private TableColumn<RoomUsageService, String> roomUsageServiceIDColumn;
+    private TableColumn<ReservationRoomDetail, String> roomReservationDetailID;
     @FXML
-    private TableColumn<RoomUsageService, String> serviceNameColumn;
+    private TableColumn<ReservationRoomDetail, String> roomReservationDetailDateChanged;
     @FXML
-    private TableColumn<RoomUsageService, Integer> quantityColumn;
+    private TableColumn<ReservationRoomDetail, String> roomReservationDetailRoomNumber;
     @FXML
-    private TableColumn<RoomUsageService, Double> unitPriceColumn;
-    @FXML
-    private TableColumn<RoomUsageService, Double> totalPriceColumn;
-    @FXML
-    private TableColumn<RoomUsageService, String> dateAddedColumn;
-    @FXML
-    private TableColumn<RoomUsageService, String> employeeAddedColumn;
+    private TableColumn<ReservationRoomDetail, String> roomReservationEmployeeFullname;
 
     @FXML
     private DialogPane dialogPane;
-
     @FXML
     private TitledPane titledPane;
 
     @FXML
     private HBox emptyLabelContainer;
     @FXML
-    private VBox serviceListContainer;
+    private VBox roomListContainer;
     @FXML
-    private GridPane serviceGridPane;
+    private GridPane roomGridPane;
+
+    @FXML
+    private ComboBox<String> floorNumberCBox;
 
     private MainController mainController;
     private RoomWithReservation roomWithReservation;
     private Employee employee;
 
-    private List<HotelService> hotelServiceList;
+    private List<Room> availableRooms;
+
 
 
     // ==================================================================================================================
@@ -107,7 +97,8 @@ public class ServiceOrderingController {
     // ==================================================================================================================
     public void initialize() {
         dialogPane.toFront();
-        setupRoomUsageServiceTableView();
+
+        setupRoomReservationDetailTableView();
     }
 
     public void setupContext(MainController mainController, Employee employee,
@@ -117,50 +108,49 @@ public class ServiceOrderingController {
         this.roomWithReservation = roomWithReservation;
 
         titledPane.setText("Quản lý đặt phòng " + roomWithReservation.getRoom().getRoomNumber());
+        roomAvailableTitle.setText("Danh sách phòng trống từ hiện tại đến ngày " +
+                dateTimeFormatter.format(roomWithReservation.getReservationForm().getApproxcheckOutTime()));
 
         if (handleValidTime()) {
             Platform.runLater(() -> navigateToRoomBookingPanel(true));
             return;
         }
 
-
         setupReservationForm();
         setupButtonActions();
         loadData();
     }
 
-    private void setupButtonActions() {
-        // Label Navigate Button
-        backBtn.setOnAction(e -> navigateToRoomBookingPanel(false));
-        bookingRoomNavigateLabel.setOnAction(e -> navigateToRoomBookingPanel(false));
-
-        // Box Navigate Button
-        navigateToReservationListBtn.setOnAction(e -> navigateToReservationListPanel());
-        navigateToCreateReservationFormBtn.setOnAction(e -> navigateToCreateReservationFormPanel());
-        navigateToRoomChangingBtn.setOnAction(e -> navigateToRoomChangingPanel());
-        navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
-
-        // Current Panel Button
-        serviceCategoryCBox.setOnAction(e -> filterServicesByCategory());
-    }
 
     private void loadData() {
         Task<Void> loadDataTask = new Task<>() {
             @Override
             protected Void call() {
-                hotelServiceList = HotelServiceDAO.getHotelService();
+                // Tải danh sách phòng khả dụng từ cơ sở dữ liệu.
+                availableRooms = RoomDAO.getAvailableRoomsUntil(
+                        roomWithReservation.getRoom().getRoomID(),
+                        roomWithReservation.getRoom().getRoomCategory().getRoomCategoryID(),
+                        roomWithReservation.getReservationForm().getApproxcheckOutTime()
+                );
 
-                loadTable();
+                // Tải danh sách chi tiết đặt phòng.
+                List<ReservationRoomDetail> roomReservationDetails = ReservationRoomDetailDAO.getByReservationFormID(
+                        roomWithReservation.getReservationForm().getReservationID()
+                );
 
-                ArrayList<String> categoryNames = (ArrayList<String>) ServiceCategoryDAO.getServiceCategoryNames();
-                categoryNames.addFirst("TẤT CẢ");
-
+                // Cập nhật bảng chi tiết đặt phòng.
+                ObservableList<ReservationRoomDetail> data = FXCollections.observableArrayList(roomReservationDetails);
                 Platform.runLater(() -> {
-                    serviceCategoryCBox.getItems().setAll(categoryNames);
-                    serviceCategoryCBox.getSelectionModel().selectFirst();
+                    roomReservationDetailTableView.setItems(data);
+                    roomReservationDetailTableView.refresh();
                 });
 
-                Platform.runLater(() -> filterServicesByCategory());
+                // Thiết lập danh sách tầng cho ComboBox và chọn giá trị đầu tiên.
+                Platform.runLater(() -> {
+                    floorNumberCBox.getItems().setAll(getFloorNumbers());
+                    floorNumberCBox.getSelectionModel().selectFirst();
+                    filterAvailableRoomsByFloor();
+                });
 
                 return null;
             }
@@ -171,21 +161,30 @@ public class ServiceOrderingController {
             loadDataTask.getException().printStackTrace();
         });
 
-        loadDataTask.setOnSucceeded(e -> displayServices(hotelServiceList));
+        loadDataTask.setOnSucceeded(e -> displayAvailableRooms(availableRooms));
 
         new Thread(loadDataTask).start();
     }
 
-    private void loadTable() {
-        List<RoomUsageService> roomUsageServices = RoomUsageServiceDAO.getByReservationFormID(roomWithReservation.getReservationForm().getReservationID());
-        ObservableList<RoomUsageService> data = FXCollections.observableArrayList(roomUsageServices);
-
-        Platform.runLater(() -> {
-            roomUsageServiceTableView.setItems(data);
-            roomUsageServiceTableView.refresh();
-        });
+    private List<String> getFloorNumbers() {
+        return List.of("TẤT CẢ", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10");
     }
 
+    private void setupButtonActions() {
+        // Label Navigate Button
+        backBtn.setOnAction(e -> navigateToRoomBookingPanel(false));
+        bookingRoomNavigateLabel.setOnAction(e -> navigateToRoomBookingPanel(false));
+
+        // Box Navigate Button
+        navigateToReservationListBtn.setOnAction(e -> navigateToReservationListPanel());
+        navigateToCreateReservationFormBtn.setOnAction(e -> navigateToCreateReservationFormPanel());
+        navigateToServiceOrderingBtn.setOnAction(e -> navigateToServiceOrderingPanel());
+        navigateToRoomCheckingOutBtn.setOnAction(e -> navigateToCheckingOutReservationFormPanel());
+
+        // Current Panel Button
+        floorNumberCBox.setOnAction(e -> filterAvailableRoomsByFloor());
+
+    }
 
     // ==================================================================================================================
     // 3. Xử lý chức năng hiển thị panel khác
@@ -200,10 +199,12 @@ public class ServiceOrderingController {
             if (isError)
                 roomBookingController
                         .getDialogPane()
-                        .showInformation("LỖI", "Thời gian lưu trú đã kết thúc. Không thể thêm dịch vụ.");
+                        .showInformation("LỖI", "Thời gian lưu trú đã kết thúc. Không thể chuyển phòng.");
+
 
             mainController.getMainPanel().getChildren().clear();
             mainController.getMainPanel().getChildren().addAll(layout.getChildren());
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -246,13 +247,13 @@ public class ServiceOrderingController {
         }
     }
 
-    private void navigateToRoomChangingPanel() {
+    private void navigateToServiceOrderingPanel() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/changing_room_panels/RoomChangingPanel.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/ordering_services_panels/ServiceOrderingPanel.fxml"));
             AnchorPane layout = loader.load();
 
-            RoomChangingController roomChangingController = loader.getController();
-            roomChangingController.setupContext(
+            ServiceOrderingController serviceOrderingController = loader.getController();
+            serviceOrderingController.setupContext(
                     mainController, employee, roomWithReservation
             );
 
@@ -305,46 +306,45 @@ public class ServiceOrderingController {
         customerIDCardNumberLabel.setText(reservationFormCustomer.getIdCardNumber());
     }
 
-    private void displayServices(List<HotelService> services) {
-        if (!services.isEmpty()) {
-            serviceGridPane.getChildren().clear();
+    private void displayAvailableRooms(List<Room> availableRooms) {
+        if (!availableRooms.isEmpty()) {
+            roomGridPane.getChildren().clear();
 
             int row = 0, col = 0;
 
             try {
-                for (HotelService service : services) {
+                for (Room room : availableRooms) {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource(
-                            "/iuh/fit/view/features/room/ordering_services_panels/ServiceItem.fxml"));
-                    Pane serviceItem = loader.load();
-                    ServiceItemController controller = loader.getController();
-                    controller.setupContext(service);
-                    controller.getAddServiceBtn().setOnAction(e ->
-                            handleServiceOrdering(service, controller.getAmountField().getValue(), controller.getAmountField())
-                    );
+                            "/iuh/fit/view/features/room/changing_room_panels/RoomAvailableChangingItem.fxml"));
+                    Pane roomItem = loader.load();
 
-                    serviceGridPane.add(serviceItem, col, row);
+                    RoomAvailableChangingItemController controller = loader.getController();
+                    controller.setupContext(room);
+                    controller.getChangingBtn().setOnAction(e -> handleChangingRoom(room));
+
+                    roomGridPane.add(roomItem, col, row);
 
                     col++;
-                    if (col == 4) {
+                    if (col == 3) {
                         col = 0;
                         row++;
                     }
                 }
-
-                serviceGridPane.setVisible(true);
-                serviceGridPane.setManaged(true);
-                emptyLabelContainer.setVisible(false);
-                emptyLabelContainer.setManaged(false);
-                serviceListContainer.setAlignment(Pos.TOP_CENTER);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            roomGridPane.setVisible(true);
+            roomGridPane.setManaged(true);
+            emptyLabelContainer.setVisible(false);
+            emptyLabelContainer.setManaged(false);
+            roomListContainer.setAlignment(Pos.TOP_CENTER);
         } else {
-            serviceGridPane.setVisible(false);
-            serviceGridPane.setManaged(false);
+            roomGridPane.setVisible(false);
+            roomGridPane.setManaged(false);
 
             if (emptyLabelContainer.getChildren().isEmpty()) {
-                Label emptyLabel = new Label("Không có dịch vụ nào khả dụng.");
+                Label emptyLabel = new Label("Không có phòng nào khả dụng.");
                 emptyLabel.setStyle("-fx-font-size: 42px; -fx-text-fill: gray;");
                 emptyLabelContainer.getChildren().add(emptyLabel);
             }
@@ -352,120 +352,104 @@ public class ServiceOrderingController {
             emptyLabelContainer.setVisible(true);
             emptyLabelContainer.setManaged(true);
 
-            serviceListContainer.setAlignment(Pos.CENTER);
+            roomListContainer.setAlignment(Pos.CENTER);
         }
     }
 
-    // ==================================================================================================================
-    // 5.  Setup table lịch sử dùng dịch vụ
-    // ==================================================================================================================
-    private void setupRoomUsageServiceTableView() {
-        roomUsageServiceIDColumn.setCellValueFactory(new PropertyValueFactory<>("roomUsageServiceID"));
-        serviceNameColumn.setCellValueFactory(data -> {
-            HotelService service = data.getValue().getHotelService();
-            String serviceName = (service != null && service.getServiceName() != null) ? service.getServiceName() : "KHÔNG CÓ";
-            return new SimpleStringProperty(serviceName);
-        });
-        quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-        unitPriceColumn.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
-        totalPriceColumn.setCellValueFactory(data -> {
-            double totalPrice = data.getValue().getQuantity() * data.getValue().getUnitPrice();
-            return new SimpleDoubleProperty(totalPrice).asObject();
-        });
-        dateAddedColumn.setCellValueFactory(data -> {
-            LocalDateTime dateAdded = data.getValue().getDayAdded();
-            String formattedDate = (dateAdded != null) ? dateAdded.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")) : "Không có";
-            return new SimpleStringProperty(formattedDate);
-        });
+    private void filterAvailableRoomsByFloor() {
+        String selectedFloor = floorNumberCBox.getSelectionModel().getSelectedItem();
 
-        employeeAddedColumn.setCellValueFactory(data -> {
-            Employee employee = data.getValue().getReservationForm().getEmployee();
-            String employeeName = (employee != null && employee.getFullName() != null) ? employee.getFullName() : "Không có";
-            return new SimpleStringProperty(employeeName);
-        });
-    }
-
-    // ==================================================================================================================
-    // 6. Xử lý sự kiện thêm dịch vụ
-    // ==================================================================================================================
-    private void handleServiceOrdering(HotelService service, int amount, Spinner<Integer> amountField) {
-
-
-        DialogPane.Dialog<ButtonType> dialog = dialogPane.showConfirmation(
-                "XÁC NHẬN",
-                "Bạn có chắc chắn muốn thêm dịch vụ: " + service.getServiceName() + " với số lượng: " + amount + " không?"
-        );
-
-        dialog.onClose(buttonType -> {
-            if (buttonType == ButtonType.YES) {
-                if (handleValidTime()) {
-                    Platform.runLater(() -> navigateToRoomBookingPanel(true));
-                    return;
-                }
-
-                handleServiceOrderingDAO(service, amount, amountField);
-                dialogPane.showInformation("Thành Công", "Dịch vụ đã được thêm thành công!");
-                loadTable();
-            }
-        });
-    }
-
-    private void handleServiceOrderingDAO(HotelService service, int quantity, Spinner<Integer> amountField) {
-        try {
-            RoomUsageService roomUsageService = new RoomUsageService();
-            roomUsageService.setQuantity(quantity);
-            roomUsageService.setUnitPrice(service.getServicePrice());
-            roomUsageService.setDayAdded(LocalDateTime.now());
-            roomUsageService.setHotelService(service);
-            roomUsageService.setReservationForm(roomWithReservation.getReservationForm());
-
-            String result = RoomUsageServiceDAO.serviceOrdering(roomUsageService);
-
-            if (result.equals("SERVICE_ORDERING_SUCCESS")) {
-                amountField.getValueFactory().setValue(1);
-            } else {
-                dialogPane.showWarning("Lỗi", result);
-            }
-
-        } catch (Exception e) {
-            dialogPane.showWarning("LỖI", e.getMessage());
-        }
-    }
-
-
-
-    // ==================================================================================================================
-    // 7. Chức năng tìm kiếm
-    // ==================================================================================================================
-    private void filterServicesByCategory() {
-        Task<List<HotelService>> filterTask = new Task<>() {
+        Task<List<Room>> filterTask = new Task<>() {
             @Override
-            protected List<HotelService> call() {
-                String selectedCategory = serviceCategoryCBox.getSelectionModel().getSelectedItem();
-                if ("TẤT CẢ".equals(selectedCategory)) {
-                    return hotelServiceList;
+            protected List<Room> call() {
+                if ("TẤT CẢ".equals(selectedFloor)) {
+                    return availableRooms;
                 } else {
-                    return hotelServiceList.stream()
-                            .filter(service -> service.getServiceCategory().getServiceCategoryName().equalsIgnoreCase(selectedCategory))
+                    return availableRooms.stream()
+                            .filter(room -> String.valueOf(room.getRoomFloorNumber()).equals(selectedFloor))
                             .toList();
                 }
             }
         };
 
-        filterTask.setOnSucceeded(e -> displayServices(filterTask.getValue()));
-        filterTask.setOnFailed(e -> dialogPane.showWarning("LỖI", "Lỗi khi lọc dịch vụ"));
+        filterTask.setOnSucceeded(e -> displayAvailableRooms(filterTask.getValue()));
+        filterTask.setOnFailed(e -> dialogPane.showWarning("LỖI", "Lỗi khi lọc phòng"));
 
         new Thread(filterTask).start();
     }
 
+
     // ==================================================================================================================
-    // 9. Kiểm tra thời gian có phù hợp
+    // 5.  Setup table lịch sử dùng phòng
+    // ==================================================================================================================
+    private void setupRoomReservationDetailTableView() {
+        roomReservationDetailID.setCellValueFactory(new PropertyValueFactory<>("reservationRoomDetailID"));
+        roomReservationDetailDateChanged.setCellValueFactory(data -> {
+            LocalDateTime dateChanged = data.getValue().getDateChanged();
+            String formattedDate = dateChanged != null ? dateChanged.format(dateTimeFormatter) : "KHÔNG CÓ";
+            return new SimpleStringProperty(formattedDate);
+        });
+        roomReservationDetailRoomNumber.setCellValueFactory(data -> {
+            Room room = data.getValue().getRoom();
+            String roomNumber = (room != null && room.getRoomNumber() != null) ? room.getRoomNumber() : "KHÔNG CÓ";
+            return new SimpleStringProperty(roomNumber);
+        });
+        roomReservationEmployeeFullname.setCellValueFactory(data -> {
+            Employee employee = data.getValue().getReservationForm().getEmployee();
+            String fullName = (employee != null && employee.getFullName() != null) ? employee.getFullName() : "KHÔNG CÓ";
+            return new SimpleStringProperty(fullName);
+        });
+
+    }
+
+    // ==================================================================================================================
+    // 6.  Xử lý sự kiện thay chuyển phòng
+    // ==================================================================================================================
+    private void handleChangingRoom(Room newRoom) {
+        try {
+            DialogPane.Dialog<ButtonType> dialog = dialogPane.showConfirmation(
+                    "XÁC NHẬN",
+                    "Bạn có chắc chắn muốn chuyển phòng?"
+            );
+
+            dialog.onClose(buttonType -> {
+                if (buttonType == ButtonType.YES) {
+                    if (handleValidTime()) {
+                        Platform.runLater(() -> navigateToRoomBookingPanel(true));
+                        return;
+                    }
+
+                    try {
+                        ReservationRoomDetailDAO.changingRoom(
+                                roomWithReservation.getRoom().getRoomID(),
+                                newRoom.getRoomID(),
+                                roomWithReservation.getReservationForm().getReservationID(),
+                                employee.getEmployeeCode()
+                        );
+
+                        dialogPane.showInformation("Thành Công", "Chuyển phòng thành công!");
+                        navigateToRoomBookingPanel(false);
+                    }  catch (Exception e) {
+                        e.printStackTrace();
+                        dialogPane.showInformation("LỖI", e.getMessage());
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            dialogPane.showInformation("LỖI", "Có lỗi xảy ra khi xử lý thao tác chuyển phòng.");
+        }
+    }
+
+
+    // ==================================================================================================================
+    // 8. Kiểm tra thời gian có phù hợp
     // ==================================================================================================================
     private boolean handleValidTime() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime checkOutDate = roomWithReservation.getReservationForm().getApproxcheckOutTime();
+
         return now.isAfter(checkOutDate);
     }
-
-
 }

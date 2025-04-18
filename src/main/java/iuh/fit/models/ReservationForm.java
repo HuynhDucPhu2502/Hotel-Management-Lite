@@ -68,6 +68,18 @@ public class ReservationForm implements Serializable {
     @OneToMany(mappedBy = "reservationForm")
     private Set<RoomUsageService> roomUsageService;
 
+    public ReservationForm(String reservationID, LocalDateTime reservationDate, LocalDateTime approxcheckInDate, LocalDateTime approxcheckOutTime, double bookingDeposit, ReservationStatus reservationStatus, Room room, Customer customer, Employee employee) {
+        this.reservationID = reservationID;
+        this.reservationDate = reservationDate;
+        this.approxcheckInDate = approxcheckInDate;
+        this.approxcheckOutTime = approxcheckOutTime;
+        this.bookingDeposit = bookingDeposit;
+        this.reservationStatus = reservationStatus;
+        this.room = room;
+        this.customer = customer;
+        this.employee = employee;
+    }
+
     public ReservationForm(LocalDateTime reservationDate,
                            LocalDateTime approxcheckInDate,
                            LocalDateTime approxcheckOutTime,

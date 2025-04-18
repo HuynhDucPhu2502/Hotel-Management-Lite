@@ -2,16 +2,16 @@ package iuh.fit.controller.features.room.creating_reservation_form_controllers;
 
 import iuh.fit.controller.MainController;
 import iuh.fit.controller.features.room.RoomBookingController;
-//import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
+import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.models.Customer;
 import iuh.fit.models.Employee;
 import iuh.fit.models.ReservationForm;
 import iuh.fit.models.Room;
-//import iuh.fit.models.enums.RoomStatus;
+import iuh.fit.models.enums.RoomStatus;
 import iuh.fit.models.wrapper.RoomWithReservation;
-//import iuh.fit.utils.RoomManagementService;
-//import iuh.fit.utils.TimelineManager;
-//import javafx.animation.KeyFrame;
+import iuh.fit.utils.RoomManagementService;
+import iuh.fit.utils.TimelineManager;
+import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -62,49 +62,49 @@ public class RoomOverDueController {
         customerFullNameLabel.setText(customer.getFullName());
         checkOutDateText.setText(dateTimeFormatter.format(reservationForm.getApproxcheckOutTime()));
 
-//        initializeOverdueTimeTracking(roomWithReservation.getReservationForm().getApproxcheckOutTime());
+        initializeOverdueTimeTracking(roomWithReservation.getReservationForm().getApproxcheckOutTime());
     }
 
-//    private void initializeOverdueTimeTracking(LocalDateTime checkOutDate) {
-//        String timelineKey = roomWithReservation.getRoom().getRoomID() + RoomStatus.OVER_DUE.name();
-//
-//        duration = java.time.Duration.between(checkOutDate, LocalDateTime.now());
-//
-//        long hours = duration.toHours();
-//        long minutes = duration.toMinutesPart();
-//        long seconds = duration.toSecondsPart();
-//
-//        lateDuration.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
-//
-//        if (TimelineManager.getInstance().containsTimeline(timelineKey)) {
-//            TimelineManager.getInstance().removeTimeline(timelineKey);
-//        }
-//
-//        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> refreshLateDurationDisplay(checkOutDate)));
-//        timeline.setCycleCount(Timeline.INDEFINITE);
-//        timeline.play();
-//
-//        TimelineManager.getInstance().addTimeline(timelineKey, timeline);
-//    }
+    private void initializeOverdueTimeTracking(LocalDateTime checkOutDate) {
+        String timelineKey = roomWithReservation.getRoom().getRoomID() + RoomStatus.OVER_DUE.name();
 
-//    private void refreshLateDurationDisplay(LocalDateTime checkOutDate) {
-//        duration = java.time.Duration.between(checkOutDate, LocalDateTime.now());
-//
-//        long hours = duration.toHours();
-//        long minutes = duration.toMinutesPart();
-//        long seconds = duration.toSecondsPart();
-//
-//        lateDuration.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
-//
-//        if (hours >= 2) {
-//            if (timeline != null) {
-//                if (MainController.isRoomBookingLoaded()) navigateToRoomBookingPanel(false);
-//                else RoomManagementService.autoCheckoutOverdueRooms(notificationButtonController, mainController);
-//                TimelineManager.getInstance().removeTimeline(roomWithReservation.getRoom().getRoomID() + RoomStatus.OVERDUE.name());
-//            }
-//
-//        }
-//    }
+        duration = java.time.Duration.between(checkOutDate, LocalDateTime.now());
+
+        long hours = duration.toHours();
+        long minutes = duration.toMinutesPart();
+        long seconds = duration.toSecondsPart();
+
+        lateDuration.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+
+        if (TimelineManager.getInstance().containsTimeline(timelineKey)) {
+            TimelineManager.getInstance().removeTimeline(timelineKey);
+        }
+
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> refreshLateDurationDisplay(checkOutDate)));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
+        TimelineManager.getInstance().addTimeline(timelineKey, timeline);
+    }
+
+    private void refreshLateDurationDisplay(LocalDateTime checkOutDate) {
+        duration = java.time.Duration.between(checkOutDate, LocalDateTime.now());
+
+        long hours = duration.toHours();
+        long minutes = duration.toMinutesPart();
+        long seconds = duration.toSecondsPart();
+
+        lateDuration.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+
+        if (hours >= 2) {
+            if (timeline != null) {
+                if (MainController.isRoomBookingLoaded()) navigateToRoomBookingPanel(false);
+                else RoomManagementService.autoCheckoutOverdueRooms(mainController);
+                TimelineManager.getInstance().removeTimeline(roomWithReservation.getRoom().getRoomID() + RoomStatus.OVER_DUE.name());
+            }
+
+        }
+    }
 
     // ==================================================================================================================
     // 3. Xử lý chức năng hiển thị panel khác
@@ -121,10 +121,10 @@ public class RoomOverDueController {
                     "/iuh/fit/view/features/room/checking_out_panels/CheckingOutReservationFormPanel.fxml"));
             AnchorPane layout = loader.load();
 
-//            CheckingOutReservationFormController checkingOutReservationFormController = loader.getController();
-//            checkingOutReservationFormController.setupContext(
-//                    mainController, employee, roomWithReservation, notificationButtonController
-//            );
+            CheckingOutReservationFormController checkingOutReservationFormController = loader.getController();
+            checkingOutReservationFormController.setupContext(
+                    mainController, employee, roomWithReservation
+            );
 
 
             mainController.getMainPanel().getChildren().clear();

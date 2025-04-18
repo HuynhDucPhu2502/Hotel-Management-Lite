@@ -10,6 +10,8 @@ import iuh.fit.models.enums.RoomStatus;
 import iuh.fit.models.wrapper.RoomWithReservation;
 //import iuh.fit.utils.RoomManagementService;
 //import iuh.fit.utils.TimelineManager;
+import iuh.fit.utils.RoomManagementService;
+import iuh.fit.utils.TimelineManager;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
@@ -58,35 +60,35 @@ public class RoomOnUseItemController {
         customerFullNameLabel.setText(customer.getFullName());
         checkOutDateText.setText(dateTimeFormatter.format(reservationForm.getApproxcheckOutTime()));
 
-//        initializeRoomOverdueCheck(reservationForm.getCheckOutDate());
+        initializeRoomOverdueCheck(reservationForm.getApproxcheckOutTime());
 
     }
 
     private void initializeRoomOverdueCheck(LocalDateTime checkOutDate) {
         String timelineKey = roomWithReservation.getRoom().getRoomID() + RoomStatus.IN_USE.name();
 
-//        if (TimelineManager.getInstance().containsTimeline(timelineKey)) {
-//            TimelineManager.getInstance().removeTimeline(timelineKey);
-//        }
-//
-//        timeline = new Timeline(
-//                new KeyFrame(Duration.seconds(1), event -> {
-//                    LocalDateTime now = LocalDateTime.now();
-//                    java.time.Duration duration = java.time.Duration.between(now, checkOutDate);
-//
-//                    if (!duration.isPositive()) {
-//                        timeline.stop();
-//                        TimelineManager.getInstance().removeTimeline(timelineKey);
-//                        if (MainController.isRoomBookingLoaded()) navigateToRoomBookingPanel(false);
-//                        else RoomManagementService.autoCheckoutOverdueRooms(notificationButtonController, mainController);
-//                    }
-//                })
-//        );
-//
-//        timeline.setCycleCount(Timeline.INDEFINITE);
-//        timeline.play();
-//
-//        TimelineManager.getInstance().addTimeline(timelineKey, timeline);
+        if (TimelineManager.getInstance().containsTimeline(timelineKey)) {
+            TimelineManager.getInstance().removeTimeline(timelineKey);
+        }
+
+        timeline = new Timeline(
+                new KeyFrame(Duration.seconds(1), event -> {
+                    LocalDateTime now = LocalDateTime.now();
+                    java.time.Duration duration = java.time.Duration.between(now, checkOutDate);
+
+                    if (!duration.isPositive()) {
+                        timeline.stop();
+                        TimelineManager.getInstance().removeTimeline(timelineKey);
+                        if (MainController.isRoomBookingLoaded()) navigateToRoomBookingPanel(false);
+                        else RoomManagementService.autoCheckoutOverdueRooms(mainController);
+                    }
+                })
+        );
+
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
+        TimelineManager.getInstance().addTimeline(timelineKey, timeline);
     }
 
 
@@ -122,23 +124,23 @@ public class RoomOnUseItemController {
         }
     }
 
-//    private void navigateToRoomBookingPanel(boolean isError) {
-//        try {
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/RoomBookingPanel.fxml"));
-//            AnchorPane layout = loader.load();
-//
-//            RoomBookingController roomBookingController = loader.getController();
-//            roomBookingController.setupContext(mainController, employee);
-//            if (isError)
-//                roomBookingController.getDialogPane().showInformation(
-//                        "Không thể thực hiện thao tác",
-//                        "Phòng này đã quá hạn Checkout. Bạn phải Checkout mới có thể thực hiện chức năng khác."
-//                );
-//
-//            mainController.getMainPanel().getChildren().clear();
-//            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private void navigateToRoomBookingPanel(boolean isError) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/iuh/fit/view/features/room/RoomBookingPanel.fxml"));
+            AnchorPane layout = loader.load();
+
+            RoomBookingController roomBookingController = loader.getController();
+            roomBookingController.setupContext(mainController, employee);
+            if (isError)
+                roomBookingController.getDialogPane().showInformation(
+                        "Không thể thực hiện thao tác",
+                        "Phòng này đã quá hạn Checkout. Bạn phải Checkout mới có thể thực hiện chức năng khác."
+                );
+
+            mainController.getMainPanel().getChildren().clear();
+            mainController.getMainPanel().getChildren().addAll(layout.getChildren());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

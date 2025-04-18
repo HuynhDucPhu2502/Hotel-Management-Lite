@@ -1,17 +1,28 @@
 package iuh.fit.utils;
 
 import iuh.fit.dao.RoomCategoryDAO;
+import iuh.fit.dao.RoomUsageServiceDAO;
 import iuh.fit.models.Room;
 import iuh.fit.models.RoomCategory;
+import iuh.fit.models.RoomUsageService;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Admin 1/16/2025
  **/
 public class RoomChargesCalculate {
+
+    public static double calculateTotalServiceCharge(String reservationFormID) {
+        List<RoomUsageService> services = RoomUsageServiceDAO.getByReservationFormID(reservationFormID);
+
+        return services.stream()
+                .mapToDouble(service -> service.getQuantity() * service.getUnitPrice())
+                .sum();
+    }
 
     public static double calculateRoomCharges(
             LocalDateTime checkInTime,

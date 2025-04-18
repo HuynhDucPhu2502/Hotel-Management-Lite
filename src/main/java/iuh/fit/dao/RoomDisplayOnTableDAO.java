@@ -14,12 +14,20 @@ public class RoomDisplayOnTableDAO {
 
     public static List<RoomDisplayOnTable> getAllData(){
         List<RoomDisplayOnTable> data = new ArrayList<>();
-        String SqlQuery = "SELECT rs.roomID, rc.roomCategoryName, rs.reservationDate, rs.checkInDate, rs.checkOutDate, i.roomCharge\n" +
-                "FROM ReservationForm rs \n" +
-                "JOIN Invoice i ON rs.reservationFormID = i.reservationFormID\n" +
-                "JOIN Room r ON rs.roomID = r.roomID\n" +
-                "JOIN RoomCategory rc ON r.roomCategoryID = rc.roomCategoryID " +
-                "WHERE r.isActivate = 'ACTIVATE' AND rc.isActivate = 'ACTIVATE'";
+        String SqlQuery = "SELECT " +
+                "r.room_id, " +
+                "rc.room_category_name, " +
+                "rc.number_of_bed, " +
+                "rf.reservation_date, " +
+                "rf.approx_check_in_date, " +
+                "rf.approx_check_out_date, " +
+                "i.room_charges " +
+                "FROM reservation_forms rf " +
+                "JOIN invoices i ON rf.reservation_id = i.reservation_id " +
+                "JOIN rooms r ON rf.room_id = r.room_id " +
+                "JOIN room_categories rc ON r.room_category_id = rc.room_category_id " +
+                "WHERE r.is_activate = 'ACTIVE' " +
+                "AND rc.is_activate = 'ACTIVE' ";
 
         try (
                 Connection connection = DBHelper.getConnection();
@@ -33,11 +41,11 @@ public class RoomDisplayOnTableDAO {
 
                 roomDisplayOnTable.setRoomID(rs.getString(1));
                 roomDisplayOnTable.setRoomCategory(rs.getString(2));
-                roomDisplayOnTable.setNumOfPeople(0);
-                roomDisplayOnTable.setBookingDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(3)));
-                roomDisplayOnTable.setCheckInDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(4)));
-                roomDisplayOnTable.setCheckOutDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(5)));
-                roomDisplayOnTable.setTotalMoney(rs.getDouble(6));
+                roomDisplayOnTable.setNumOfPeople(rs.getInt(3));
+                roomDisplayOnTable.setBookingDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(4)));
+                roomDisplayOnTable.setCheckInDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(5)));
+                roomDisplayOnTable.setCheckOutDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(6)));
+                roomDisplayOnTable.setTotalMoney(rs.getDouble(7));
                 data.add(roomDisplayOnTable);
             }
 
@@ -51,13 +59,21 @@ public class RoomDisplayOnTableDAO {
 
     public static List<RoomDisplayOnTable> getDataThreeYearsLatest(){
         List<RoomDisplayOnTable> data = new ArrayList<>();
-        String SqlQuery = "SELECT rs.roomID, rc.roomCategoryName, rs.reservationDate, rs.checkInDate, rs.checkOutDate, i.roomCharge\n" +
-                "FROM ReservationForm rs \n" +
-                "JOIN Invoice i ON rs.reservationFormID = i.reservationFormID\n" +
-                "JOIN Room r ON rs.roomID = r.roomID\n" +
-                "JOIN RoomCategory rc ON r.roomCategoryID = rc.roomCategoryID " +
-                "WHERE r.isActivate = 'ACTIVATE' AND rc.isActivate = 'ACTIVATE' \n" +
-                "AND DATEPART(YEAR, i.invoiceDate) >= DATEPART(YEAR, GETDATE()) - 2 ";
+        String SqlQuery = "SELECT " +
+                "r.room_id, " +
+                "rc.room_category_name, " +
+                "rc.number_of_bed, " +
+                "rf.reservation_date, " +
+                "rf.approx_check_in_date, " +
+                "rf.approx_check_out_date, " +
+                "i.room_charges " +
+                "FROM reservation_forms rf " +
+                "JOIN invoices i ON rf.reservation_id = i.reservation_id " +
+                "JOIN rooms r ON rf.room_id = r.room_id " +
+                "JOIN room_categories rc ON r.room_category_id = rc.room_category_id " +
+                "WHERE r.is_activate = 'ACTIVE' " +
+                "AND rc.is_activate = 'ACTIVE' " +
+                "AND DATEPART(YEAR, i.invoice_date) >= DATEPART(YEAR, GETDATE()) - 2;";
 
         try (
                 Connection connection = DBHelper.getConnection();
@@ -71,11 +87,11 @@ public class RoomDisplayOnTableDAO {
 
                 roomDisplayOnTable.setRoomID(rs.getString(1));
                 roomDisplayOnTable.setRoomCategory(rs.getString(2));
-                roomDisplayOnTable.setNumOfPeople(0);
-                roomDisplayOnTable.setBookingDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(3)));
-                roomDisplayOnTable.setCheckInDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(4)));
-                roomDisplayOnTable.setCheckOutDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(5)));
-                roomDisplayOnTable.setTotalMoney(rs.getDouble(6));
+                roomDisplayOnTable.setNumOfPeople(rs.getInt(3));
+                roomDisplayOnTable.setBookingDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(4)));
+                roomDisplayOnTable.setCheckInDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(5)));
+                roomDisplayOnTable.setCheckOutDate(ConvertHelper.localDateTimeConverter(rs.getTimestamp(6)));
+                roomDisplayOnTable.setTotalMoney(rs.getDouble(7));
                 data.add(roomDisplayOnTable);
             }
 
