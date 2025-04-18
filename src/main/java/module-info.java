@@ -26,6 +26,7 @@ module iuh.fit {
 
     // open excel
     requires java.desktop;
+    requires com.fasterxml.jackson.databind;
 
     opens iuh.fit.controller to javafx.fxml;
     opens iuh.fit.controller.features to javafx.fxml;

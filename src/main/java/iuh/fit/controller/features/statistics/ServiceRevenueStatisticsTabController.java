@@ -13,9 +13,12 @@ import iuh.fit.security.PreferencesKey;
 import iuh.fit.utils.EditDateRangePicker;
 //import iuh.fit.utils.ExportFileHelper;
 import iuh.fit.utils.ExportFileHelper;
+import iuh.fit.utils.JsonFileUtil;
 import iuh.fit.utils.QuarterChecker;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -27,8 +30,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.NumberFormat;
@@ -298,86 +303,345 @@ public class ServiceRevenueStatisticsTabController implements Initializable {
     }
 
     @FXML
-    void exportExcelFile() throws IOException {
-        TableView<ServiceDisplayOnTable> clone = cloneTableView(serviceDataTableView);
-        clone.getItems().setAll(currentData);
-        if (clone.getItems().isEmpty()){
-            showMessages("Cảnh báo",
-                    "Không có dữ liệu để xuất file excel!!!",
-                    "Hãy chọn OK để để hủy.",
-                    Alert.AlertType.WARNING);
+    void exportExcelFile() {
+        if (currentData.isEmpty()) {
+            showMessages("Cảnh báo", "Không có dữ liệu để xuất file excel!!!", "Hãy chọn OK để để hủy.", Alert.AlertType.WARNING);
             return;
         }
 
-        boolean forEmployee = employeeNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_EMPLOYEE_NAME);
-        boolean forService = serviceCategoryNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_SERVICE_CATEGORY);
-        boolean yearCBBChecked = filterByYearCheckBox.isSelected();
-        boolean allOfTimeChecked = filterAllTheTimeCheckbox.isSelected();
-        int numOfInvoice = getNumOfInvoice(FXCollections.observableArrayList(currentData));
-        double totalMoney = calculateTotalMoney(FXCollections.observableArrayList(currentData));
-        if(yearCBBChecked && quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
-            ExportFileHelper.exportServiceExcelFile(
-                    clone,
-                    ExportExcelCategory.ALL_OF_YEAR,
-                    forEmployee,
-                    forService,
-                    serviceTabDateRangePicker.getValue(),
-                    numOfInvoice, totalMoney);
-        } else if(yearCBBChecked && !quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
-            ExportFileHelper.exportServiceExcelFile(
-                    clone,
-                    ExportExcelCategory.QUARTER,
-                    forEmployee,
-                    forService,
-                    serviceTabDateRangePicker.getValue(),
-                    numOfInvoice, totalMoney);
-        } else if(allOfTimeChecked){
-            ExportFileHelper.exportServiceExcelFile(
-                    clone,
-                    ExportExcelCategory.ALL_OF_TIME,
-                    forEmployee,
-                    forService,
-                    serviceTabDateRangePicker.getValue(),
-                    numOfInvoice, totalMoney);
-        } else {
-            LocalDateTime startDate = serviceTabDateRangePicker.getValue().getStartDate().atTime(0, 0,0);
-            LocalDateTime endDate = serviceTabDateRangePicker.getValue().getEndDate().atTime(23, 59,59);
-            if(isAMonth(startDate, endDate))
-                ExportFileHelper.exportServiceExcelFile(
-                        clone,
-                        ExportExcelCategory.ALL_OF_MONTH,
-                        forEmployee,
-                        forService,
-                        serviceTabDateRangePicker.getValue(),
-                        numOfInvoice,
-                        totalMoney);
-            else if(isADay(startDate, endDate))
-                ExportFileHelper.exportServiceExcelFile(
-                        clone,
-                        ExportExcelCategory.DAY_OF_MONTH,
-                        forEmployee,
-                        forService,
-                        serviceTabDateRangePicker.getValue(),
-                        numOfInvoice,
-                        totalMoney);
-            else if(isManyYear(startDate, endDate))
-                ExportFileHelper.exportServiceExcelFile(
-                        clone,
-                        ExportExcelCategory.MANY_YEAR,
-                        forEmployee,
-                        forService,
-                        serviceTabDateRangePicker.getValue(),
-                        numOfInvoice,
-                        totalMoney);
-            else ExportFileHelper.exportServiceExcelFile(
-                        clone,
-                        ExportExcelCategory.DATE_RANGE,
-                        forEmployee,
-                        forService,
-                        serviceTabDateRangePicker.getValue(),
-                        numOfInvoice,
-                        totalMoney);
+        // Chuẩn bị TableView tạm thời trên luồng chính
+        TableView<ServiceDisplayOnTable> exportTableView = new TableView<>();
+
+        // Thiết lập các cột giống serviceDataTableView
+        TableColumn<ServiceDisplayOnTable, String> serviceIDCol = new TableColumn<>("Mã dịch vụ");
+        serviceIDCol.setCellValueFactory(new PropertyValueFactory<>("serviceId"));
+
+        TableColumn<ServiceDisplayOnTable, String> serviceNameCol = new TableColumn<>("Tên dịch vụ");
+        serviceNameCol.setCellValueFactory(new PropertyValueFactory<>("serviceName"));
+
+        TableColumn<ServiceDisplayOnTable, String> serviceCategoryCol = new TableColumn<>("Loại dịch vụ");
+        serviceCategoryCol.setCellValueFactory(new PropertyValueFactory<>("serviceCategory"));
+
+        TableColumn<ServiceDisplayOnTable, String> employeeNameCol = new TableColumn<>("Tên nhân viên");
+        employeeNameCol.setCellValueFactory(new PropertyValueFactory<>("employeeName"));
+
+        TableColumn<ServiceDisplayOnTable, LocalDateTime> dateAddedCol = new TableColumn<>("Ngày thêm");
+        dateAddedCol.setCellValueFactory(new PropertyValueFactory<>("dateAdded"));
+        dateAddedCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(LocalDateTime date, boolean empty) {
+                super.updateItem(date, empty);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy", new Locale("vi", "VN"));
+                setText(empty || date == null ? null : date.format(formatter));
+            }
+        });
+
+        TableColumn<ServiceDisplayOnTable, Integer> quantityCol = new TableColumn<>("Số lượng");
+        quantityCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+
+        TableColumn<ServiceDisplayOnTable, Double> unitPriceCol = new TableColumn<>("Đơn giá");
+        unitPriceCol.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
+        unitPriceCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(Double amount, boolean empty) {
+                super.updateItem(amount, empty);
+                setText(empty || amount == null ? null : formatCurrency(amount));
+            }
+        });
+
+        TableColumn<ServiceDisplayOnTable, Double> totalMoneyCol = new TableColumn<>("Tổng tiền");
+        totalMoneyCol.setCellValueFactory(new PropertyValueFactory<>("totalMoney"));
+        totalMoneyCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(Double amount, boolean empty) {
+                super.updateItem(amount, empty);
+                setText(empty || amount == null ? null : formatCurrency(amount));
+            }
+        });
+
+        exportTableView.getColumns().addAll(
+                serviceIDCol, serviceNameCol, serviceCategoryCol, employeeNameCol,
+                dateAddedCol, quantityCol, unitPriceCol, totalMoneyCol
+        );
+
+        // Gán dữ liệu từ currentData
+        exportTableView.getItems().setAll(currentData);
+
+        // Lấy các giá trị UI trên luồng chính
+        final boolean forEmployee = employeeNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_EMPLOYEE_NAME);
+        final boolean forService = serviceCategoryNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_SERVICE_CATEGORY);
+        final boolean yearCBBChecked = filterByYearCheckBox.isSelected();
+        final boolean allOfTimeChecked = filterAllTheTimeCheckbox.isSelected();
+        final String quarterValue = quarterCombobox.getValue();
+        final DateRange dateRange = serviceTabDateRangePicker.getValue();
+        final int numOfInvoice = getNumOfInvoice(FXCollections.observableArrayList(currentData));
+        final double totalMoney = calculateTotalMoney(FXCollections.observableArrayList(currentData));
+
+        // Khởi tạo FileChooser trên luồng chính
+        FileChooser fileChooser = new FileChooser();
+        String fileAddress = JsonFileUtil.readFile("settings.json", PreferencesKey.EXPORT_SERVICE_STATISTIC);
+        if (fileAddress == null) {
+            fileAddress = "D://Thống kê doanh thu"; // Mặc định nếu JSON không có
         }
+        fileChooser.setTitle("Save Excel File");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+        );
+
+        File serviceRevenueFolder = new File(fileAddress.concat("//Doanh thu dịch vụ"));
+        if (!serviceRevenueFolder.exists()) serviceRevenueFolder.mkdirs();
+
+        // Xác định thư mục và tên file mặc định dựa trên ExportExcelCategory
+        File saveFolder = null;
+        String initialFileName = null;
+        ExportExcelCategory exportType;
+
+        if (yearCBBChecked && quarterValue.equalsIgnoreCase(NONE_VALUE_QUARTER)) {
+            exportType = ExportExcelCategory.ALL_OF_YEAR;
+        } else if (yearCBBChecked && !quarterValue.equalsIgnoreCase(NONE_VALUE_QUARTER)) {
+            exportType = ExportExcelCategory.QUARTER;
+        } else if (allOfTimeChecked) {
+            exportType = ExportExcelCategory.ALL_OF_TIME;
+        } else {
+            LocalDateTime startDate = dateRange.getStartDate().atTime(0, 0, 0);
+            LocalDateTime endDate = dateRange.getEndDate().atTime(23, 59, 59);
+            if (isAMonth(startDate, endDate)) {
+                exportType = ExportExcelCategory.ALL_OF_MONTH;
+            } else if (isADay(startDate, endDate)) {
+                exportType = ExportExcelCategory.DAY_OF_MONTH;
+            } else if (isManyYear(startDate, endDate)) {
+                exportType = ExportExcelCategory.MANY_YEAR;
+            } else {
+                exportType = ExportExcelCategory.DATE_RANGE;
+            }
+        }
+
+        switch (exportType) {
+            case ALL_OF_TIME -> {
+                File totalRevenueFolder = new File(serviceRevenueFolder, "//Tổng danh thu");
+                if (!totalRevenueFolder.exists()) totalRevenueFolder.mkdirs();
+
+                ServiceDisplayOnTable serviceInstance = currentData.getFirst();
+
+                if (!forEmployee) {
+                    String employeeName = serviceInstance.getEmployeeName();
+                    File employeeFolder = new File(totalRevenueFolder.getPath() + "//Nhân viên//" + employeeName);
+                    if (!employeeFolder.exists()) employeeFolder.mkdirs();
+                    saveFolder = employeeFolder;
+                    initialFileName = employeeName + " - " + allOfYears.getFirst() + " - " + allOfYears.getLast() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else if (!forService) {
+                    String serviceCategory = serviceInstance.getServiceCategory();
+                    File serviceFolder = new File(totalRevenueFolder.getPath() + "//Loại dịch vụ//" + serviceCategory);
+                    if (!serviceFolder.exists()) serviceFolder.mkdirs();
+                    saveFolder = serviceFolder;
+                    initialFileName = serviceCategory + " - " + allOfYears.getFirst() + " - " + allOfYears.getLast() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    saveFolder = totalRevenueFolder;
+                    initialFileName = allOfYears.getFirst() + " - " + allOfYears.getLast() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case ALL_OF_YEAR -> {
+                ServiceDisplayOnTable serviceInstance = currentData.getFirst();
+                String year = String.valueOf(serviceInstance.getDateAdded().getYear());
+                File yearFolder = new File(serviceRevenueFolder.getPath() + "//" + year + "//Cả năm");
+                if (!yearFolder.exists()) yearFolder.mkdirs();
+
+                if (!forEmployee) {
+                    String employeeName = serviceInstance.getEmployeeName();
+                    File employeeFolder = new File(yearFolder.getPath() + "//Nhân viên//" + employeeName);
+                    if (!employeeFolder.exists()) employeeFolder.mkdirs();
+                    saveFolder = employeeFolder;
+                    initialFileName = employeeName + " - " + year + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else if (!forService) {
+                    String serviceCategory = serviceInstance.getServiceCategory();
+                    File serviceFolder = new File(yearFolder.getPath() + "//Loại dịch vụ//" + serviceCategory);
+                    if (!serviceFolder.exists()) serviceFolder.mkdirs();
+                    saveFolder = serviceFolder;
+                    initialFileName = serviceCategory + " - " + year + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    saveFolder = yearFolder;
+                    initialFileName = year + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case ALL_OF_MONTH -> {
+                ServiceDisplayOnTable serviceInstance = currentData.getFirst();
+                String year = String.valueOf(serviceInstance.getDateAdded().getYear());
+                String month = serviceInstance.getDateAdded().getMonth().toString();
+                File yearFolder = new File(serviceRevenueFolder, year);
+
+                if (!forEmployee) {
+                    String employeeName = serviceInstance.getEmployeeName();
+                    File employeeFolder = new File(yearFolder, Month.valueOf(month).name() + "/Nhân viên/" + employeeName);
+                    if (!employeeFolder.exists()) employeeFolder.mkdirs();
+                    saveFolder = employeeFolder;
+                    initialFileName = employeeName + " - " + Month.valueOf(month).name() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else if (!forService) {
+                    String serviceCategory = serviceInstance.getServiceCategory();
+                    File serviceFolder = new File(yearFolder, Month.valueOf(month).name() + "/Loại dịch vụ/" + serviceCategory);
+                    if (!serviceFolder.exists()) serviceFolder.mkdirs();
+                    saveFolder = serviceFolder;
+                    initialFileName = serviceCategory + " - " + Month.valueOf(month).name() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    File monthFolder = new File(yearFolder, Month.valueOf(month).name());
+                    if (!monthFolder.exists()) monthFolder.mkdirs();
+                    saveFolder = monthFolder;
+                    initialFileName = Month.valueOf(month).name() + "-" + year + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case QUARTER -> {
+                ServiceDisplayOnTable serviceInstance = currentData.getFirst();
+                String year = String.valueOf(serviceInstance.getDateAdded().getYear());
+                int month = serviceInstance.getDateAdded().getMonthValue();
+                String quarter = QuarterChecker.FIRST_QUATER.contains(month) ? "Quý 1" :
+                        QuarterChecker.SECOND_QUATER.contains(month) ? "Quý 2" :
+                                QuarterChecker.THIRD_QUATER.contains(month) ? "Quý 3" : "Quý 4";
+                File yearFolder = new File(serviceRevenueFolder, year);
+                if (!yearFolder.exists()) yearFolder.mkdirs();
+
+                if (!forEmployee) {
+                    String employeeName = serviceInstance.getEmployeeName();
+                    File employeeFolder = new File(yearFolder, quarter + "/Nhân viên/" + employeeName);
+                    if (!employeeFolder.exists()) employeeFolder.mkdirs();
+                    saveFolder = employeeFolder;
+                    initialFileName = employeeName + " - " + quarter + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else if (!forService) {
+                    String serviceCategory = serviceInstance.getServiceCategory();
+                    File serviceFolder = new File(yearFolder, quarter + "/Loại dịch vụ/" + serviceCategory);
+                    if (!serviceFolder.exists()) serviceFolder.mkdirs();
+                    saveFolder = serviceFolder;
+                    initialFileName = serviceCategory + " - " + quarter + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    File quarterFolder = new File(yearFolder, quarter);
+                    if (!quarterFolder.exists()) quarterFolder.mkdirs();
+                    saveFolder = quarterFolder;
+                    initialFileName = quarter + "-" + year + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case DAY_OF_MONTH -> {
+                ServiceDisplayOnTable serviceInstance = currentData.getFirst();
+                String year = String.valueOf(serviceInstance.getDateAdded().getYear());
+                String month = serviceInstance.getDateAdded().getMonth().toString();
+                String day = String.valueOf(serviceInstance.getDateAdded().getDayOfMonth());
+                File yearFolder = new File(serviceRevenueFolder, year);
+                if (!yearFolder.exists()) yearFolder.mkdirs();
+
+                if (!forEmployee) {
+                    String employeeName = serviceInstance.getEmployeeName();
+                    File dayFolder = new File(yearFolder, Month.valueOf(month).name() + "/Ngày " + day + "/Nhân viên/" + employeeName);
+                    if (!dayFolder.exists()) dayFolder.mkdirs();
+                    saveFolder = dayFolder;
+                    initialFileName = employeeName + " - TDTK-" + LocalDate.now() + ".xlsx";
+                } else if (!forService) {
+                    String serviceCategory = serviceInstance.getServiceCategory();
+                    File dayFolder = new File(yearFolder, Month.valueOf(month).name() + "/Ngày " + day + "/Loại dịch vụ/" + serviceCategory);
+                    if (!dayFolder.exists()) dayFolder.mkdirs();
+                    saveFolder = dayFolder;
+                    initialFileName = serviceCategory + " - TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    File dayFolder = new File(yearFolder, Month.valueOf(month).name() + "/Ngày " + day);
+                    if (!dayFolder.exists()) dayFolder.mkdirs();
+                    saveFolder = dayFolder;
+                    initialFileName = day + "-" + serviceInstance.getDateAdded().getMonth().getValue() + "-" + year + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case MANY_YEAR -> {
+                String fromYear = String.valueOf(dateRange.getStartDate().getYear());
+                String toYear = String.valueOf(dateRange.getEndDate().getYear());
+                String employeeName = currentData.getFirst().getEmployeeName();
+                String serviceCategory = currentData.getFirst().getServiceCategory();
+                File yearFolder = new File(serviceRevenueFolder, fromYear + "-" + toYear);
+                if (!yearFolder.exists()) yearFolder.mkdirs();
+
+                if (!forEmployee) {
+                    File dateRangeFolder = new File(yearFolder, dateRange.getStartDate() + " đến " + dateRange.getEndDate() + "/Nhân viên/" + employeeName);
+                    if (!dateRangeFolder.exists()) dateRangeFolder.mkdirs();
+                    saveFolder = dateRangeFolder;
+                    initialFileName = employeeName + " - TDTK-" + LocalDate.now() + ".xlsx";
+                } else if (!forService) {
+                    File dateRangeFolder = new File(yearFolder, dateRange.getStartDate() + " đến " + dateRange.getEndDate() + "/Loại dịch vụ/" + serviceCategory);
+                    if (!dateRangeFolder.exists()) dateRangeFolder.mkdirs();
+                    saveFolder = dateRangeFolder;
+                    initialFileName = serviceCategory + " - TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    File dateRangeFolder = new File(yearFolder, dateRange.getStartDate() + " đến " + dateRange.getEndDate());
+                    if (!dateRangeFolder.exists()) dateRangeFolder.mkdirs();
+                    saveFolder = dateRangeFolder;
+                    initialFileName = dateRange.getStartDate() + " đến " + dateRange.getEndDate() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case DATE_RANGE -> {
+                String year = String.valueOf(dateRange.getStartDate().getYear());
+                String employeeName = currentData.getFirst().getEmployeeName();
+                String serviceCategory = currentData.getFirst().getServiceCategory();
+                File yearFolder = new File(serviceRevenueFolder, year);
+                if (!yearFolder.exists()) yearFolder.mkdirs();
+
+                if (!forEmployee) {
+                    File dateRangeFolder = new File(yearFolder, dateRange.getStartDate() + " đến " + dateRange.getEndDate() + "/Nhân viên/" + employeeName);
+                    if (!dateRangeFolder.exists()) dateRangeFolder.mkdirs();
+                    saveFolder = dateRangeFolder;
+                    initialFileName = employeeName + " - TDTK-" + LocalDate.now() + ".xlsx";
+                } else if (!forService) {
+                    File dateRangeFolder = new File(yearFolder, dateRange.getStartDate() + " đến " + dateRange.getEndDate() + "/Loại dịch vụ/" + serviceCategory);
+                    if (!dateRangeFolder.exists()) dateRangeFolder.mkdirs();
+                    saveFolder = dateRangeFolder;
+                    initialFileName = serviceCategory + " - TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    File dateRangeFolder = new File(yearFolder, dateRange.getStartDate() + " đến " + dateRange.getEndDate());
+                    if (!dateRangeFolder.exists()) dateRangeFolder.mkdirs();
+                    saveFolder = dateRangeFolder;
+                    initialFileName = dateRange.getStartDate() + " đến " + dateRange.getEndDate() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+        }
+
+        // Thiết lập thư mục và tên file mặc định cho FileChooser
+        if (saveFolder != null) {
+            fileChooser.setInitialDirectory(saveFolder);
+            fileChooser.setInitialFileName(initialFileName);
+        }
+
+        // Mở FileChooser trên luồng chính
+        File userSelection = fileChooser.showSaveDialog(null);
+        if (userSelection == null) {
+            showMessages("Thông báo", "Không có file được chọn", "", Alert.AlertType.INFORMATION);
+            return;
+        }
+        final String filePath = userSelection.getAbsolutePath();
+
+        // Tạo Task để gọi exportServiceExcelFile
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws IOException {
+                ExportFileHelper.exportServiceExcelFile(exportTableView, filePath, numOfInvoice, totalMoney);
+                return null;
+            }
+        };
+
+        // Hiển thị ProgressIndicator
+        ProgressIndicator indicator = new ProgressIndicator();
+        chartViewAnchorPane.getChildren().add(indicator);
+
+        // Xử lý kết quả Task
+        task.setOnSucceeded(e -> {
+            chartViewAnchorPane.getChildren().remove(indicator);
+            Platform.runLater(() -> {
+                showMessages("Thành công", "Xuất file Excel hoàn tất", "", Alert.AlertType.INFORMATION);
+                // Mở file Excel sau khi xuất
+                try {
+                    ExportFileHelper.openExcelFile(filePath);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+        });
+        task.setOnFailed(e -> {
+            chartViewAnchorPane.getChildren().remove(indicator);
+            Platform.runLater(() -> showMessages("Lỗi", "Không thể xuất file Excel", task.getException().getMessage(), Alert.AlertType.ERROR));
+        });
+
+        new Thread(task).start();
     }
 
     // set action for pagination page, change data on table when choose another page

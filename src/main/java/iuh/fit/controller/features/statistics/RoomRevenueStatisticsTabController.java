@@ -11,9 +11,12 @@ import iuh.fit.security.PreferencesKey;
 import iuh.fit.utils.EditDateRangePicker;
 //import iuh.fit.utils.ExportFileHelper;
 import iuh.fit.utils.ExportFileHelper;
+import iuh.fit.utils.JsonFileUtil;
 import iuh.fit.utils.QuarterChecker;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -25,8 +28,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.NumberFormat;
@@ -256,78 +261,308 @@ public class RoomRevenueStatisticsTabController implements Initializable {
     }
 
     @FXML
-    void exportExcelFile() throws IOException {
-        TableView<RoomDisplayOnTable> clone = cloneTableView(roomDataTableView);
-        clone.getItems().setAll(currentData);
-        if (clone.getItems().isEmpty()){
-            showMessages("Cảnh báo",
-                    "Không có dữ liệu để xuất file excel!!!",
-                    "Hãy chọn OK để để hủy.",
-                    Alert.AlertType.WARNING);
+    void exportExcelFile() {
+        if (currentData.isEmpty()) {
+            showMessages("Cảnh báo", "Không có dữ liệu để xuất file excel!!!", "Hãy chọn OK để để hủy.", Alert.AlertType.WARNING);
             return;
         }
 
-        boolean forRoomCategory = roomCategoryNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_ROOM_CATEGORY_NAME);
-        boolean yearCBBChecked = filterByYearCheckBox.isSelected();
-        boolean allOfTimeChecked = filterAllTheTimeCheckbox.isSelected();
-        int numOfInvoice = getNumOfInvoice(FXCollections.observableArrayList(currentData));
-        double totalMoney = calculateTotalMoney(FXCollections.observableArrayList(currentData));
-        if(yearCBBChecked && quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
-            ExportFileHelper.exportRoomExcelFile(
-                    clone,
-                    ExportExcelCategory.ALL_OF_YEAR,
-                    forRoomCategory,
-                    roomTabDateRangePicker.getValue(),
-                    numOfInvoice, totalMoney);
-        } else if(yearCBBChecked && !quarterCombobox.getValue().equalsIgnoreCase(NONE_VALUE_QUARTER)){
-            ExportFileHelper.exportRoomExcelFile(
-                    clone,
-                    ExportExcelCategory.QUARTER,
-                    forRoomCategory,
-                    roomTabDateRangePicker.getValue(),
-                    numOfInvoice, totalMoney);
-        } else if(allOfTimeChecked){
-            ExportFileHelper.exportRoomExcelFile(
-                    clone,
-                    ExportExcelCategory.ALL_OF_TIME,
-                    forRoomCategory,
-                    roomTabDateRangePicker.getValue(),
-                    numOfInvoice, totalMoney);
-        } else {
-            LocalDateTime startDate = roomTabDateRangePicker.getValue().getStartDate().atTime(0, 0,0);
-            LocalDateTime endDate = roomTabDateRangePicker.getValue().getEndDate().atTime(23, 59,59);
-            if(isAMonth(startDate, endDate))
-                ExportFileHelper.exportRoomExcelFile(
-                        clone,
-                        ExportExcelCategory.ALL_OF_MONTH,
-                        forRoomCategory,
-                        roomTabDateRangePicker.getValue(),
-                        numOfInvoice,
-                        totalMoney);
-            else if(isADay(startDate, endDate))
-                ExportFileHelper.exportRoomExcelFile(
-                        clone,
-                        ExportExcelCategory.DAY_OF_MONTH,
-                        forRoomCategory,
-                        roomTabDateRangePicker.getValue(),
-                        numOfInvoice,
-                        totalMoney);
-            else if(isManyYear(startDate, endDate))
-                ExportFileHelper.exportRoomExcelFile(
-                        clone,
-                        ExportExcelCategory.MANY_YEAR,
-                        forRoomCategory,
-                        roomTabDateRangePicker.getValue(),
-                        numOfInvoice,
-                        totalMoney);
-            else ExportFileHelper.exportRoomExcelFile(
-                        clone,
-                        ExportExcelCategory.DATE_RANGE,
-                        forRoomCategory,
-                        roomTabDateRangePicker.getValue(),
-                        numOfInvoice,
-                        totalMoney);
+        // Chuẩn bị TableView tạm thời trên luồng chính
+        TableView<RoomDisplayOnTable> exportTableView = new TableView<>();
+
+        // Thiết lập các cột giống roomDataTableView
+        TableColumn<RoomDisplayOnTable, String> roomIDCol = new TableColumn<>("Mã phòng");
+        roomIDCol.setCellValueFactory(new PropertyValueFactory<>("roomID"));
+
+        TableColumn<RoomDisplayOnTable, String> roomCategoryCol = new TableColumn<>("Loại phòng");
+        roomCategoryCol.setCellValueFactory(new PropertyValueFactory<>("roomCategory"));
+
+        TableColumn<RoomDisplayOnTable, Integer> numOfPeopleCol = new TableColumn<>("Số người");
+        numOfPeopleCol.setCellValueFactory(new PropertyValueFactory<>("numOfPeople"));
+
+        TableColumn<RoomDisplayOnTable, LocalDateTime> bookingDateCol = new TableColumn<>("Ngày đặt");
+        bookingDateCol.setCellValueFactory(new PropertyValueFactory<>("bookingDate"));
+        bookingDateCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(LocalDateTime date, boolean empty) {
+                super.updateItem(date, empty);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy", new Locale("vi", "VN"));
+                setText(empty || date == null ? null : date.format(formatter));
+            }
+        });
+
+        TableColumn<RoomDisplayOnTable, LocalDateTime> checkInDateCol = new TableColumn<>("Ngày nhận");
+        checkInDateCol.setCellValueFactory(new PropertyValueFactory<>("checkInDate"));
+        checkInDateCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(LocalDateTime date, boolean empty) {
+                super.updateItem(date, empty);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy", new Locale("vi", "VN"));
+                setText(empty || date == null ? null : date.format(formatter));
+            }
+        });
+
+        TableColumn<RoomDisplayOnTable, LocalDateTime> checkOutDateCol = new TableColumn<>("Ngày trả");
+        checkOutDateCol.setCellValueFactory(new PropertyValueFactory<>("checkOutDate"));
+        checkOutDateCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(LocalDateTime date, boolean empty) {
+                super.updateItem(date, empty);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy", new Locale("vi", "VN"));
+                setText(empty || date == null ? null : date.format(formatter));
+            }
+        });
+
+        TableColumn<RoomDisplayOnTable, Double> totalMoneyCol = new TableColumn<>("Tổng tiền");
+        totalMoneyCol.setCellValueFactory(new PropertyValueFactory<>("totalMoney"));
+        totalMoneyCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(Double amount, boolean empty) {
+                super.updateItem(amount, empty);
+                setText(empty || amount == null ? null : formatCurrency(amount));
+            }
+        });
+
+        exportTableView.getColumns().addAll(
+                roomIDCol, roomCategoryCol, numOfPeopleCol, bookingDateCol,
+                checkInDateCol, checkOutDateCol, totalMoneyCol
+        );
+
+        // Gán dữ liệu từ currentData
+        exportTableView.getItems().setAll(currentData);
+
+        // Lấy các giá trị UI trên luồng chính
+        final boolean forRoomCategory = roomCategoryNameCombobox.getValue().equalsIgnoreCase(NONE_VALUE_ROOM_CATEGORY_NAME);
+        final boolean yearCBBChecked = filterByYearCheckBox.isSelected();
+        final boolean allOfTimeChecked = filterAllTheTimeCheckbox.isSelected();
+        final String quarterValue = quarterCombobox.getValue();
+        final DateRange dateRange = roomTabDateRangePicker.getValue();
+        final int numOfInvoice = getNumOfInvoice(FXCollections.observableArrayList(currentData));
+        final double totalMoney = calculateTotalMoney(FXCollections.observableArrayList(currentData));
+
+        // Khởi tạo FileChooser trên luồng chính
+        FileChooser fileChooser = new FileChooser();
+        String fileAddress = JsonFileUtil.readFile("settings.json", PreferencesKey.EXPORT_ROOM_STATISTIC);
+        if (fileAddress == null) {
+            fileAddress = "D://Thống kê doanh thu"; // Mặc định nếu JSON không có
         }
+        fileChooser.setTitle("Save Excel File");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+        );
+
+        File roomRevenueFolder = new File(fileAddress.concat("//Doanh thu phòng"));
+        if (!roomRevenueFolder.exists()) roomRevenueFolder.mkdirs();
+
+        // Xác định thư mục và tên file mặc định dựa trên ExportExcelCategory
+        File saveFolder = null;
+        String initialFileName = null;
+        ExportExcelCategory exportType;
+
+        if (yearCBBChecked && quarterValue.equalsIgnoreCase(NONE_VALUE_QUARTER)) {
+            exportType = ExportExcelCategory.ALL_OF_YEAR;
+        } else if (yearCBBChecked && !quarterValue.equalsIgnoreCase(NONE_VALUE_QUARTER)) {
+            exportType = ExportExcelCategory.QUARTER;
+        } else if (allOfTimeChecked) {
+            exportType = ExportExcelCategory.ALL_OF_TIME;
+        } else {
+            LocalDateTime startDate = dateRange.getStartDate().atTime(0, 0, 0);
+            LocalDateTime endDate = dateRange.getEndDate().atTime(23, 59, 59);
+            if (isAMonth(startDate, endDate)) {
+                exportType = ExportExcelCategory.ALL_OF_MONTH;
+            } else if (isADay(startDate, endDate)) {
+                exportType = ExportExcelCategory.DAY_OF_MONTH;
+            } else if (isManyYear(startDate, endDate)) {
+                exportType = ExportExcelCategory.MANY_YEAR;
+            } else {
+                exportType = ExportExcelCategory.DATE_RANGE;
+            }
+        }
+
+        switch (exportType) {
+            case ALL_OF_TIME -> {
+                File totalRevenueFolder = new File(roomRevenueFolder, "//Tổng danh thu");
+                if (!totalRevenueFolder.exists()) totalRevenueFolder.mkdirs();
+
+                RoomDisplayOnTable roomInstance = currentData.getFirst();
+
+                if (!forRoomCategory) {
+                    String roomCategory = roomInstance.getRoomCategory();
+                    File roomCategoryFolder = new File(totalRevenueFolder.getPath() + "//Loại phòng//" + roomCategory);
+                    if (!roomCategoryFolder.exists()) roomCategoryFolder.mkdirs();
+                    saveFolder = roomCategoryFolder;
+                    initialFileName = roomCategory + " - " + allOfYears.getFirst() + " - " + allOfYears.getLast() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    saveFolder = totalRevenueFolder;
+                    initialFileName = allOfYears.getFirst() + " - " + allOfYears.getLast() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case ALL_OF_YEAR -> {
+                RoomDisplayOnTable roomInstance = currentData.getFirst();
+                String year = String.valueOf(roomInstance.getBookingDate().getYear());
+                File yearFolder = new File(roomRevenueFolder.getPath() + "//" + year + "//Cả năm");
+                if (!yearFolder.exists()) yearFolder.mkdirs();
+
+                if (!forRoomCategory) {
+                    String roomCategory = roomInstance.getRoomCategory();
+                    File roomCategoryFolder = new File(yearFolder.getPath() + "//Loại phòng//" + roomCategory);
+                    if (!roomCategoryFolder.exists()) roomCategoryFolder.mkdirs();
+                    saveFolder = roomCategoryFolder;
+                    initialFileName = roomCategory + " - " + year + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    saveFolder = yearFolder;
+                    initialFileName = year + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case ALL_OF_MONTH -> {
+                RoomDisplayOnTable roomInstance = currentData.getFirst();
+                String year = String.valueOf(roomInstance.getBookingDate().getYear());
+                String month = roomInstance.getBookingDate().getMonth().toString();
+                File yearFolder = new File(roomRevenueFolder, year);
+
+                if (!forRoomCategory) {
+                    String roomCategory = roomInstance.getRoomCategory();
+                    File roomCategoryFolder = new File(yearFolder, Month.valueOf(month).name() + "/Loại phòng/" + roomCategory);
+                    if (!roomCategoryFolder.exists()) roomCategoryFolder.mkdirs();
+                    saveFolder = roomCategoryFolder;
+                    initialFileName = roomCategory + " - " + Month.valueOf(month).name() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    File monthFolder = new File(yearFolder, Month.valueOf(month).name());
+                    if (!monthFolder.exists()) monthFolder.mkdirs();
+                    saveFolder = monthFolder;
+                    initialFileName = Month.valueOf(month).name() + "-" + year + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case QUARTER -> {
+                RoomDisplayOnTable roomInstance = currentData.getFirst();
+                String year = String.valueOf(roomInstance.getBookingDate().getYear());
+                int month = roomInstance.getBookingDate().getMonthValue();
+                String quarter = QuarterChecker.FIRST_QUATER.contains(month) ? "Quý 1" :
+                        QuarterChecker.SECOND_QUATER.contains(month) ? "Quý 2" :
+                                QuarterChecker.THIRD_QUATER.contains(month) ? "Quý 3" : "Quý 4";
+                File yearFolder = new File(roomRevenueFolder, year);
+                if (!yearFolder.exists()) yearFolder.mkdirs();
+
+                if (!forRoomCategory) {
+                    String roomCategory = roomInstance.getRoomCategory();
+                    File roomCategoryFolder = new File(yearFolder, quarter + "/Loại phòng/" + roomCategory);
+                    if (!roomCategoryFolder.exists()) roomCategoryFolder.mkdirs();
+                    saveFolder = roomCategoryFolder;
+                    initialFileName = roomCategory + " - " + quarter + "-TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    File quarterFolder = new File(yearFolder, quarter);
+                    if (!quarterFolder.exists()) quarterFolder.mkdirs();
+                    saveFolder = quarterFolder;
+                    initialFileName = quarter + "-" + year + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case DAY_OF_MONTH -> {
+                RoomDisplayOnTable roomInstance = currentData.getFirst();
+                String year = String.valueOf(roomInstance.getBookingDate().getYear());
+                String month = roomInstance.getBookingDate().getMonth().toString();
+                String day = String.valueOf(roomInstance.getBookingDate().getDayOfMonth());
+                File yearFolder = new File(roomRevenueFolder, year);
+                if (!yearFolder.exists()) yearFolder.mkdirs();
+
+                if (!forRoomCategory) {
+                    String roomCategory = roomInstance.getRoomCategory();
+                    File dayFolder = new File(yearFolder, Month.valueOf(month).name() + "/Ngày " + day + "/Loại phòng/" + roomCategory);
+                    if (!dayFolder.exists()) dayFolder.mkdirs();
+                    saveFolder = dayFolder;
+                    initialFileName = roomCategory + " - TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    File dayFolder = new File(yearFolder, Month.valueOf(month).name() + "/Ngày " + day);
+                    if (!dayFolder.exists()) dayFolder.mkdirs();
+                    saveFolder = dayFolder;
+                    initialFileName = day + "-" + roomInstance.getBookingDate().getMonth().getValue() + "-" + year + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case MANY_YEAR -> {
+                String fromYear = String.valueOf(dateRange.getStartDate().getYear());
+                String toYear = String.valueOf(dateRange.getEndDate().getYear());
+                String roomCategory = currentData.getFirst().getRoomCategory();
+                File yearFolder = new File(roomRevenueFolder, fromYear + "-" + toYear);
+                if (!yearFolder.exists()) yearFolder.mkdirs();
+
+                if (!forRoomCategory) {
+                    File dateRangeFolder = new File(yearFolder, dateRange.getStartDate() + " đến " + dateRange.getEndDate() + "/Loại phòng/" + roomCategory);
+                    if (!dateRangeFolder.exists()) dateRangeFolder.mkdirs();
+                    saveFolder = dateRangeFolder;
+                    initialFileName = roomCategory + " - TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    File dateRangeFolder = new File(yearFolder, dateRange.getStartDate() + " đến " + dateRange.getEndDate());
+                    if (!dateRangeFolder.exists()) dateRangeFolder.mkdirs();
+                    saveFolder = dateRangeFolder;
+                    initialFileName = dateRange.getStartDate() + " đến " + dateRange.getEndDate() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+            case DATE_RANGE -> {
+                String year = String.valueOf(dateRange.getStartDate().getYear());
+                String roomCategory = currentData.getFirst().getRoomCategory();
+                File yearFolder = new File(roomRevenueFolder, year);
+                if (!yearFolder.exists()) yearFolder.mkdirs();
+
+                if (!forRoomCategory) {
+                    File dateRangeFolder = new File(yearFolder, dateRange.getStartDate() + " đến " + dateRange.getEndDate() + "/Loại phòng/" + roomCategory);
+                    if (!dateRangeFolder.exists()) dateRangeFolder.mkdirs();
+                    saveFolder = dateRangeFolder;
+                    initialFileName = roomCategory + " - TDTK-" + LocalDate.now() + ".xlsx";
+                } else {
+                    File dateRangeFolder = new File(yearFolder, dateRange.getStartDate() + " đến " + dateRange.getEndDate());
+                    if (!dateRangeFolder.exists()) dateRangeFolder.mkdirs();
+                    saveFolder = dateRangeFolder;
+                    initialFileName = dateRange.getStartDate() + " đến " + dateRange.getEndDate() + "-TDTK-" + LocalDate.now() + ".xlsx";
+                }
+            }
+        }
+
+        // Thiết lập thư mục và tên file mặc định cho FileChooser
+        if (saveFolder != null) {
+            fileChooser.setInitialDirectory(saveFolder);
+            fileChooser.setInitialFileName(initialFileName);
+        }
+
+        // Mở FileChooser trên luồng chính
+        File userSelection = fileChooser.showSaveDialog(null);
+        if (userSelection == null) {
+            showMessages("Thông báo", "Không có file được chọn", "", Alert.AlertType.INFORMATION);
+            return;
+        }
+        final String filePath = userSelection.getAbsolutePath();
+
+        // Tạo Task để gọi exportRoomExcelFile
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws IOException {
+                ExportFileHelper.exportRoomExcelFile(exportTableView, filePath, numOfInvoice, totalMoney);
+                return null;
+            }
+        };
+
+        // Hiển thị ProgressIndicator
+        ProgressIndicator indicator = new ProgressIndicator();
+        chartViewAnchorPane.getChildren().add(indicator);
+
+        // Xử lý kết quả Task
+        task.setOnSucceeded(e -> {
+            chartViewAnchorPane.getChildren().remove(indicator);
+            Platform.runLater(() -> {
+                showMessages("Thành công", "Xuất file Excel hoàn tất", "", Alert.AlertType.INFORMATION);
+                // Mở file Excel sau khi xuất
+                try {
+                    ExportFileHelper.openExcelFile(filePath);
+                } catch (IOException ex) {
+                    showMessages("Lỗi", "Không thể mở file Excel", ex.getMessage(), Alert.AlertType.ERROR);
+                }
+            });
+        });
+        task.setOnFailed(e -> {
+            chartViewAnchorPane.getChildren().remove(indicator);
+            Platform.runLater(() -> showMessages("Lỗi", "Không thể xuất file Excel", task.getException().getMessage(), Alert.AlertType.ERROR));
+        });
+
+        new Thread(task).start();
     }
 
     // set action for pagination page, change data on table when choose another page
