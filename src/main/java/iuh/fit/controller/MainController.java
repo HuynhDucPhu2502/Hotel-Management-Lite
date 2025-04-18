@@ -21,6 +21,7 @@ import iuh.fit.dao.EmployeeDAO;
 import iuh.fit.models.*;
 
 import iuh.fit.models.enums.Position;
+import iuh.fit.utils.TimelineManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -202,14 +203,10 @@ public class MainController {
                     Employee employee = account.getEmployee();
                     invoiceManagerController.setupContext(mainController, employee);
                 }
-//
-//
-//                case EmployeeInformationController employeeInformationController ->
-//                        employeeInformationController.setupContext(account.getEmployee(), mainController);
-//
-//                case DashboardController dashboardController ->
-//                    dashboardController.setupContext(account, mainController);
-//
+
+                case DashboardController dashboardController ->
+                    dashboardController.setupContext(account, mainController);
+
                 case EmployeeSearchingController employeeSearchingController ->
                         employeeSearchingController.setupContext(this);
 
@@ -220,10 +217,10 @@ public class MainController {
                 default -> {}
             }
 
-//            if (!fxmlPath.contains("RoomBookingPanel") && !fxmlPath.contains("DashBoardPanel")) {
-//                TimelineManager.getInstance().removeTimeline("REALTIME_DASHBOARD");
-//                TimelineManager.getInstance().stopAllTimelines();
-//            }
+            if (!fxmlPath.contains("RoomBookingPanel") && !fxmlPath.contains("DashBoardPanel")) {
+                TimelineManager.getInstance().removeTimeline("REALTIME_DASHBOARD");
+                TimelineManager.getInstance().stopAllTimelines();
+            }
 
             ROOM_BOOKING_LOADED = fxmlPath.contains("RoomBookingPanel");
 

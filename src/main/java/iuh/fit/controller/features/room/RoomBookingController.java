@@ -2,10 +2,7 @@ package iuh.fit.controller.features.room;
 
 import com.dlsc.gemsfx.DialogPane;
 import iuh.fit.controller.MainController;
-//import iuh.fit.controller.features.NotificationButtonController;
-//import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomAvailableItemController;
-//import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomOnUseItemController;
-//import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomOverDueController;
+
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomAvailableItemController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomOnUseItemController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomOverDueController;
@@ -16,9 +13,8 @@ import iuh.fit.models.Employee;
 import iuh.fit.models.Room;
 import iuh.fit.models.enums.RoomStatus;
 import iuh.fit.models.wrapper.RoomWithReservation;
-//import iuh.fit.utils.GlobalConstants;
-//import iuh.fit.utils.RoomManagementService;
-//import iuh.fit.utils.TimelineManager;
+import iuh.fit.utils.RoomManagementService;
+import iuh.fit.utils.TimelineManager;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -27,6 +23,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -47,6 +44,7 @@ public class RoomBookingController {
     private Button allBtn, availableBtn,
             onUseBtn, overDueBtn;
 
+    @Getter
     @FXML
     private DialogPane dialogPane;
 
@@ -101,7 +99,7 @@ public class RoomBookingController {
                     roomFloorNumberCBox.getSelectionModel().selectFirst();
                 });
 
-//                RoomManagementService.autoCheckoutOverdueRooms(notificationButtonController, mainController);
+                RoomManagementService.autoCheckoutOverdueRooms(mainController);
                 return RoomWithReservationDAO.getRoomWithReservation().stream()
                         .sorted(Comparator.comparing(r -> r.getRoom().getRoomNumber()))
                         .toList();
@@ -112,7 +110,7 @@ public class RoomBookingController {
             roomWithReservations = loadDataTask.getValue();
             displayFilteredRooms(roomWithReservations);
             loadDataForBtn();
-//            TimelineManager.getInstance().printAllTimelines();
+            TimelineManager.getInstance().printAllTimelines();
         });
 
         loadDataTask.setOnFailed(event -> {
@@ -124,11 +122,13 @@ public class RoomBookingController {
 
     private void loadDataForBtn() {
         Map<RoomStatus, Long> roomStatusCount = RoomDAO.getRoomStatusCount();
-        availableBtn.setText(ROOM_BOOKING_AVAIL_BTN + "("+ roomStatusCount.get(RoomStatus.AVAILABLE) + ")");
-        onUseBtn.setText(ROOM_BOOKING_ON_USE_BTN + "("+ roomStatusCount.get(RoomStatus.IN_USE) + ")");
-        overDueBtn.setText(ROOM_BOOKING_OVER_DUE_BTN + "("+ roomStatusCount.get(RoomStatus.OVER_DUE) + ")");
-        allBtn.setText(ROOM_BOOKING_ALL_BTN + "("+roomWithReservations.size()+")");
+
+        availableBtn.setText(ROOM_BOOKING_AVAIL_BTN + " (" + roomStatusCount.getOrDefault(RoomStatus.AVAILABLE, 0L) + ")");
+        onUseBtn.setText(ROOM_BOOKING_ON_USE_BTN + " (" + roomStatusCount.getOrDefault(RoomStatus.IN_USE, 0L) + ")");
+        overDueBtn.setText(ROOM_BOOKING_OVER_DUE_BTN + " (" + roomStatusCount.getOrDefault(RoomStatus.OVER_DUE, 0L) + ")");
+        allBtn.setText(ROOM_BOOKING_ALL_BTN + " (" + roomWithReservations.size() + ")");
     }
+
 
     private void displayFilteredRooms(List<RoomWithReservation> roomsWithReservations) {
         roomGridPane.getChildren().clear();
@@ -272,9 +272,5 @@ public class RoomBookingController {
         }
     }
 
-
-    public DialogPane getDialogPane() {
-        return dialogPane;
-    }
 
 }

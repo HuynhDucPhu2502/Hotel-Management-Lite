@@ -32,14 +32,20 @@ public class EmployeeDAO {
     }
 
     // Lấy thông tin nhân viên theo mã nhân viên
-    public static Employee getEmployeeByEmployeeID(String employeeID) {
+    public static Employee getEmployeeByEmployeeCode(String employeeCode) {
         try (EntityManager em = EntityManagerUtil.getEntityManager()) {
-            return em.find(Employee.class, employeeID);
+            return em.createQuery("""
+            SELECT e FROM Employee e
+            WHERE e.employeeCode = :code
+        """, Employee.class)
+                    .setParameter("code", employeeCode)
+                    .getSingleResult();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
+
 
     // Lấy ID tiếp theo từ GlobalSequence
     public static String getNextEmployeeID() {

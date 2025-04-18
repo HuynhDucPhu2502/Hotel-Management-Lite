@@ -1,18 +1,26 @@
 package iuh.fit.controller.features;
 
 import iuh.fit.controller.MainController;
+import iuh.fit.dao.RoomDAO;
 import iuh.fit.models.Account;
 import iuh.fit.models.enums.Position;
 
+import iuh.fit.models.enums.RoomStatus;
+import iuh.fit.utils.TimelineManager;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.util.Duration;
 
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class DashboardController {
 
@@ -54,7 +62,7 @@ public class DashboardController {
         loadDataIntoKeywords();
         loadFeaturesIntoGridPane();
         bindSearchFunctionality();
-//        Platform.runLater(this::loadNumberOfRoomInformation);
+        Platform.runLater(this::loadNumberOfRoomInformation);
     }
 
     private void loadDataIntoKeywords() {
@@ -70,7 +78,6 @@ public class DashboardController {
         featureKeywordFXMLMapping.put(createKeyword("Tìm kiếm khách hàng", "Tìm kiếm khách hàng, tim kiem khach hang, tkkh, customer_search"), "/iuh/fit/view/features/customer/CustomerSearchingPanel.fxml");
         featureKeywordFXMLMapping.put(createKeyword("Quản lý khách hàng", "Quản lý khách hàng, quan ly khach hang, qlkh, customer_manager"), "/iuh/fit/view/features/customer/CustomerManagerPanel.fxml");
         featureKeywordFXMLMapping.put(createKeyword("Thống kê doanh thu", "Thống kê doanh thu, thong ke doanh thu, tkdt, revenue_statistics"), "/iuh/fit/view/features/statistics/RevenueStatisticalPanel.fxml");
-        featureKeywordFXMLMapping.put(createKeyword("Thống kê tỉ lệ sử dụng phòng", "Thống kê tỉ lệ sử dụng phòng, thong ke ti le su dung phong, tktlsdp, rate_using_room"), "/iuh/fit/view/features/statistics/RateUsingRoomStatisticsTab.fxml");
 
         // Thêm chức năng riêng cho MANAGER
         if (position.equals(Position.MANAGER)) {
@@ -80,16 +87,6 @@ public class DashboardController {
 
             featureKeywordFXMLMapping.put(createKeyword("Quản lý tài khoản", "Quản lý tài khoản, quan ly tai khoan, qltk, account_manager"), "/iuh/fit/view/features/employee/AccountManagerPanel.fxml");
             featureKeywordFXMLMapping.put(createKeyword("Cập nhật thông tin tài khoản", "Cập nhật thông tin tài khoản, cập nhật tài khoản, cap nhat thong tin tai khoan, cap nhat tai khoan, cntk"), "/iuh/fit/view/features/employee/AccountManagerPanel.fxml");
-
-            featureKeywordFXMLMapping.put(createKeyword("Quản lý ca làm", "Quản lý ca làm, quan ly ca lam, qlcl, shift_manager"), "/iuh/fit/view/features/employee/ShiftManagerPanel.fxml");
-            featureKeywordFXMLMapping.put(createKeyword("Thêm ca làm", "Thêm ca làm, them ca lam, tcl"), "/iuh/fit/view/features/employee/ShiftManagerPanel.fxml");
-            featureKeywordFXMLMapping.put(createKeyword("Xóa ca làm", "Xóa ca làm, xoa ca lam, xcl"), "/iuh/fit/view/features/employee/ShiftManagerPanel.fxml");
-            featureKeywordFXMLMapping.put(createKeyword("Cập hật ca làm", "Cập nhật ca làm, cap nhat ca lam, cncl"), "/iuh/fit/view/features/employee/ShiftManagerPanel.fxml");
-
-            featureKeywordFXMLMapping.put(createKeyword("Quản lý giá phòng", "Quản lý giá phòng, quan ly gia phong, qlgp, pricing_manager"), "/iuh/fit/view/features/room/PricingManagerPanel.fxml");
-            featureKeywordFXMLMapping.put(createKeyword("Thêm giá phòng", "Thêm giá phòng, them gia phong, tgp"), "/iuh/fit/view/features/room/PricingManagerPanel.fxml");
-            featureKeywordFXMLMapping.put(createKeyword("Xóa giá phòng", "Xóa giá phòng, xoa gia phong, xgp"), "/iuh/fit/view/features/room/PricingManagerPanel.fxml");
-            featureKeywordFXMLMapping.put(createKeyword("Cập nhật giá phòng", "Cập nhật giá phòng, cap nhat gia phong, cngp"), "/iuh/fit/view/features/room/PricingManagerPanel.fxml");
 
             featureKeywordFXMLMapping.put(createKeyword("Quản lý loại phòng", "Quản lý loại phòng, quan ly loai phong, qllp, room_category_manager"), "/iuh/fit/view/features/room/RoomCategoryManagerPanel.fxml");
             featureKeywordFXMLMapping.put(createKeyword("Thêm loại phòng", "Thêm loại phòng, them loai phong, tlp"), "/iuh/fit/view/features/room/RoomCategoryManagerPanel.fxml");
@@ -110,32 +107,31 @@ public class DashboardController {
             featureKeywordFXMLMapping.put(createKeyword("Thêm dịch vụ", "Thêm dịch vụ, them dich vu, tdv"), "/iuh/fit/view/features/service/HotelServiceManagerPanel.fxml");
             featureKeywordFXMLMapping.put(createKeyword("Xóa dịch vụ", "Xóa dịch vụ, xoa dich vu, xdv"), "/iuh/fit/view/features/service/HotelServiceManagerPanel.fxml");
             featureKeywordFXMLMapping.put(createKeyword("Cập nhật dịch vụ", "Cập nhật dịch vụ, cap nhat dich vu, cndv"), "/iuh/fit/view/features/service/HotelServiceManagerPanel.fxml");
-
-            featureKeywordFXMLMapping.put(createKeyword("Sao lưu dữ liệu", "Sao lưu dữ liệu, sao luu du lieu, backup"), "/iuh/fit/view/features/backup_restore_database/Backup_Restore_Panel.fxml");
         }
     }
 
-//    private void loadNumberOfRoomInformation(){
-//        TimelineManager.getInstance().removeTimeline("REALTIME_DASHBOARD");
-//        getNumbersOfRoomInformation();
-//        Timeline timeline =  new Timeline(new KeyFrame(Duration.seconds(60), event -> {
-//            getNumbersOfRoomInformation();
-//        }));
-//
-//        timeline.setCycleCount(Timeline.INDEFINITE); // Lặp vô hạn
-//        timeline.play(); // Bắt đầu chạy
-//
-//        TimelineManager.getInstance().addTimeline("REALTIME_DASHBOARD", timeline);
-//    }
+    private void loadNumberOfRoomInformation(){
+        TimelineManager.getInstance().removeTimeline("REALTIME_DASHBOARD");
+        getNumbersOfRoomInformation();
+        Timeline timeline =  new Timeline(new KeyFrame(Duration.seconds(60), event -> {
+            getNumbersOfRoomInformation();
+        }));
+
+        timeline.setCycleCount(Timeline.INDEFINITE); // Lặp vô hạn
+        timeline.play(); // Bắt đầu chạy
+
+        TimelineManager.getInstance().addTimeline("REALTIME_DASHBOARD", timeline);
+    }
 
 
+    private void getNumbersOfRoomInformation(){
+        Map<RoomStatus, Long> roomStatusCount = RoomDAO.getRoomStatusCount();
 
-//    private void getNumbersOfRoomInformation(){
-//        HashMap<RoomStatus, Integer> roomStatusCount = RoomDAO.getRoomStatusCount();
-//        roomAvailabelCountLabel.setText(String.valueOf(roomStatusCount.get(RoomStatus.AVAILABLE)));
-//        roomOnUseCountLabel.setText(String.valueOf(roomStatusCount.get(RoomStatus.ON_USE)));
-//        roomOverdueCountLabel.setText(String.valueOf(roomStatusCount.get(RoomStatus.OVERDUE)));
-//    }
+        roomAvailabelCountLabel.setText(String.valueOf(roomStatusCount.getOrDefault(RoomStatus.AVAILABLE, 0L)));
+        roomOnUseCountLabel.setText(String.valueOf(roomStatusCount.getOrDefault(RoomStatus.IN_USE, 0L)));
+        roomOverdueCountLabel.setText(String.valueOf(roomStatusCount.getOrDefault(RoomStatus.OVER_DUE, 0L)));
+    }
+
 
     private HashMap<String, String> createKeyword(String functionName, String keyword) {
         HashMap<String, String> map = new HashMap<>();
@@ -159,7 +155,7 @@ public class DashboardController {
         featureBox.setOnMouseExited(event -> featureBox.setStyle(
                 "-fx-border-color: #ccc; -fx-padding: 20; -fx-background-color: #f0f0f0;"));
 
-//        featureBox.setOnMouseClicked(event -> mainController.loadPanel(fxmlPath, mainController, account));
+        featureBox.setOnMouseClicked(event -> mainController.loadPanel(fxmlPath, mainController, account));
 
         return featureBox;
     }

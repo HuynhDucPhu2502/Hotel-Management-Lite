@@ -26,80 +26,71 @@ public class RoomManagementService {
     private static final ScheduledExecutorService SCHEDULER =
             Executors.newScheduledThreadPool(1);
     public static final Employee SYSTEM_EMPLOYEE =
-            EmployeeDAO.getEmployeeByEmployeeID("EMP-000000");
+            EmployeeDAO.getEmployeeByEmployeeCode("EMP-000000");
 
-//    public static void startAutoCheckoutScheduler(MainController mainController) {
-//        SCHEDULER.scheduleAtFixedRate(
-//                () -> RoomManagementService.autoCheckoutOverdueRooms(mainController),
-//                0,
-//                60,
-//                TimeUnit.SECONDS
-//        );
-//    }
-//
-//    public static void autoCheckoutOverdueRooms(MainController mainController) {
-//        List<RoomWithReservation> overdueRooms =
-//                RoomWithReservationDAO.getRoomOverDueWithLatestReservation();
-//
-//        for (RoomWithReservation roomWithReservation : overdueRooms) {
-//            checkAndUpdateRoomStatus(
-//                    roomWithReservation,
-//                    SYSTEM_EMPLOYEE,
-//                    mainController
-//            );
-//        }
-//
-//        List<RoomWithReservation> allRoomWithReservation =
-//                RoomWithReservationDAO.getRoomWithReservation();
-//
-//        for (RoomWithReservation roomWithReservation : allRoomWithReservation) {
-//            checkAndUpdateRoomStatus(
-//                    roomWithReservation,
-//                    SYSTEM_EMPLOYEE,
-//                    mainController
-//            );
-//        }
-//    }
+    public static void startAutoCheckoutScheduler(MainController mainController) {
+        SCHEDULER.scheduleAtFixedRate(
+                () -> RoomManagementService.autoCheckoutOverdueRooms(mainController),
+                0,
+                60,
+                TimeUnit.SECONDS
+        );
+    }
 
-//    public static void checkAndUpdateRoomStatus(
-//            RoomWithReservation roomWithReservation,
-//            Employee employee,
-//            MainController mainController
-//    ) {
-//        ReservationForm reservationForm = roomWithReservation.getReservationForm();
-//        Room room = roomWithReservation.getRoom();
-//
-//        if (reservationForm == null || room == null) return;
-//
-//        LocalDateTime now = LocalDateTime.now();
-//        LocalDateTime checkOutDate = reservationForm.getApproxcheckOutTime();
-//
-//        if (now.isAfter(checkOutDate)) {
-//            long hoursOverdue = ChronoUnit.HOURS.between(checkOutDate, now);
-//
-//            if (hoursOverdue >= 2) {
-//                handleCheckOut(roomWithReservation, employee);
-//                room.setRoomStatus(RoomStatus.AVAILABLE);
-//                RoomDAO.updateRoomStatus(room.getRoomID(), RoomStatus.AVAILABLE);
-//
-//                topBarController.getInfo(GlobalMessage.AUTO_CHECKOUT, "Phòng " + room.getRoomID() + " đã được tự động checkout do quá hạn quá 2h");
-//                notifiedOverdueRooms.remove(room);
-//                ShiftDetailDAO.updateNumbOfCheckOutRoom(mainController.getShiftDetailID());
-//                ShiftDetailForInvoiceDAO.addInvoiceID(mainController.getShiftDetailID(), roomWithReservation.getReservationForm().getReservationID());
-//            } else {
-//                RoomDAO.updateRoomStatus(room.getRoomID(), RoomStatus.OVERDUE);
-//                room.setRoomStatus(RoomStatus.OVERDUE);
-//
-//                if (!notifiedOverdueRooms.contains(room)) {
-//                    notifiedOverdueRooms.add(room);
-//                    topBarController.getInfo(
-//                            GlobalMessage.AUTO_CHANGE_TO_OVERDUE,
-//                            "Phòng " + room.getRoomID() + " đã quá hạn sử dụng.\nHãy liên hệ với khách hàng để chuẩn bị thủ tục checkout"
-//                    );
-//                }
-//            }
-//        }
-//    }
+    public static void autoCheckoutOverdueRooms(MainController mainController) {
+        List<RoomWithReservation> overdueRooms =
+                RoomWithReservationDAO.getRoomOverDueWithLatestReservation();
+
+        for (RoomWithReservation roomWithReservation : overdueRooms) {
+            checkAndUpdateRoomStatus(
+                    roomWithReservation,
+                    SYSTEM_EMPLOYEE,
+                    mainController
+            );
+        }
+
+        List<RoomWithReservation> allRoomWithReservation =
+                RoomWithReservationDAO.getRoomWithReservation();
+
+        for (RoomWithReservation roomWithReservation : allRoomWithReservation) {
+            checkAndUpdateRoomStatus(
+                    roomWithReservation,
+                    SYSTEM_EMPLOYEE,
+                    mainController
+            );
+        }
+    }
+
+    public static void checkAndUpdateRoomStatus(
+            RoomWithReservation roomWithReservation,
+            Employee employee,
+            MainController mainController
+    ) {
+        ReservationForm reservationForm = roomWithReservation.getReservationForm();
+        Room room = roomWithReservation.getRoom();
+
+        if (reservationForm == null || room == null) return;
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime checkOutDate = reservationForm.getApproxcheckOutTime();
+
+        if (now.isAfter(checkOutDate)) {
+            long hoursOverdue = ChronoUnit.HOURS.between(checkOutDate, now);
+
+            if (hoursOverdue >= 2) {
+                handleCheckOut(roomWithReservation, employee);
+                room.setRoomStatus(RoomStatus.AVAILABLE);
+                RoomDAO.updateRoomStatus(room.getRoomID(), RoomStatus.AVAILABLE);
+
+
+            } else {
+                RoomDAO.updateRoomStatus(room.getRoomID(), RoomStatus.OVER_DUE);
+                room.setRoomStatus(RoomStatus.OVER_DUE);
+
+
+            }
+        }
+    }
 
     public static void handleCheckOut(RoomWithReservation roomWithReservation, Employee employee) {
         try {

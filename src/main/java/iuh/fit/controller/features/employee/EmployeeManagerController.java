@@ -272,7 +272,7 @@ public class EmployeeManagerController {
             EmployeeDAO.createData(employee);
 
             // Đảm bảo lấy đúng đối tượng Employee từ database (đã được quản lý)
-            Employee savedEmployee = EmployeeDAO.getEmployeeByEmployeeID(employee.getEmployeeCode());
+            Employee savedEmployee = EmployeeDAO.getEmployeeByEmployeeCode(employee.getEmployeeCode());
             if (savedEmployee == null) {
                 dialogPane.showWarning("LỖI", "Không tìm thấy nhân viên sau khi lưu.");
                 return;

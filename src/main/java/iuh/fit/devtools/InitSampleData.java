@@ -215,6 +215,7 @@ public class InitSampleData {
             tx.begin();
 
             List<Employee> employees = List.of(
+                    new Employee("EMP-000000", "ADMIN", "", "", Gender.MALE, "123456789", LocalDate.of(1900, 1, 1), ObjectStatus.ACTIVE, Position.MANAGER),
                     new Employee("EMP-000001", "Huynh Duc Phu", "0912345678", "123 Ho Chi Minh", Gender.MALE, "001099012345", LocalDate.of(1985, 6, 15), ObjectStatus.ACTIVE, Position.MANAGER),
                     new Employee("EMP-000002", "Nguyen Xuan Chuc", "0908765432", "456 Hue", Gender.MALE, "002199012346", LocalDate.of(1990, 4, 22), ObjectStatus.ACTIVE, Position.RECEPTIONIST),
                     new Employee("EMP-000003", "Le Tran Gia Huy", "0987654321", "789 Ho Chi Minh", Gender.MALE, "003299012347", LocalDate.of(1992, 8, 19), ObjectStatus.ACTIVE, Position.MANAGER),
