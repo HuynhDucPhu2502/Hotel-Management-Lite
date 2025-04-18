@@ -2,8 +2,10 @@ package iuh.fit.dao;
 
 import iuh.fit.dto.InvoiceInfoDTO;
 import iuh.fit.models.Customer;
+import iuh.fit.models.Room;
 import iuh.fit.models.RoomCategory;
 import iuh.fit.models.enums.ObjectStatus;
+import iuh.fit.models.enums.RoomStatus;
 import iuh.fit.utils.EntityManagerUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -80,7 +82,28 @@ public class PosDaoImpl extends UnicastRemoteObject implements PosDAO {
         }
     }
 
-    public List<RoomCategory> getCatogoryForPOS (){
+    public List<RoomCategory> getCategoryForPOS (){
         return RoomCategoryDAO.getRoomCategory();
+    }
+
+    public List<Room> getAvailableRoomByRoomCategoryForPOS (RoomCategory category){
+        try (EntityManager em = EntityManagerUtil.getEntityManager()) {
+
+            String jpql = """
+                SELECT r
+                    FROM Room r
+                    WHERE r.roomCategory = :category AND r.roomStatus = :status
+            """;
+
+            TypedQuery<Room> query = em.createQuery(jpql, Room.class);
+
+            query.setParameter("category", category);
+            query.setParameter("status", RoomStatus.AVAILABLE);
+
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
