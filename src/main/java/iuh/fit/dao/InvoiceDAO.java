@@ -72,6 +72,15 @@ public class InvoiceDAO {
         invoice.setInvoiceDate(now);
         invoice.setRoomCharges(roomCharge);
         invoice.setServiceCharges(serviceCharge);
+
+        double subTotal = roomCharge + serviceCharge;
+        double taxCharge = subTotal * 0.1;
+        double totalDue = subTotal + taxCharge;
+
+        invoice.setSubTotal(subTotal);
+        invoice.setTaxCharge(taxCharge);
+        invoice.setTotalDue(totalDue);
+
         invoice.setReservationForm(form);
         em.persist(invoice);
 
@@ -96,6 +105,8 @@ public class InvoiceDAO {
         if (form == null) return "RESERVATION_FORM_NOT_FOUND";
 
 
+        form.setBookingDeposit(0);
+        em.merge(form);
         Room room = form.getRoom();
 
         String hcoID = em.createQuery("SELECT gs.nextID FROM GlobalSequence gs WHERE gs.tableName = 'HistoryCheckOut'", String.class).getSingleResult();
@@ -119,6 +130,15 @@ public class InvoiceDAO {
         invoice.setInvoiceDate(now);
         invoice.setRoomCharges(roomCharge);
         invoice.setServiceCharges(serviceCharge);
+
+        double subTotal = roomCharge + serviceCharge;
+        double taxCharge = subTotal * 0.1;
+        double totalDue = subTotal + taxCharge;
+
+        invoice.setSubTotal(subTotal);
+        invoice.setTaxCharge(taxCharge);
+        invoice.setTotalDue(totalDue);
+
         invoice.setReservationForm(form);
         em.persist(invoice);
 

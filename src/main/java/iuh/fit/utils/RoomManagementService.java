@@ -103,6 +103,7 @@ public class RoomManagementService {
                     roomWithReservation.getReservationForm().getReservationID()
             );
 
+
             InvoiceDAO.roomCheckingOut(
                     roomWithReservation.getReservationForm().getReservationID(),
                     roomCharge,
@@ -123,6 +124,9 @@ public class RoomManagementService {
             double serviceCharge = RoomChargesCalculate.calculateTotalServiceCharge(
                     roomWithReservation.getReservationForm().getReservationID()
             );
+
+            System.out.println(">> ROOM CHARGE: " + roomCharge);
+            System.out.println(">> SERVICE CHARGE: " + serviceCharge);
 
             InvoiceDAO.roomCheckingOutEarly(
                     roomWithReservation.getReservationForm().getReservationID(),

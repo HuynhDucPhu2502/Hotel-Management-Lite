@@ -1,5 +1,7 @@
 package iuh.fit.devtools;
 
+import iuh.fit.dao.CustomerDAO;
+import iuh.fit.dao.EmployeeDAO;
 import iuh.fit.models.*;
 import iuh.fit.models.enums.*;
 import iuh.fit.security.PasswordHashing;
@@ -33,10 +35,15 @@ public class InitSampleData {
         initRoomCategoryAndRoomData(em);
         initGlobalSequenceData(em);
         initAllReservationRelatedData(em);
+        initTestReservationForms(em);
 
         emf.close();
     }
 
+    // =================================================================
+    // Hàm tạo reservation form, history check in, history check out,
+    // reservation room detail, room usage service, invoice
+    // =================================================================
     public static void initAllReservationRelatedData(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
@@ -353,6 +360,78 @@ public class InitSampleData {
 
 
     // =================================================================
+    // Hàm tạo dữ liệu test cho chức năng đặt phòng
+    // =================================================================
+    public static void initTestReservationForms(EntityManager em) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            Employee emp1 = EmployeeDAO.getEmployeeByEmployeeCode("EMP-000001");
+            Employee emp2 = EmployeeDAO.getEmployeeByEmployeeCode("EMP-000001");
+            Customer cus1 = CustomerDAO.findById("CUS-000001");
+            Customer cus2 = CustomerDAO.findById("CUS-000002");
+            Room room1 = em.find(Room.class, "T1101");
+            Room room2 = em.find(Room.class, "T1105");
+
+            // Phiếu 1: Chưa checkin
+            ReservationForm rf1 = new ReservationForm(
+                    "RF-000031",
+                    LocalDateTime.now(),
+                    LocalDateTime.now(),
+                    LocalDateTime.now().plusDays(3),
+                    500000.0,
+                    ReservationStatus.RESERVATION,
+                    room1,
+                    cus1,
+                    emp1
+            );
+            em.persist(rf1);
+
+            // Phiếu 2: Đã checkin
+            ReservationForm rf2 = new ReservationForm(
+                    "RF-000032",
+                    LocalDateTime.now().minusDays(2),
+                    LocalDateTime.now().minusDays(1),
+                    LocalDateTime.now().plusDays(3),
+                    500000.0,
+                    ReservationStatus.RESERVATION,
+                    room2,
+                    cus2,
+                    emp2
+            );
+            em.persist(rf2);
+
+            HistoryCheckIn hci = new HistoryCheckIn();
+            hci.setRoomHistoryCheckinID("HCI-000031");
+            hci.setCheckInDate(LocalDateTime.now().minusDays(1));
+            hci.setReservationForm(rf2);
+            rf2.setHistoryCheckIn(hci);
+            em.persist(hci);
+
+            ReservationRoomDetail rrd = new ReservationRoomDetail();
+            rrd.setReservationRoomDetailID("RRD-000031");
+            rrd.setDateChanged(LocalDateTime.now().minusDays(1));
+            rrd.setRoom(room2);
+            rrd.setReservationForm(rf2);
+            em.persist(rrd);
+
+            // Cập nhật trạng thái phòng
+            room2.setRoomStatus(RoomStatus.IN_USE);
+
+            tx.commit();
+            System.out.println("Tạo thành công dữ liệu cho chức năng đặt phòng:");
+            System.out.println("+ 1 phiếu đặt phòng đến thời gian nhưng chưa checkin");
+            System.out.println("+ 1 phiếu đặt phòng đã checkin");
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        }
+    }
+
+
+    // =================================================================
     // Hàm tạo dữ liệu cho Global Sequence
     // =================================================================
     public static void initGlobalSequenceData(EntityManager em) {
@@ -368,10 +447,10 @@ public class InitSampleData {
                     new GlobalSequence(0, "HotelService", "HS-000021"),
                     new GlobalSequence(0, "Customer", "CUS-000031"),
                     new GlobalSequence(0, "RoomCategory", "RC-000005"),
-                    new GlobalSequence(0, "ReservationForm", "RF-000031"),
-                    new GlobalSequence(0, "ReservationRoomDetail", "RRD-000031"),
-                    new GlobalSequence(0, "HistoryCheckin", "HCI-000031"),
-                    new GlobalSequence(0, "HistoryCheckout", "HCI-000031"),
+                    new GlobalSequence(0, "ReservationForm", "RF-000033"),
+                    new GlobalSequence(0, "ReservationRoomDetail", "RRD-000032"),
+                    new GlobalSequence(0, "HistoryCheckin", "HCI-000032"),
+                    new GlobalSequence(0, "HistoryCheckout", "HCO-000031"),
                     new GlobalSequence(0, "RoomUsageService", "RUS-000031"),
                     new GlobalSequence(0, "Invoice", "INV-000031")
             );
