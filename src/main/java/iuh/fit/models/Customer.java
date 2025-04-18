@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
@@ -21,7 +22,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Customer extends Person {
+public class Customer extends Person implements Serializable {
 
     @Column(name = "customer_code", unique = true, nullable = false)
     private String customerCode;

@@ -5,6 +5,7 @@ import iuh.fit.models.enums.RoomStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Room {
+public class Room implements Serializable {
     @Id
     @Column(name = "room_id", columnDefinition = "nvarchar(50)", nullable = false)
     @EqualsAndHashCode.Include

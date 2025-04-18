@@ -18,6 +18,9 @@ module iuh.fit {
     // xuat exel
     requires org.apache.poi.poi;
     requires org.apache.poi.ooxml;
+    requires java.rmi;
+    requires java.naming;
+    requires org.checkerframework.checker.qual;
     requires itextpdf;
     requires org.apache.pdfbox;
 
@@ -62,6 +65,7 @@ module iuh.fit {
     exports iuh.fit.devtools;
 
     exports iuh.fit.dao;
+    exports iuh.fit.dto;
     exports iuh.fit.models.wrapper;
     exports iuh.fit.models.enums;
     exports iuh.fit.utils;

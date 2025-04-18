@@ -6,6 +6,7 @@ import iuh.fit.models.enums.Position;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,7 +19,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Employee extends Person {
+public class Employee extends Person implements Serializable {
 
     @Column(name = "employee_code", unique = true, nullable = false)
     private String employeeCode;
