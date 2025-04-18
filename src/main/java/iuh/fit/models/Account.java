@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 /**
  * Admin 1/14/2025
  **/
@@ -15,7 +17,7 @@ import lombok.ToString;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Account {
+public class Account implements Serializable {
     @Id
     @Column(name = "account_id")
     private String accountID;
