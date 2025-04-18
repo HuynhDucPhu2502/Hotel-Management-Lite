@@ -17,8 +17,6 @@ public class InvoiceDAO {
 
         String jpql = """
             SELECT i FROM Invoice i
-            WHERE i.reservationForm.historyCheckIn IS NOT NULL
-              AND i.reservationForm.historyCheckOut IS NOT NULL
         """;
 
         return em.createQuery(jpql, Invoice.class).getResultList();

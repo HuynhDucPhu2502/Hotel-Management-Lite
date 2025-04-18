@@ -9,6 +9,7 @@ import iuh.fit.controller.features.customer.CustomerManagerController;
 import iuh.fit.controller.features.customer.CustomerSearchingController;
 import iuh.fit.controller.features.employee.EmployeeManagerController;
 import iuh.fit.controller.features.employee.EmployeeSearchingController;
+import iuh.fit.controller.features.invoice.InvoiceManagerController;
 import iuh.fit.controller.features.room.RoomBookingController;
 import iuh.fit.controller.features.room.RoomManagerController;
 import iuh.fit.controller.features.room.RoomSearchingController;
@@ -16,6 +17,7 @@ import iuh.fit.controller.features.room.creating_reservation_form_controllers.Cr
 import iuh.fit.controller.features.service.HotelServiceManagerController;
 import iuh.fit.controller.features.service.HotelServiceSearchingController;
 import iuh.fit.controller.features.statistics.StatisticalController;
+import iuh.fit.dao.EmployeeDAO;
 import iuh.fit.models.*;
 
 import iuh.fit.models.enums.Position;
@@ -195,11 +197,11 @@ public class MainController {
 
                 case RoomBookingController roomBookingController ->
                         roomBookingController.setupContext(mainController, account.getEmployee());
-//
-//                case InvoiceManagerController invoiceManagerController -> {
-//                    Employee employee = EmployeeDAO.getEmployeeByAccountID(account.getAccountID());
-//                    invoiceManagerController.setupContext(mainController, employee, notificationButtonController);
-//                }
+
+                case InvoiceManagerController invoiceManagerController -> {
+                    Employee employee = account.getEmployee();
+                    invoiceManagerController.setupContext(mainController, employee);
+                }
 //
 //
 //                case EmployeeInformationController employeeInformationController ->
