@@ -118,8 +118,6 @@ public class MainController {
 
     private void setupMenuButtons() {
         Position position = account.getEmployee().getPosition();
-        informationBtn = menuController.getInformationBtn();
-        handleTooltips();
 
         // Tắt các button menu không thuộc về lễ tân
         if (position.equals(Position.RECEPTIONIST)) {
@@ -171,15 +169,6 @@ public class MainController {
         }
     }
 
-    private void handleTooltips() {
-        // Tạo Tooltip
-        Tooltip tooltip = new Tooltip("Về phần mềm");
-        Tooltip.install(informationBtn, tooltip); // Gắn Tooltip vào Button
-
-        // Thêm Tooltip bằng cách setTooltip
-        informationBtn.setTooltip(tooltip);
-        tooltip.setShowDelay(javafx.util.Duration.millis(400));
-    }
 
     public void loadPanel(String fxmlPath, MainController mainController, Account account) {
         try {

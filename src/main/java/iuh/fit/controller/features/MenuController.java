@@ -143,8 +143,6 @@ public class MenuController {
     @FXML
     private Button revenueStatisticsButton;
     @FXML
-    private Button rateUsingRoomButton;
-    @FXML
     private ImageView arrowUpForStatistics;
 
 //  =====================================================
@@ -154,8 +152,6 @@ public class MenuController {
 
 //  =====================================================
 
-    @FXML
-    private Button informationBtn;
 
     @FXML
     private ScrollPane scrollPane;
