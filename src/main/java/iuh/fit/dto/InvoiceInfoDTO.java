@@ -4,8 +4,10 @@ import iuh.fit.models.Customer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.checkerframework.checker.units.qual.N;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -18,7 +20,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class InvoiceInfoDTO {
+@ToString
+public class InvoiceInfoDTO implements Serializable {
     private Customer customer;
     private String invoiceID;
     private String roomID;

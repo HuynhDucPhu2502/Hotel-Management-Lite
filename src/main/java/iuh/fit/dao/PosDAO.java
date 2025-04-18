@@ -2,6 +2,7 @@ package iuh.fit.dao;
 
 import iuh.fit.dto.InvoiceInfoDTO;
 import iuh.fit.models.Customer;
+import iuh.fit.models.Room;
 import iuh.fit.models.RoomCategory;
 import iuh.fit.models.enums.Gender;
 
@@ -26,6 +27,8 @@ public interface PosDAO extends Remote {
             String info
     ) throws RemoteException;
 
-    List<RoomCategory> getCatogoryForPOS () throws RemoteException;
+    List<RoomCategory> getCategoryForPOS () throws RemoteException;
+
+    List<Room> getAvailableRoomByRoomCategoryForPOS (RoomCategory category) throws RemoteException;
 
 }
