@@ -1,34 +1,35 @@
 package iuh.fit.controller.features.room;
 
 import com.dlsc.gemsfx.DialogPane;
-import iuh.fit.dao.RoomCategoryDAO;
-import iuh.fit.dao.RoomDAO;
+import iuh.fit.dao.daointerface.RoomCategoryDAO;
+import iuh.fit.dao.daoimpl.RoomCategoryDAOImpl;
+import iuh.fit.dao.daointerface.RoomDAO;
+import iuh.fit.dao.daoimpl.RoomDAOImpl;
 import iuh.fit.models.Room;
 import iuh.fit.models.RoomCategory;
 import iuh.fit.models.enums.ObjectStatus;
 import iuh.fit.models.enums.RoomStatus;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
 import javafx.util.Callback;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class RoomManagerController {
+    private final RoomCategoryDAO roomCategoryDAO = new RoomCategoryDAOImpl();
+    private final RoomDAO roomDAO = new RoomDAOImpl();
+
     // Input Fields
     @FXML
     private TextField roomIDTextField;
@@ -53,7 +54,7 @@ public class RoomManagerController {
     @FXML
     private TableColumn<Room, Double> roomStateColumn;
     @FXML
-    private TableColumn<Room, String> numberOfBedColumn;
+    private TableColumn<Room, Integer> numberOfBedColumn;
     @FXML
     private TableColumn<Room, Void> actionColumn;
 
@@ -68,8 +69,11 @@ public class RoomManagerController {
     private String flagCategory = null;
     private ObservableList<Room> items;
 
+    public RoomManagerController() throws RemoteException {
+    }
+
     // Gọi mấy phương thức để gắn sự kiện và dữ liệu cho lúc đầu khởi tạo giao diện
-    public void initialize() {
+    public void initialize() throws RemoteException {
         dialogPane.toFront();
         roomTableView.setFixedCellSize(40);
 
@@ -79,15 +83,27 @@ public class RoomManagerController {
         resetBtn.setOnAction(e -> handleResetAction());
         addBtn.setOnAction(e -> handleAddAction());
         updateBtn.setOnAction(e -> handleUpdateAction());
-        roomIDSearchField.setOnKeyReleased((keyEvent) -> handleSearchAction());
-        roomIDSearchField.setOnAction(event -> handleSearchAction());
+        roomIDSearchField.setOnKeyReleased((keyEvent) -> {
+            try {
+                handleSearchAction();
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        roomIDSearchField.setOnAction(event -> {
+            try {
+                handleSearchAction();
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
         SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1,10,1); // min=1, max=10, default=1
         floorNumbSpinner.setValueFactory(valueFactory);
     }
 
     // Phương thức load dữ liệu lên giao diện
-    private void loadData() {
-        List<Room> rooms = RoomDAO.getRoom();
+    private void loadData() throws RemoteException {
+        List<Room> rooms = roomDAO.getRoom();
         List<String> roomsID = rooms.stream().map(Room::getRoomID).collect(Collectors.toList());
 
         roomIDSearchField.getItems().setAll(roomsID);
@@ -100,7 +116,7 @@ public class RoomManagerController {
         roomStateComboBox.getItems().setAll(roomStatusList);
         roomStateComboBox.getSelectionModel().selectFirst();
 
-        List<RoomCategory> roomCategoryList = RoomCategoryDAO.getRoomCategory();
+        List<RoomCategory> roomCategoryList = roomCategoryDAO.getRoomCategory();
         roomCategoryComboBox.getItems().setAll(roomCategoryList);
         roomCategoryComboBox.getSelectionModel().selectFirst();
 
@@ -110,7 +126,10 @@ public class RoomManagerController {
     private void setupTable() {
         roomIDColumn.setCellValueFactory(new PropertyValueFactory<>("roomID"));
         roomStateColumn.setCellValueFactory(new PropertyValueFactory<>("roomStatus"));
-        numberOfBedColumn.setCellValueFactory(new PropertyValueFactory<>("numberOfBed"));
+        numberOfBedColumn.setCellValueFactory(cell ->{
+            Room room = cell.getValue();
+            return new SimpleIntegerProperty(room.getRoomCategory() != null ? room.getRoomCategory().getNumberOfBed() : 0).asObject();
+        });
 
         setupActionColumn();
         roomTableView.setItems(items);
@@ -189,9 +208,9 @@ public class RoomManagerController {
     // Chức năng 2: Thêm
     private void handleAddAction() {
         try {
-            String newRoomID = RoomDAO.roomIDGenerate(floorNumbSpinner.getValue(), roomCategoryComboBox.getValue());
+            String newRoomID = roomDAO.roomIDGenerate(floorNumbSpinner.getValue(), roomCategoryComboBox.getValue());
             Room room = new Room(newRoomID, roomStateComboBox.getValue(), LocalDateTime.now(), ObjectStatus.ACTIVE, roomCategoryComboBox.getValue());
-            RoomDAO.createData(room);
+            roomDAO.createData(room);
             dialogPane.showInformation("Thông báo", "Tạo phòng mới thành công với mã: " + newRoomID);
             loadData();
         } catch (Exception e) {
@@ -199,11 +218,11 @@ public class RoomManagerController {
         }
     }
 
-    private String handleRoomIDGenerate() {
+    private String handleRoomIDGenerate() throws RemoteException {
         RoomCategory roomCategorySelected = roomCategoryComboBox.getSelectionModel().getSelectedItem();
         int floorNumb = floorNumbSpinner.getValue();
 
-        return RoomDAO.roomIDGenerate(floorNumb, roomCategorySelected);
+        return roomDAO.roomIDGenerate(floorNumb, roomCategorySelected);
     }
 
     private void handleUpdateBtn(Room room) {
@@ -233,9 +252,17 @@ public class RoomManagerController {
         dialogPane.showConfirmation("XÁC NHẬN", "Bạn có chắc chắn muốn cập nhật?")
                 .onClose(buttonType -> {
                     if (buttonType == ButtonType.YES) {
-                        RoomDAO.updateData(oldRoomID, flagCategory, updatedRoom);
+                        try {
+                            roomDAO.updateData(oldRoomID, flagCategory, updatedRoom);
+                        } catch (RemoteException e) {
+                            throw new RuntimeException(e);
+                        }
                         handleResetAction();
-                        loadData();
+                        try {
+                            loadData();
+                        } catch (RemoteException e) {
+                            throw new RuntimeException(e);
+                        }
                         dialogPane.showInformation("Thành công", "Phòng đã được cập nhật.");
                     }
                 });
@@ -251,9 +278,17 @@ public class RoomManagerController {
 
             dialog.onClose(buttonType -> {
                 if (buttonType == ButtonType.YES) {
-                    RoomDAO.deleteData(room.getRoomID());
+                    try {
+                        roomDAO.deleteData(room.getRoomID());
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                     handleResetAction();
-                    loadData();
+                    try {
+                        loadData();
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                     dialogPane.showInformation("Thành công", "Xóa phòng thành công");
                 }
             });
@@ -263,7 +298,7 @@ public class RoomManagerController {
         }
     }
 
-    private void handleSearchAction() {
+    private void handleSearchAction() throws RemoteException {
         roomStateSearchField.setText("");
         numberOfBedSearchField.setText("");
 
@@ -271,9 +306,9 @@ public class RoomManagerController {
         List<Room> room;
 
         if (searchText == null || searchText.isEmpty()) {
-            room = RoomDAO.getRoom();
+            room = roomDAO.getRoom();
         } else {
-            room = RoomDAO.findDataByAnyContainsId(searchText);
+            room = roomDAO.findDataByAnyContainsId(searchText);
             if (!room.isEmpty()) {
                 if(room.size()==1){
                     roomStateSearchField.setText(room.getFirst().getRoomStatus().toString());

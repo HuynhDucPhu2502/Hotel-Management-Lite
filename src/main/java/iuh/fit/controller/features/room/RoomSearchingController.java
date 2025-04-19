@@ -2,9 +2,11 @@ package iuh.fit.controller.features.room;
 
 import com.dlsc.gemsfx.DialogPane;
 import iuh.fit.controller.MainController;
-import iuh.fit.dao.RoomCategoryDAO;
-import iuh.fit.dao.RoomDAO;
-//import iuh.fit.dao.RoomWithReservationDAO;
+import iuh.fit.dao.daointerface.RoomCategoryDAO;
+import iuh.fit.dao.daoimpl.RoomCategoryDAOImpl;
+import iuh.fit.dao.daointerface.RoomDAO;
+import iuh.fit.dao.daoimpl.RoomDAOImpl;
+//import iuh.fit.dao.daoimpl.RoomWithReservationDAOImpl;
 import iuh.fit.models.Account;
 import iuh.fit.models.Room;
 //import iuh.fit.models.enums.Position;
@@ -20,6 +22,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 //import java.io.IOException;
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +30,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RoomSearchingController {
+    private final RoomCategoryDAO roomCategoryDAO = new RoomCategoryDAOImpl();
+    private final RoomDAO roomDAO = new RoomDAOImpl();
 
     // Dialog Pane
     @FXML
@@ -61,6 +66,9 @@ public class RoomSearchingController {
     private MainController mainController;
     private Account account;
 
+    public RoomSearchingController() throws RemoteException {
+    }
+
     public void setupContext(MainController mainController, Account account) {
         this.mainController = mainController;
         this.account = account;
@@ -79,11 +87,11 @@ public class RoomSearchingController {
     private void loadData() {
         Task<Void> loadDataTask = new Task<>() {
             @Override
-            protected Void call() {
-                List<Room> roomList = RoomDAO.getRoom();
+            protected Void call() throws RemoteException {
+                List<Room> roomList = roomDAO.getRoom();
                 items = FXCollections.observableArrayList(roomList);
 
-                List<String> comboBoxItems = RoomCategoryDAO.getRoomCategory()
+                List<String> comboBoxItems = roomCategoryDAO.getRoomCategory()
                         .stream()
                         .map(roomCategory -> roomCategory.getRoomCategoryID() +
                                 " " + roomCategory.getRoomCategoryName())
@@ -166,7 +174,7 @@ public class RoomSearchingController {
 //    }
 //
 //    private void handleCreateReservationForm(Room room) throws IOException {
-//        RoomWithReservation roomWithReservations = RoomWithReservationDAO.getRoomWithReservationByRoomId(room.getRoomID());
+//        RoomWithReservation roomWithReservations = RoomWithReservationDAOImpl.getRoomWithReservationByRoomId(room.getRoomID());
 //        mainController.loadPanelCreateReservationFormController("/iuh/fit/view/features/room/creating_reservation_form_panels/CreateReservationFormPanel.fxml", mainController, account, roomWithReservations);
 //    }
 
@@ -183,7 +191,7 @@ public class RoomSearchingController {
     private void handleSearchAction() {
         Task<ObservableList<Room>> searchTask = new Task<>() {
             @Override
-            protected ObservableList<Room> call() {
+            protected ObservableList<Room> call() throws RemoteException {
                 String roomID = roomIDSearchField.getText().isBlank() ? null : roomIDSearchField.getText().trim();
                 String roomStatus = roomStatusSearchField.getSelectionModel().getSelectedItem();
                 LocalDateTime lowerDate = handleDateInput(dateOfCreationLowerBoundSearchField.getValue());
@@ -191,7 +199,7 @@ public class RoomSearchingController {
                 String selectedCategory = roomCategorySearchField.getSelectionModel().getSelectedItem();
                 String categoryID = handleCategoryIDInput(selectedCategory);
 
-                List<Room> searchResults = RoomDAO.searchRooms(roomID, roomStatus, lowerDate, upperDate, categoryID);
+                List<Room> searchResults = roomDAO.searchRooms(roomID, roomStatus, lowerDate, upperDate, categoryID);
                 return FXCollections.observableArrayList(searchResults);
             }
         };

@@ -1,11 +1,13 @@
 package iuh.fit.utils;
 
-import iuh.fit.dao.RoomCategoryDAO;
-import iuh.fit.dao.RoomUsageServiceDAO;
+import iuh.fit.dao.daointerface.RoomCategoryDAO;
+import iuh.fit.dao.daoimpl.RoomCategoryDAOImpl;
+import iuh.fit.dao.daoimpl.RoomUsageServiceDAOImpl;
 import iuh.fit.models.Room;
 import iuh.fit.models.RoomCategory;
 import iuh.fit.models.RoomUsageService;
 
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -16,8 +18,28 @@ import java.util.Map;
  **/
 public class RoomChargesCalculate {
 
+    static RoomCategoryDAO roomCategoryDAO;
+
+    static {
+        try {
+            roomCategoryDAO = new RoomCategoryDAOImpl();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final RoomUsageServiceDAOImpl roomUsageServiceDAO;
+
+    static {
+        try {
+            roomUsageServiceDAO = new RoomUsageServiceDAOImpl();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static double calculateTotalServiceCharge(String reservationFormID) {
-        List<RoomUsageService> services = RoomUsageServiceDAO.getByReservationFormID(reservationFormID);
+        List<RoomUsageService> services = roomUsageServiceDAO.getByReservationFormID(reservationFormID);
 
         return services.stream()
                 .mapToDouble(service -> service.getQuantity() * service.getUnitPrice())
@@ -28,8 +50,8 @@ public class RoomChargesCalculate {
             LocalDateTime checkInTime,
             LocalDateTime checkOutTime,
             Room room
-    )  {
-        RoomCategory roomCategory = RoomCategoryDAO.getDataByID(room.getRoomCategory().getRoomCategoryID());
+    ) throws RemoteException {
+        RoomCategory roomCategory = roomCategoryDAO.getDataByID(room.getRoomCategory().getRoomCategoryID());
 
         double hourlyPrice = roomCategory.getHourlyPrice();
         double dailyPrice = roomCategory.getDailyPrice();

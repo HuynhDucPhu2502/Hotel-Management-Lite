@@ -1,7 +1,8 @@
 package iuh.fit.controller;
 
 import com.dlsc.gemsfx.DialogPane;
-import iuh.fit.dao.AccountDAO;
+import iuh.fit.dao.daointerface.AccountDAO;
+import iuh.fit.dao.daoimpl.AccountDAOImpl;
 import iuh.fit.models.Account;
 import iuh.fit.models.enums.AccountStatus;
 import iuh.fit.security.PasswordHashing;
@@ -16,6 +17,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.rmi.RemoteException;
 import java.util.Objects;
 
 public class LoginController {
@@ -34,12 +36,23 @@ public class LoginController {
     @FXML private ImageView showPassButton;            // Nút chuyển đổi hiển thị mật khẩu
     @FXML private Text errorMessage;                   // Thông báo lỗi khi đăng nhập
 
+    AccountDAO accountDAO = new AccountDAOImpl();
+
+    public LoginController() throws RemoteException {
+    }
+
     @FXML
     public void initialize(Stage mainStage) {
 
         dialogPane.toFront();
         hiddenPasswordField.textProperty().bindBidirectional(visiblePasswordField.textProperty());
-        signInButton.setOnMouseClicked(event -> signIn(mainStage));
+        signInButton.setOnMouseClicked(event -> {
+            try {
+                signIn(mainStage);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
 
@@ -81,7 +94,7 @@ public class LoginController {
 // =====================================================================================
 // 🔑 Các hàm xử lý chức năng đăng nhập (Login)
 // =====================================================================================
-    private void signIn(Stage mainStage) {
+    private void signIn(Stage mainStage) throws RemoteException {
         String userName = userNameField.getText();
         String password = hiddenPasswordField.getText();
 
@@ -96,7 +109,7 @@ public class LoginController {
         }
 
 
-        Account account = AccountDAO.getLogin(userName, PasswordHashing.hashPassword(password));
+        Account account = accountDAO.getLogin(userName, PasswordHashing.hashPassword(password));
         if (account == null) {
             errorMessage.setText(ErrorMessages.LOGIN_INVALID_ACCOUNT);
             return;

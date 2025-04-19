@@ -9,10 +9,10 @@ import iuh.fit.controller.features.room.checking_in_reservation_list_controllers
 import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
 import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
-import iuh.fit.dao.HistoryCheckInDAO;
-import iuh.fit.dao.HotelServiceDAO;
-import iuh.fit.dao.RoomUsageServiceDAO;
-import iuh.fit.dao.ServiceCategoryDAO;
+import iuh.fit.dao.daoimpl.*;
+import iuh.fit.dao.daointerface.HistoryCheckInDAO;
+import iuh.fit.dao.daointerface.HotelServiceDAO;
+import iuh.fit.dao.daointerface.ServiceCategoryDAO;
 import iuh.fit.models.*;
 import iuh.fit.models.wrapper.RoomWithReservation;
 import iuh.fit.utils.RoomChargesCalculate;
@@ -29,6 +29,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -39,6 +40,11 @@ public class ServiceOrderingController {
     // ==================================================================================================================
     // 1. Các biến
     // ==================================================================================================================
+    private final HistoryCheckInDAO historyCheckInDAO = new HistoryCheckInDAOImpl();
+    private final HotelServiceDAO hotelServiceDAO = new HotelServiceDAOImpl();
+    private final RoomUsageServiceDAOImpl roomUsageServiceDAO = new RoomUsageServiceDAOImpl();
+    public final ServiceCategoryDAO serviceCategoryDAO = new ServiceCategoryDAOImpl();
+
     @FXML
     private Button backBtn, bookingRoomNavigateLabel;
 
@@ -101,6 +107,9 @@ public class ServiceOrderingController {
 
     private List<HotelService> hotelServiceList;
 
+    public ServiceOrderingController() throws RemoteException {
+    }
+
 
     // ==================================================================================================================
     // 2. Khởi tạo và nạp dữ liệu vào giao diện
@@ -111,7 +120,7 @@ public class ServiceOrderingController {
     }
 
     public void setupContext(MainController mainController, Employee employee,
-                             RoomWithReservation roomWithReservation) {
+                             RoomWithReservation roomWithReservation) throws RemoteException {
         this.mainController = mainController;
         this.employee = employee;
         this.roomWithReservation = roomWithReservation;
@@ -147,12 +156,12 @@ public class ServiceOrderingController {
     private void loadData() {
         Task<Void> loadDataTask = new Task<>() {
             @Override
-            protected Void call() {
-                hotelServiceList = HotelServiceDAO.getHotelService();
+            protected Void call() throws RemoteException {
+                hotelServiceList = hotelServiceDAO.getHotelService();
 
                 loadTable();
 
-                ArrayList<String> categoryNames = (ArrayList<String>) ServiceCategoryDAO.getServiceCategoryNames();
+                ArrayList<String> categoryNames = (ArrayList<String>) serviceCategoryDAO.getServiceCategoryNames();
                 categoryNames.addFirst("TẤT CẢ");
 
                 Platform.runLater(() -> {
@@ -177,7 +186,7 @@ public class ServiceOrderingController {
     }
 
     private void loadTable() {
-        List<RoomUsageService> roomUsageServices = RoomUsageServiceDAO.getByReservationFormID(roomWithReservation.getReservationForm().getReservationID());
+        List<RoomUsageService> roomUsageServices = roomUsageServiceDAO.getByReservationFormID(roomWithReservation.getReservationForm().getReservationID());
         ObservableList<RoomUsageService> data = FXCollections.observableArrayList(roomUsageServices);
 
         Platform.runLater(() -> {
@@ -283,13 +292,13 @@ public class ServiceOrderingController {
     // ==================================================================================================================
     // 4.  Đẩy dữ liệu lên giao diện
     // ==================================================================================================================
-    private void setupReservationForm() {
+    private void setupReservationForm() throws RemoteException {
         ReservationForm reservationForm = roomWithReservation.getReservationForm();
 
         Room reservationFormRoom = roomWithReservation.getRoom();
         Customer reservationFormCustomer = roomWithReservation.getReservationForm().getCustomer();
 
-        LocalDateTime actualCheckInDate = HistoryCheckInDAO.getActualCheckInDate(reservationForm.getReservationID());
+        LocalDateTime actualCheckInDate = historyCheckInDAO.getActualCheckInDate(reservationForm.getReservationID());
 
         roomNumberLabel.setText(reservationFormRoom.getRoomNumber());
         roomCategoryLabel.setText(reservationFormRoom.getRoomCategory().getRoomCategoryName());
@@ -419,7 +428,7 @@ public class ServiceOrderingController {
             roomUsageService.setHotelService(service);
             roomUsageService.setReservationForm(roomWithReservation.getReservationForm());
 
-            String result = RoomUsageServiceDAO.serviceOrdering(roomUsageService);
+            String result = roomUsageServiceDAO.serviceOrdering(roomUsageService);
 
             if (result.equals("SERVICE_ORDERING_SUCCESS")) {
                 amountField.getValueFactory().setValue(1);

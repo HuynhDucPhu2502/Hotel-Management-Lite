@@ -3,9 +3,10 @@ package iuh.fit.controller.features.room.checking_in_reservation_list_controller
 import com.dlsc.gemsfx.DialogPane;
 import iuh.fit.controller.MainController;
 import iuh.fit.controller.features.room.RoomBookingController;
-import iuh.fit.dao.ReservationFormDAO;
-import iuh.fit.dao.ReservationRoomDetailDAO;
-import iuh.fit.dao.RoomWithReservationDAO;
+import iuh.fit.dao.daoimpl.*;
+import iuh.fit.dao.daointerface.ReservationFormDAO;
+import iuh.fit.dao.daointerface.ReservationRoomDetailDAO;
+import iuh.fit.dao.daointerface.RoomWithReservationDAO;
 import iuh.fit.models.*;
 import iuh.fit.models.wrapper.RoomWithReservation;
 import iuh.fit.utils.RoomChargesCalculate;
@@ -17,6 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.AnchorPane;
 
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -25,6 +27,10 @@ public class ReservationFormDetailsController {
     // ==================================================================================================================
     // 1. Các biến
     // ==================================================================================================================
+    private final ReservationFormDAO reservationFormDAO = new ReservationFormDAOImpl();
+    private final ReservationRoomDetailDAO reservationRoomDetailDAO = new ReservationRoomDetailDAOImpl();
+    private final RoomWithReservationDAO roomWithReservationDAO = new RoomWithReservationDAOImpl();
+
     @FXML
     private Button backBtn, reservationFormListNavigate, bookingRoomNavigate,
             reservationFormBtn;
@@ -60,6 +66,9 @@ public class ReservationFormDetailsController {
     private RoomWithReservation roomWithReservation;
     private Employee employee;
 
+    public ReservationFormDetailsController() throws RemoteException {
+    }
+
     // ==================================================================================================================
     // 2. Khởi tạo và nạp dữ liệu vào giao diện
     // ==========================================s========================================================================
@@ -69,7 +78,7 @@ public class ReservationFormDetailsController {
 
     public void setupContext(
             MainController mainController, ReservationForm reservationForm,
-            Employee employee, RoomWithReservation roomWithReservation) {
+            Employee employee, RoomWithReservation roomWithReservation) throws RemoteException {
         this.mainController = mainController;
         this.reservationForm = reservationForm;
         this.roomWithReservation = roomWithReservation;
@@ -106,7 +115,7 @@ public class ReservationFormDetailsController {
     // ==================================================================================================================
     // 3.  Đẩy dữ liệu lên giao diện
     // ==================================================================================================================
-    private void setupReservationForm() {
+    private void setupReservationForm() throws RemoteException {
         Room reservationFormRoom = reservationForm.getRoom();
         Customer reservationFormCustomer = reservationForm.getCustomer();
         Employee reservationFormEmployee = reservationForm.getEmployee();
@@ -204,7 +213,11 @@ public class ReservationFormDetailsController {
 
             dialog.onClose(buttonType -> {
                 if (buttonType == ButtonType.YES) {
-                    ReservationFormDAO.deleteData(reservationForm.getReservationID());
+                    try {
+                        reservationFormDAO.deleteData(reservationForm.getReservationID());
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                     navigateToReservationListPanel();
 
                 }
@@ -220,12 +233,12 @@ public class ReservationFormDetailsController {
     // ==================================================================================================================
     private void handleCheckIn() {
         try {
-            ReservationRoomDetailDAO.roomCheckingIn(
+            reservationRoomDetailDAO.roomCheckingIn(
                     reservationForm.getReservationID(),
                     employee.getEmployeeCode()
             );
 
-            roomWithReservation = RoomWithReservationDAO
+            roomWithReservation = roomWithReservationDAO
                     .getRoomWithReservationByID(reservationForm.getReservationID(), roomWithReservation.getRoom().getRoomID());
 
             navigateToReservationListPanel("Check-in thành công tại phòng đã đặt.");
@@ -236,14 +249,14 @@ public class ReservationFormDetailsController {
 
     private void handleEarlyCheckin() {
         try {
-            String result = ReservationRoomDetailDAO.roomEarlyCheckingIn(
+            String result = reservationRoomDetailDAO.roomEarlyCheckingIn(
                     reservationForm.getReservationID(),
                     employee.getEmployeeCode()
             );
 
             switch (result) {
                 case "ROOM_CHECKING_IN_SUCCESS" -> {
-                    roomWithReservation = RoomWithReservationDAO
+                    roomWithReservation = roomWithReservationDAO
                             .getRoomWithReservationByID(reservationForm.getReservationID(), roomWithReservation.getRoom().getRoomID());
                     navigateToReservationListPanel("Check-in thành công tại phòng đã đặt.");
                 }

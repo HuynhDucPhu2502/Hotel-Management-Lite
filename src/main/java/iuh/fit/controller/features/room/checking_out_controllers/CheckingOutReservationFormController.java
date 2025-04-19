@@ -7,9 +7,9 @@ import iuh.fit.controller.features.room.checking_in_reservation_list_controllers
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
 import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
 import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
-import iuh.fit.dao.HistoryCheckInDAO;
-import iuh.fit.dao.ReservationRoomDetailDAO;
-import iuh.fit.dao.RoomUsageServiceDAO;
+import iuh.fit.dao.daoimpl.*;
+import iuh.fit.dao.daointerface.HistoryCheckInDAO;
+import iuh.fit.dao.daointerface.ReservationRoomDetailDAO;
 import iuh.fit.models.*;
 import iuh.fit.models.enums.RoomStatus;
 import iuh.fit.models.wrapper.RoomWithReservation;
@@ -27,6 +27,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -37,6 +38,12 @@ public class CheckingOutReservationFormController {
     // ==================================================================================================================
     // 1. Các biến
     // ==================================================================================================================
+
+    private final HistoryCheckInDAO historyCheckInDAO = new HistoryCheckInDAOImpl();
+    ReservationRoomDetailDAO reservationRoomDetailDAO = new ReservationRoomDetailDAOImpl();
+    private final RoomUsageServiceDAOImpl roomUsageServiceDAO = new RoomUsageServiceDAOImpl();
+
+
     @FXML
     private Button backBtn, bookingRoomNavigateLabel;
 
@@ -97,6 +104,9 @@ public class CheckingOutReservationFormController {
     private RoomWithReservation roomWithReservation;
     private Employee employee;
 
+    public CheckingOutReservationFormController() throws RemoteException {
+    }
+
     // ==================================================================================================================
     // 2. Khởi tạo và nạp dữ liệu vào giao diện
     // ==================================================================================================================
@@ -107,7 +117,7 @@ public class CheckingOutReservationFormController {
     }
 
     public void setupContext(MainController mainController, Employee employee,
-                             RoomWithReservation roomWithReservation) {
+                             RoomWithReservation roomWithReservation) throws RemoteException {
         this.mainController = mainController;
         this.employee = employee;
         this.roomWithReservation = roomWithReservation;
@@ -118,15 +128,15 @@ public class CheckingOutReservationFormController {
         loadData();
     }
 
-    private void loadData() {
-        List<ReservationRoomDetail> roomReservationDetails = ReservationRoomDetailDAO.getByReservationFormID(
+    private void loadData() throws RemoteException {
+        List<ReservationRoomDetail> roomReservationDetails = reservationRoomDetailDAO.getByReservationFormID(
                 roomWithReservation.getReservationForm().getReservationID()
         );
         ObservableList<ReservationRoomDetail> roomReservationDetailsData = FXCollections.observableArrayList(roomReservationDetails);
         roomReservationDetailTableView.setItems(roomReservationDetailsData);
         roomReservationDetailTableView.refresh();
 
-        List<RoomUsageService> roomUsageServices = RoomUsageServiceDAO.getByReservationFormID(roomWithReservation.getReservationForm().getReservationID());
+        List<RoomUsageService> roomUsageServices = roomUsageServiceDAO.getByReservationFormID(roomWithReservation.getReservationForm().getReservationID());
         ObservableList<RoomUsageService> roomUsageServicesData = FXCollections.observableArrayList(roomUsageServices);
         roomUsageServiceTableView.setItems(roomUsageServicesData);
         roomUsageServiceTableView.refresh();
@@ -166,13 +176,13 @@ public class CheckingOutReservationFormController {
         }
     }
 
-    private void setupReservationForm() {
+    private void setupReservationForm() throws RemoteException {
         ReservationForm reservationForm = roomWithReservation.getReservationForm();
 
         Room reservationFormRoom = roomWithReservation.getRoom();
         Customer reservationFormCustomer = roomWithReservation.getReservationForm().getCustomer();
 
-        LocalDateTime actualCheckInDate = HistoryCheckInDAO.getActualCheckInDate(reservationForm.getReservationID());
+        LocalDateTime actualCheckInDate = historyCheckInDAO.getActualCheckInDate(reservationForm.getReservationID());
 
         roomNumberLabel.setText(reservationFormRoom.getRoomNumber());
         roomCategoryLabel.setText(reservationFormRoom.getRoomCategory().getRoomCategoryName());

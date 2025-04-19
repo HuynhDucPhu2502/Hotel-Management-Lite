@@ -2,9 +2,10 @@ package iuh.fit.controller.features.statistics;
 
 import com.dlsc.gemsfx.daterange.DateRange;
 import com.dlsc.gemsfx.daterange.DateRangePicker;
-import iuh.fit.dao.EmployeeDAO;
-import iuh.fit.dao.ServiceCategoryDAO;
-import iuh.fit.dao.ServiceDisplayOnTableDAO;
+import iuh.fit.dao.daoimpl.*;
+import iuh.fit.dao.daointerface.EmployeeDAO;
+import iuh.fit.dao.daointerface.ServiceCategoryDAO;
+import iuh.fit.dao.daointerface.ServiceDisplayOnTableDAO;
 import iuh.fit.models.Employee;
 import iuh.fit.models.ServiceCategory;
 import iuh.fit.models.enums.ExportExcelCategory;
@@ -36,6 +37,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -48,6 +50,8 @@ import java.util.stream.Collectors;
 public class ServiceRevenueStatisticsTabController implements Initializable {
 
     public ToggleGroup showDataViewToggleGroup;
+    public final ServiceCategoryDAO serviceCategoryDAO = new ServiceCategoryDAOImpl();
+    public final ServiceDisplayOnTableDAO serviceDisplayOnTableDAO = new ServiceDisplayOnTableDAOImpl();
 
     // Variables for revenue statistics view components
     @FXML private TableView<ServiceDisplayOnTable> serviceDataTableView;
@@ -86,8 +90,10 @@ public class ServiceRevenueStatisticsTabController implements Initializable {
     private static final String NONE_VALUE_QUARTER = "--Quý--";
     private static final String NONE_VALUE_SERVICE_CATEGORY = "--Loại dịch vụ--";
 
+    EmployeeDAO employeeDAO = new EmployeeDAOImpl();
+
     // data of 3 years
-    private final List<ServiceDisplayOnTable> serviceDisplayOnTableData = ServiceDisplayOnTableDAO.getDataThreeYearsLatest();
+    private final List<ServiceDisplayOnTable> serviceDisplayOnTableData = serviceDisplayOnTableDAO.getDataThreeYearsLatest();
 
     // data of all the time
     private final List<ServiceDisplayOnTable> allOfData = new ArrayList<>();
@@ -101,14 +107,25 @@ public class ServiceRevenueStatisticsTabController implements Initializable {
     // limit of data rows per page on table view
     private static final int ROW_PER_PAGE = 12;
 
+    public ServiceRevenueStatisticsTabController() throws RemoteException {
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         EditDateRangePicker.editDateRangePicker(serviceTabDateRangePicker);
         serviceDataTableView.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        loadDataToEmployeeNameCombobox();
+        try {
+            loadDataToEmployeeNameCombobox();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         loadDataToComboboxOfYear();
         loadDataToComboboxOfQuarter();
-        loadDataToCategoryServiceCombobox();
+        try {
+            loadDataToCategoryServiceCombobox();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         dateRangeAction();
         statisByDateRangeOption();
         paginationOnAction();
@@ -197,10 +214,10 @@ public class ServiceRevenueStatisticsTabController implements Initializable {
 
     // handle event for statistic all the time
     @FXML
-    void statisticAllTheTime() {
+    void statisticAllTheTime() throws RemoteException {
         if (isGetALl()) {
             if(allOfData.isEmpty()){
-                allOfData.addAll(ServiceDisplayOnTableDAO.getAllData());
+                allOfData.addAll(serviceDisplayOnTableDAO.getAllData());
             }
             currentData = allOfData;
             updateOnTable(0);
@@ -1150,8 +1167,8 @@ public class ServiceRevenueStatisticsTabController implements Initializable {
     }
 
     // set data to combox of category service
-    private void loadDataToCategoryServiceCombobox() {
-        List<ServiceCategory> serviceCategoryList = ServiceCategoryDAO.findAll();
+    private void loadDataToCategoryServiceCombobox() throws RemoteException {
+        List<ServiceCategory> serviceCategoryList = serviceCategoryDAO.findAll();
         ObservableList<String> categoryNames = FXCollections.observableArrayList(NONE_VALUE_SERVICE_CATEGORY);
         if(serviceCategoryList != null){
             serviceCategoryList.forEach(c -> categoryNames.add(c.getServiceCategoryName()));
@@ -1172,8 +1189,8 @@ public class ServiceRevenueStatisticsTabController implements Initializable {
     }
 
     // set data to combox of employee name
-    private void loadDataToEmployeeNameCombobox() {
-        List<Employee> employeeList = EmployeeDAO.getEmployees();
+    private void loadDataToEmployeeNameCombobox() throws RemoteException {
+        List<Employee> employeeList = employeeDAO.getEmployees();
         ObservableList<String> empNames = FXCollections.observableArrayList(NONE_VALUE_EMPLOYEE_NAME);
         employeeList.forEach(e -> empNames.add(e.getFullName()));
         employeeNameCombobox.setItems(empNames);

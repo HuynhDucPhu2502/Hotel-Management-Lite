@@ -8,9 +8,10 @@ import iuh.fit.controller.features.room.checking_in_reservation_list_controllers
 import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
 import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
-import iuh.fit.dao.HistoryCheckInDAO;
-import iuh.fit.dao.ReservationRoomDetailDAO;
-import iuh.fit.dao.RoomDAO;
+import iuh.fit.dao.daoimpl.*;
+import iuh.fit.dao.daointerface.HistoryCheckInDAO;
+import iuh.fit.dao.daointerface.ReservationRoomDetailDAO;
+import iuh.fit.dao.daointerface.RoomDAO;
 import iuh.fit.models.*;
 import iuh.fit.models.wrapper.RoomWithReservation;
 import iuh.fit.utils.RoomChargesCalculate;
@@ -27,6 +28,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -36,7 +38,11 @@ public class RoomChangingController {
     // ==================================================================================================================
     // 1. Các biến
     // ==================================================================================================================
-   @FXML
+    private final HistoryCheckInDAO historyCheckInDAO = new HistoryCheckInDAOImpl();
+    private final ReservationRoomDetailDAO reservationRoomDetailDAO = new ReservationRoomDetailDAOImpl();
+    private final RoomDAO roomDAO = new RoomDAOImpl();
+
+    @FXML
    private Button backBtn, bookingRoomNavigateLabel;
    @FXML
    private Button navigateToCreateReservationFormBtn,
@@ -90,6 +96,8 @@ public class RoomChangingController {
 
     private List<Room> availableRooms;
 
+    public RoomChangingController() throws RemoteException {
+    }
 
 
     // ==================================================================================================================
@@ -102,7 +110,7 @@ public class RoomChangingController {
     }
 
     public void setupContext(MainController mainController, Employee employee,
-                             RoomWithReservation roomWithReservation) {
+                             RoomWithReservation roomWithReservation) throws RemoteException {
         this.mainController = mainController;
         this.employee = employee;
         this.roomWithReservation = roomWithReservation;
@@ -125,16 +133,16 @@ public class RoomChangingController {
     private void loadData() {
         Task<Void> loadDataTask = new Task<>() {
             @Override
-            protected Void call() {
+            protected Void call() throws RemoteException {
                 // Tải danh sách phòng khả dụng từ cơ sở dữ liệu.
-                availableRooms = RoomDAO.getAvailableRoomsUntil(
+                availableRooms = roomDAO.getAvailableRoomsUntil(
                         roomWithReservation.getRoom().getRoomID(),
                         roomWithReservation.getRoom().getRoomCategory().getRoomCategoryID(),
                         roomWithReservation.getReservationForm().getApproxcheckOutTime()
                 );
 
                 // Tải danh sách chi tiết đặt phòng.
-                List<ReservationRoomDetail> roomReservationDetails = ReservationRoomDetailDAO.getByReservationFormID(
+                List<ReservationRoomDetail> roomReservationDetails = reservationRoomDetailDAO.getByReservationFormID(
                         roomWithReservation.getReservationForm().getReservationID()
                 );
 
@@ -284,13 +292,13 @@ public class RoomChangingController {
     // ==================================================================================================================
     // 4.  Đẩy dữ liệu lên giao diện
     // ==================================================================================================================
-    private void setupReservationForm() {
+    private void setupReservationForm() throws RemoteException {
         ReservationForm reservationForm = roomWithReservation.getReservationForm();
 
         Room reservationFormRoom = roomWithReservation.getRoom();
         Customer reservationFormCustomer = roomWithReservation.getReservationForm().getCustomer();
 
-        LocalDateTime actualCheckInDate = HistoryCheckInDAO.getActualCheckInDate(reservationForm.getReservationID());
+        LocalDateTime actualCheckInDate = historyCheckInDAO.getActualCheckInDate(reservationForm.getReservationID());
 
         roomNumberLabel.setText(reservationFormRoom.getRoomNumber());
         roomCategoryLabel.setText(reservationFormRoom.getRoomCategory().getRoomCategoryName());
@@ -420,7 +428,7 @@ public class RoomChangingController {
                     }
 
                     try {
-                        ReservationRoomDetailDAO.changingRoom(
+                        reservationRoomDetailDAO.changingRoom(
                                 roomWithReservation.getRoom().getRoomID(),
                                 newRoom.getRoomID(),
                                 roomWithReservation.getReservationForm().getReservationID(),

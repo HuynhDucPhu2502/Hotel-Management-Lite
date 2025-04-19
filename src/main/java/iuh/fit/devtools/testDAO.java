@@ -1,15 +1,15 @@
 package iuh.fit.devtools;
-
-import iuh.fit.dao.*;
-import iuh.fit.models.*;
-import iuh.fit.models.enums.*;
-import iuh.fit.utils.EntityManagerUtil;
-import jakarta.persistence.EntityManager;
-import net.datafaker.Faker;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
+//
+//import iuh.fit.dao.*;
+//import iuh.fit.models.*;
+//import iuh.fit.models.enums.*;
+//import iuh.fit.utils.EntityManagerUtil;
+//import jakarta.persistence.EntityManager;
+//import net.datafaker.Faker;
+//
+//import java.time.LocalDate;
+//import java.time.LocalDateTime;
+//import java.util.*;
 
 // =================================================================
 // Lớp này không có tác dụng gì. Đây là lớp test DAO của bài tập
@@ -125,7 +125,7 @@ public class testDAO {
 //
 //    // Tạo dữ liệu HistoryCheckOut, Invoice
 //    private static void generateHistoryCheckoutData(Faker faker, EntityManager em) {
-//        List<ReservationForm> rfs = ReservationFormDAO.findAll();
+//        List<ReservationForm> rfs = ReservationFormDAOImpl.findAll();
 //
 //        int historyCheckOuntCount = 0;
 //        for(int i = 0; i < rfs.size(); i++) {
@@ -166,7 +166,7 @@ public class testDAO {
 //
 //    // Tạo dữ liệu HistoryCheckIn, ReservationRoomDetail
 //    private static void generateHistoryCheckinAndRoomReservationDetailData(Faker faker, EntityManager em) {
-//        List<ReservationForm> rfs = ReservationFormDAO.findAll();
+//        List<ReservationForm> rfs = ReservationFormDAOImpl.findAll();
 //
 //        int historyCheckOutCount = 0;
 //        int reservationFormCount = 0;
@@ -204,8 +204,8 @@ public class testDAO {
 //
 //    // Tạo dữ liệu RoomUsageService
 //    private static void generateFakerRoomUsageService(Faker faker, EntityManager em) {
-//        List<ReservationForm> rfs = ReservationFormDAO.findAll();
-//        List<HotelService> hs = HotelServiceDAO.getHotelService();
+//        List<ReservationForm> rfs = ReservationFormDAOImpl.findAll();
+//        List<HotelService> hs = HotelServiceDAOImpl.getHotelService();
 //
 //        int count = 0;
 //        for(int i = 0; i < rfs.size(); i++) {
@@ -243,9 +243,9 @@ public class testDAO {
 //
 //    // Tạo dữ liệu ReservationForm
 //    private static void generateReservationFormData(Faker faker, EntityManager em) {
-//        List<Employee> emps = EmployeeDAO.findAll();
+//        List<Employee> emps = EmployeeDAOImpl.findAll();
 //        List<Customer> cus = CustomerDAO.findAll();
-//        List<Room> rooms = RoomDAO.findAll();
+//        List<Room> rooms = RoomDAOImpl.findAll();
 //
 //
 //        // Tạo phiếu cho trường hợp IN_USE, RESERVATION
@@ -497,28 +497,28 @@ public class testDAO {
 //        newEmployee.setIdCardNumber(faker.number().digits(12));
 //        newEmployee.setEmployeeCode("EMP-" + String.format("%06d", 11));
 //        newEmployee.setPosition(faker.options().option(Position.class));
-//        EmployeeDAO.create(newEmployee);
+//        EmployeeDAOImpl.create(newEmployee);
 //
 //        System.out.println("Tạo Employee: " + newEmployee.getEmployeeCode());
 //
 //        // Read
 //        System.out.println("Đọc Employee: " + newEmployee.getEmployeeCode());
-//        Employee employee = EmployeeDAO.findById("EMP-000011");
+//        Employee employee = EmployeeDAOImpl.findById("EMP-000011");
 //        System.out.println(employee);
 //
 //        // Update
 //        employee.setFullName("Test");
-//        EmployeeDAO.update(employee);
+//        EmployeeDAOImpl.update(employee);
 //
 //        System.out.println("Đọc lại Employee khi đổi tên: " + employee.getEmployeeCode());
-//        Employee updatedEmployee = EmployeeDAO.findById("EMP-000011");
+//        Employee updatedEmployee = EmployeeDAOImpl.findById("EMP-000011");
 //        System.out.println(updatedEmployee);
 //
 //        // Delete
-//        EmployeeDAO.delete("EMP-000011");
+//        EmployeeDAOImpl.delete("EMP-000011");
 //
 //        System.out.println("Xóa Employee: " +employee.getEmployeeCode());
-//        Employee deletedEmployee = EmployeeDAO.findById("EMP-000011");
+//        Employee deletedEmployee = EmployeeDAOImpl.findById("EMP-000011");
 //        System.out.println(deletedEmployee);
 //
 //    }
@@ -599,9 +599,9 @@ public class testDAO {
 //        newEmployee.setIdCardNumber(faker.number().digits(12));
 //        newEmployee.setEmployeeCode("EMP-" + String.format("%06d", 13));
 //        newEmployee.setPosition(faker.options().option(Position.class));
-//        EmployeeDAO.create(newEmployee);
+//        EmployeeDAOImpl.create(newEmployee);
 //
-//        Room room = RoomDAO.findById("R-000016");
+//        Room room = RoomDAOImpl.findById("R-000016");
 //
 //        ReservationForm newReservationForm = new ReservationForm();
 //
@@ -628,26 +628,26 @@ public class testDAO {
 //        newReservationForm.setRoom(room);
 //
 //        // CREATE
-//        ReservationFormDAO.create(newReservationForm);
+//        ReservationFormDAOImpl.create(newReservationForm);
 //        System.out.println("Tạo ReservationForm: " + newReservationForm.getReservationID());
 //
 //        // READ
 //        System.out.println("Đọc ReservationForm: " + newReservationForm.getReservationID());
-//        ReservationForm reservationForm = ReservationFormDAO.findById("RF-000016");
+//        ReservationForm reservationForm = ReservationFormDAOImpl.findById("RF-000016");
 //        System.out.println(reservationForm);
 //
 //        // UPDATE
 //        reservationForm.setReservationStatus(ReservationStatus.CANCEL);
-//        ReservationFormDAO.update(reservationForm);
+//        ReservationFormDAOImpl.update(reservationForm);
 //
 //        System.out.println("Đọc lại ReservationForm khi đổi status: " + reservationForm.getReservationID());
-//        ReservationForm updatedReservationForm = ReservationFormDAO.findById("RF-000016");
+//        ReservationForm updatedReservationForm = ReservationFormDAOImpl.findById("RF-000016");
 //        System.out.println(updatedReservationForm);
 //
 //        // DELETE
-//        ReservationFormDAO.delete("RF-000016");
+//        ReservationFormDAOImpl.delete("RF-000016");
 //        System.out.println("Xóa ReservationForm: " + reservationForm.getReservationID());
-//        ReservationForm deletedReservationForm = ReservationFormDAO.findById("RF-000016");
+//        ReservationForm deletedReservationForm = ReservationFormDAOImpl.findById("RF-000016");
 //        System.out.println(deletedReservationForm);
 //    }
 //
@@ -664,31 +664,31 @@ public class testDAO {
 //        serviceCategory.setServiceCategoryName(faker.name().fullName());
 //        serviceCategory.setIsActivate(ObjectStatus.ACTIVE);
 //
-//        ServiceCategoryDAO.createData(serviceCategory);
+//        ServiceCategoryDAOImpl.createData(serviceCategory);
 //
-//        System.out.println("Tạo ServiceCategory: " + ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID()));
+//        System.out.println("Tạo ServiceCategory: " + ServiceCategoryDAOImpl.findById(serviceCategory.getServiceCategoryID()));
 //
 //        // READ
 //        System.out.println("Đọc ServiceCategory: " + serviceCategory.getServiceCategoryID());
-//        System.out.println(ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID()));
+//        System.out.println(ServiceCategoryDAOImpl.findById(serviceCategory.getServiceCategoryID()));
 //
 //        // delete
-//        if(ServiceCategoryDAO.deleteData(serviceCategory.getServiceCategoryID()))
+//        if(ServiceCategoryDAOImpl.deleteData(serviceCategory.getServiceCategoryID()))
 //            System.out.println("Xóa ServiceCategory thanh cong");
 //
 //        // UPDATE
 //        serviceCategory.setIsActivate(ObjectStatus.INACTIVE);
-//        ServiceCategoryDAO.updateData(serviceCategory);
+//        ServiceCategoryDAOImpl.updateData(serviceCategory);
 //
 //        System.out.println("Đọc lại ServiceCategory khi đổi status: " + serviceCategory.getServiceCategoryID());
-//        ServiceCategory updatedServiceCategory = ServiceCategoryDAO.findById(serviceCategory.getServiceCategoryID());
+//        ServiceCategory updatedServiceCategory = ServiceCategoryDAOImpl.findById(serviceCategory.getServiceCategoryID());
 //        System.out.println(updatedServiceCategory);
 //    }
 //
 //    private static void testCRUDHistoryCheckin(Faker faker) {
-//        List<Employee> emps = EmployeeDAO.findAll();
+//        List<Employee> emps = EmployeeDAOImpl.findAll();
 //        List<Customer> cus = CustomerDAO.findAll();
-//        List<Room> rooms = RoomDAO.findAll();
+//        List<Room> rooms = RoomDAOImpl.findAll();
 //
 //        System.out.println("\n\n\nCRUD bảng HistoryCheckin");
 //
@@ -716,7 +716,7 @@ public class testDAO {
 //        rf.setEmployee(emps.get(1));
 //        rf.setRoom(rooms.get(1));
 //
-//        ReservationFormDAO.create(rf);
+//        ReservationFormDAOImpl.create(rf);
 //
 //        HistoryCheckIn hci = new HistoryCheckIn();
 //
@@ -728,24 +728,24 @@ public class testDAO {
 //        );
 //        hci.setReservationForm(rf);
 //
-//        HistoryCheckInDAO.create(hci);
+//        HistoryCheckInDAOImpl.create(hci);
 //
-//        System.out.println("Tạo HistoryCheckin: " + HistoryCheckInDAO.findById(hci.getRoomHistoryCheckinID()));
+//        System.out.println("Tạo HistoryCheckin: " + HistoryCheckInDAOImpl.findById(hci.getRoomHistoryCheckinID()));
 //
 //        // READ
 //        System.out.println("Đọc HistoryCheckin: " + hci.getRoomHistoryCheckinID());
-//        System.out.println(HistoryCheckInDAO.findById(hci.getRoomHistoryCheckinID()));
+//        System.out.println(HistoryCheckInDAOImpl.findById(hci.getRoomHistoryCheckinID()));
 //
 //        // delete
-//        if(HistoryCheckInDAO.delete(hci.getRoomHistoryCheckinID()))
+//        if(HistoryCheckInDAOImpl.delete(hci.getRoomHistoryCheckinID()))
 //            System.out.println("Xóa HistoryCheckin thanh cong");
 //
 //        // UPDATE
 //        hci.setCheckInDate(LocalDateTime.now());
-//        HistoryCheckInDAO.update(hci);
+//        HistoryCheckInDAOImpl.update(hci);
 //
 //        System.out.println("Đọc lại HistoryCheckin khi đổi status: " + hci.getRoomHistoryCheckinID());
-//        HistoryCheckIn updatedHistoryCheckIn = HistoryCheckInDAO.findById(hci.getRoomHistoryCheckinID());
+//        HistoryCheckIn updatedHistoryCheckIn = HistoryCheckInDAOImpl.findById(hci.getRoomHistoryCheckinID());
 //        System.out.println(updatedHistoryCheckIn);
 //    }
 //
@@ -759,7 +759,7 @@ public class testDAO {
 //        roomCategory.setHourlyPrice(faker.number().randomDouble(2, 100, 500));
 //        roomCategory.setDailyPrice(faker.number().randomDouble(2, 1000, 5000));
 //        roomCategory.setIsActivate(ObjectStatus.ACTIVE);
-//        RoomCategoryDAO.create(roomCategory);
+//        RoomCategoryDAOImpl.create(roomCategory);
 //
 //        // Create Room
 //        Room newRoom = new Room();
@@ -768,49 +768,49 @@ public class testDAO {
 //        newRoom.setIsActivate(faker.options().option(ObjectStatus.class));
 //        newRoom.setDateOfCreation(LocalDateTime.now());
 //        newRoom.setRoomCategory(roomCategory);
-//        RoomDAO.create(newRoom);
+//        RoomDAOImpl.create(newRoom);
 //
 //        System.out.println("Tạo Room: " + newRoom.getRoomID());
 //
 //        //TEST CRUD FOR ROOM
 //        // Read
 //        System.out.println("Đọc Room: " + newRoom.getRoomID());
-//        Room room = RoomDAO.findById("R-000021");
+//        Room room = RoomDAOImpl.findById("R-000021");
 //        System.out.println(room);
 //
 //        // Update
 //        room.setRoomStatus(RoomStatus.IN_USE);
-//        RoomDAO.update(room);
+//        RoomDAOImpl.update(room);
 //
 //        System.out.println("Đọc lại Room khi đổi status: " + room.getRoomID());
-//        Room updatedRoom = RoomDAO.findById("R-000021");
+//        Room updatedRoom = RoomDAOImpl.findById("R-000021");
 //        System.out.println(updatedRoom);
 //
 //        // Delete
-//        RoomDAO.delete("R-000021");
+//        RoomDAOImpl.delete("R-000021");
 //        System.out.println("Xóa Room: " + room.getRoomID());
-//        Room deletedRoom = RoomDAO.findById("R-000021");
+//        Room deletedRoom = RoomDAOImpl.findById("R-000021");
 //        System.out.println(deletedRoom);
 //
 //
 //        //TEST CRUD FOR ROOM CATEGORY
 //        // Read
 //        System.out.println("Đọc RoomCategory: " + roomCategory.getRoomCategoryID());
-//        RoomCategory readRoomCategory = RoomCategoryDAO.getById("RC-000011");
+//        RoomCategory readRoomCategory = RoomCategoryDAOImpl.getById("RC-000011");
 //        System.out.println(readRoomCategory);
 //
 //        // Update
 //        readRoomCategory.setRoomCategoryName("Test");
-//        RoomCategoryDAO.update(readRoomCategory);
+//        RoomCategoryDAOImpl.update(readRoomCategory);
 //
 //        System.out.println("Đọc lại Room khi đổi status: " + readRoomCategory.getRoomCategoryID());
-//        RoomCategory updateRoomCategory = RoomCategoryDAO.getById("RC-000011");
+//        RoomCategory updateRoomCategory = RoomCategoryDAOImpl.getById("RC-000011");
 //        System.out.println(updateRoomCategory);
 //
 //        // Delete
-//        RoomCategoryDAO.delete(updateRoomCategory.getRoomCategoryID());
+//        RoomCategoryDAOImpl.delete(updateRoomCategory.getRoomCategoryID());
 //        System.out.println("Xóa RoomCategory: " + updateRoomCategory.getRoomCategoryID());
-//        RoomCategory deletedRoomCategory = RoomCategoryDAO.getById(updateRoomCategory.getRoomCategoryID());
+//        RoomCategory deletedRoomCategory = RoomCategoryDAOImpl.getById(updateRoomCategory.getRoomCategoryID());
 //        System.out.println(deletedRoomCategory);
 //    }
 }

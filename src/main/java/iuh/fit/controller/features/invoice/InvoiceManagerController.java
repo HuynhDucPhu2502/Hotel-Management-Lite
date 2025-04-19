@@ -2,11 +2,11 @@ package iuh.fit.controller.features.invoice;
 
 import com.dlsc.gemsfx.daterange.DateRangePicker;
 import iuh.fit.controller.MainController;
-import iuh.fit.dao.InvoiceDAO;
+import iuh.fit.dao.daointerface.InvoiceDAO;
+import iuh.fit.dao.daoimpl.InvoiceDAOImpl;
 import iuh.fit.models.Employee;
 import iuh.fit.models.Invoice;
 import iuh.fit.utils.EditDateRangePicker;
-import iuh.fit.utils.RoomManagementService;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,12 +19,15 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
 
 public class InvoiceManagerController {
+    private InvoiceDAO invoiceDAO = new InvoiceDAOImpl();
+
     @FXML
     private DateRangePicker invoiceDateRangeSearchField;
     @FXML
@@ -40,6 +43,9 @@ public class InvoiceManagerController {
     private MainController mainController;
     private Employee employee;
     private List<Invoice> invoiceList;
+
+    public InvoiceManagerController() throws RemoteException {
+    }
 
 
     public void initialize() {
@@ -57,9 +63,9 @@ public class InvoiceManagerController {
     private void loadData() {
         Task<List<Invoice>> loadDataTask = new Task<>() {
             @Override
-            protected List<Invoice> call() {
+            protected List<Invoice> call() throws RemoteException {
 //                RoomManagementService.autoCheckoutOverdueRooms(notificationButtonController, mainController);
-                return InvoiceDAO.getAllInvoices();
+                return invoiceDAO.getAllInvoices();
             }
         };
 

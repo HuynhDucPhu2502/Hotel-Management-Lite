@@ -2,8 +2,10 @@ package iuh.fit.controller.features.statistics;
 
 import com.dlsc.gemsfx.daterange.DateRange;
 import com.dlsc.gemsfx.daterange.DateRangePicker;
-import iuh.fit.dao.RoomCategoryDAO;
-import iuh.fit.dao.RoomDisplayOnTableDAO;
+import iuh.fit.dao.daointerface.RoomCategoryDAO;
+import iuh.fit.dao.daoimpl.RoomCategoryDAOImpl;
+import iuh.fit.dao.daointerface.RoomDisplayOnTableDAO;
+import iuh.fit.dao.daoimpl.RoomDisplayOnTableDAOImpl;
 import iuh.fit.models.RoomCategory;
 import iuh.fit.models.enums.ExportExcelCategory;
 import iuh.fit.models.wrapper.RoomDisplayOnTable;
@@ -34,6 +36,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -45,6 +48,9 @@ import java.util.stream.Collectors;
 
 public class RoomRevenueStatisticsTabController implements Initializable {
     public ToggleGroup showDataViewToggleGroup;
+    private final RoomCategoryDAO roomCategoryDAO = new RoomCategoryDAOImpl();
+    private final RoomDisplayOnTableDAO roomDisplayOnTableDAO = new RoomDisplayOnTableDAOImpl();
+
     // Variables for revenue statistics view components
     @FXML
     private TableView<RoomDisplayOnTable> roomDataTableView;
@@ -80,7 +86,7 @@ public class RoomRevenueStatisticsTabController implements Initializable {
     private static final int COMBO_YEAR_CAPACITY = 3;
 
     // data of 3 years
-    private final List<RoomDisplayOnTable> rooomDisplayOnTableData = RoomDisplayOnTableDAO.getDataThreeYearsLatest();
+    private final List<RoomDisplayOnTable> rooomDisplayOnTableData = roomDisplayOnTableDAO.getDataThreeYearsLatest();
 
     // data of all the time
     private final List<RoomDisplayOnTable> allOfData = new ArrayList<>();
@@ -94,11 +100,18 @@ public class RoomRevenueStatisticsTabController implements Initializable {
     // limit of data rows per page on table view
     private static final int ROW_PER_PAGE = 12;
 
+    public RoomRevenueStatisticsTabController() throws RemoteException {
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         EditDateRangePicker.editDateRangePicker(roomTabDateRangePicker);
         roomDataTableView.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        loadDataToRoomCategoryNameCombobox();
+        try {
+            loadDataToRoomCategoryNameCombobox();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         loadDataToComboboxOfYear();
         loadDataToComboboxOfQuarter();
         dateRangeAction();
@@ -160,10 +173,10 @@ public class RoomRevenueStatisticsTabController implements Initializable {
 
     // handle event for statistic all the time
     @FXML
-    void statisticAllTheTime() {
+    void statisticAllTheTime() throws RemoteException {
         if (isGetALl()) {
             if(allOfData.isEmpty()){
-                allOfData.addAll(RoomDisplayOnTableDAO.getAllData());
+                allOfData.addAll(roomDisplayOnTableDAO.getAllData());
             }
             currentData = allOfData;
             updateOnTable(0);
@@ -1064,8 +1077,8 @@ public class RoomRevenueStatisticsTabController implements Initializable {
     }
 
     // set data to combox of employee name
-    private void loadDataToRoomCategoryNameCombobox() {
-        List<RoomCategory> employeeList = RoomCategoryDAO.getRoomCategory();
+    private void loadDataToRoomCategoryNameCombobox() throws RemoteException {
+        List<RoomCategory> employeeList = roomCategoryDAO.getRoomCategory();
         ObservableList<String> roomCategoryName = FXCollections.observableArrayList(NONE_VALUE_ROOM_CATEGORY_NAME);
         employeeList.forEach(e -> roomCategoryName.add(e.getRoomCategoryName()));
         roomCategoryNameCombobox.setItems(roomCategoryName);
