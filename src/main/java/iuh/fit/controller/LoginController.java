@@ -25,14 +25,14 @@ public class LoginController {
 
 
     // --- Các trường nhập liệu ---
-    @FXML private TextField userNameField;             // Trường nhập tên đăng nhập
-    @FXML private PasswordField hiddenPasswordField;   // Trường nhập mật khẩu (ẩn)
-    @FXML private TextField visiblePasswordField;      // Trường nhập mật khẩu (hiện - kiểu text)
+    @FXML private TextField userNameField;
+    @FXML private PasswordField hiddenPasswordField;
+    @FXML private TextField visiblePasswordField;
 
     // --- Thành phần điều khiển giao diện ---
-    @FXML private Button signInButton;                 // Nút thực hiện đăng nhập
-    @FXML private ImageView showPassButton;            // Nút chuyển đổi hiển thị mật khẩu
-    @FXML private Text errorMessage;                   // Thông báo lỗi khi đăng nhập
+    @FXML private Button signInButton;
+    @FXML private ImageView showPassButton;
+    @FXML private Text errorMessage;
 
     @FXML
     public void initialize(Stage mainStage) {
@@ -40,6 +40,14 @@ public class LoginController {
         dialogPane.toFront();
         hiddenPasswordField.textProperty().bindBidirectional(visiblePasswordField.textProperty());
         signInButton.setOnMouseClicked(event -> signIn(mainStage));
+
+        userNameField.setOnAction(event -> {
+            if (isDefaultIcon) hiddenPasswordField.requestFocus();
+            else visiblePasswordField.requestFocus();
+        });
+
+        hiddenPasswordField.setOnAction(event -> signIn(mainStage));
+        visiblePasswordField.setOnAction(event -> signIn(mainStage));
     }
 
 
@@ -125,6 +133,7 @@ public class LoginController {
 
             MainController mainController = fxmlLoader.getController();
             mainController.initialize(account, mainStage);
+
 
             Scene scene = new Scene(mainPanel);
 
