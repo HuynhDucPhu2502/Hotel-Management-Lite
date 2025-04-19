@@ -452,11 +452,92 @@ public class InitSampleData {
 
             room3.setRoomStatus(RoomStatus.OVER_DUE);
 
+            HotelService hs1 = em.find(HotelService.class, "HS-000001");
+            HotelService hs2 = em.find(HotelService.class, "HS-000002");
+            HotelService hs3 = em.find(HotelService.class, "HS-000003");
+            HotelService hs4 = em.find(HotelService.class, "HS-000004");
+
+            RoomUsageService rus1 = new RoomUsageService("RUS-000032", 100000.0, 2, LocalDateTime.now(), hs1, rf3);
+            RoomUsageService rus2 = new RoomUsageService("RUS-000033", 200000.0, 1, LocalDateTime.now(), hs2, rf3);
+            RoomUsageService rus3 = new RoomUsageService("RUS-000034", 150000.0, 3, LocalDateTime.now(), hs3, rf3);
+            RoomUsageService rus4 = new RoomUsageService("RUS-000035", 50000.0, 1, LocalDateTime.now(), hs4, rf3);
+
+            em.persist(rus1);
+            em.persist(rus2);
+            em.persist(rus3);
+            em.persist(rus4);
+
+            // Phiếu 4: đã check-in, gần đến giờ checkout (còn 3 phút nữa)
+            ReservationForm rf4 = new ReservationForm(
+                    "RF-000034",
+                    LocalDateTime.now().minusDays(1),
+                    LocalDateTime.now().minusHours(23),
+                    LocalDateTime.now().plusMinutes(3),
+                    500000.0,
+                    ReservationStatus.RESERVATION,
+                    em.find(Room.class, "V2206"),
+                    CustomerDAO.findById("CUS-000004"),
+                    EmployeeDAO.getEmployeeByEmployeeCode("EMP-000004")
+            );
+            em.persist(rf4);
+
+            HistoryCheckIn hci4 = new HistoryCheckIn();
+            hci4.setRoomHistoryCheckinID("HCI-000033");
+            hci4.setCheckInDate(LocalDateTime.now().minusHours(23));
+            hci4.setReservationForm(rf4);
+            rf4.setHistoryCheckIn(hci4);
+            em.persist(hci4);
+
+            ReservationRoomDetail rrd4 = new ReservationRoomDetail();
+            rrd4.setReservationRoomDetailID("RRD-000033");
+            rrd4.setDateChanged(LocalDateTime.now().minusHours(23));
+            rrd4.setRoom(em.find(Room.class, "V2206"));
+            rrd4.setReservationForm(rf4);
+            em.persist(rrd4);
+
+            Room room4 = em.find(Room.class, "V2206");
+            room4.setRoomStatus(RoomStatus.IN_USE);
+
+            // Phiếu 5: đã check-in, gần quá 2 tiếng thời gian checkout (còn 3 phút)
+            ReservationForm rf5 = new ReservationForm(
+                    "RF-000035",
+                    LocalDateTime.now().minusDays(2),
+                    LocalDateTime.now().minusDays(1),
+                    LocalDateTime.now().minusHours(2).plusMinutes(1),
+                    600000.0,
+                    ReservationStatus.RESERVATION,
+                    em.find(Room.class, "V2304"),
+                    CustomerDAO.findById("CUS-000005"),
+                    EmployeeDAO.getEmployeeByEmployeeCode("EMP-000005")
+            );
+            em.persist(rf5);
+
+            HistoryCheckIn hci5 = new HistoryCheckIn();
+            hci5.setRoomHistoryCheckinID("HCI-000034");
+            hci5.setCheckInDate(LocalDateTime.now().minusDays(1));
+            hci5.setReservationForm(rf5);
+            rf5.setHistoryCheckIn(hci5);
+            em.persist(hci5);
+
+            ReservationRoomDetail rrd5 = new ReservationRoomDetail();
+            rrd5.setReservationRoomDetailID("RRD-000034");
+            rrd5.setDateChanged(LocalDateTime.now().minusDays(1));
+            rrd5.setRoom(em.find(Room.class, "V2304"));
+            rrd5.setReservationForm(rf5);
+            em.persist(rrd5);
+
+            // Cập nhật trạng thái phòng
+            Room room5 = em.find(Room.class, "V2304");
+            room5.setRoomStatus(RoomStatus.IN_USE);
+
+
             tx.commit();
-            System.out.println("Tạo thành công dữ liệu test:");
+            System.out.println("Dữ liệu test thời gian thực:");
             System.out.println("+ Phiếu 1: chưa checkin");
             System.out.println("+ Phiếu 2: đã checkin");
-            System.out.println("+ Phiếu 3: đã checkin và quá hạn checkout");
+            System.out.println("+ Phiếu 3: đã checkin và quá hạn checkout 1 tiếng");
+            System.out.println("+ Phiếu 4: đã checkin và còn 3 phút nữa đến giờ checkout");
+            System.out.println("+ Phiếu 5: đã checkin và còn 3 phút nữa quá 2 tiếng thời gian checkout ");
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();
@@ -480,11 +561,11 @@ public class InitSampleData {
                     new GlobalSequence(0, "HotelService", "HS-000021"),
                     new GlobalSequence(0, "Customer", "CUS-000031"),
                     new GlobalSequence(0, "RoomCategory", "RC-000005"),
-                    new GlobalSequence(0, "ReservationForm", "RF-000034"),
-                    new GlobalSequence(0, "ReservationRoomDetail", "RRD-000033"),
-                    new GlobalSequence(0, "HistoryCheckin", "HCI-000033"),
+                    new GlobalSequence(0, "ReservationForm", "RF-000036"),
+                    new GlobalSequence(0, "ReservationRoomDetail", "RRD-000035"),
+                    new GlobalSequence(0, "HistoryCheckin", "HCI-000035"),
                     new GlobalSequence(0, "HistoryCheckout", "HCO-000031"),
-                    new GlobalSequence(0, "RoomUsageService", "RUS-000031"),
+                    new GlobalSequence(0, "RoomUsageService", "RUS-000036"),
                     new GlobalSequence(0, "Invoice", "INV-000031")
             );
 

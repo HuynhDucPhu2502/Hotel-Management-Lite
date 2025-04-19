@@ -44,8 +44,7 @@ public class RoomManagementService {
         for (RoomWithReservation roomWithReservation : overdueRooms) {
             checkAndUpdateRoomStatus(
                     roomWithReservation,
-                    SYSTEM_EMPLOYEE,
-                    mainController
+                    SYSTEM_EMPLOYEE
             );
         }
 
@@ -55,16 +54,14 @@ public class RoomManagementService {
         for (RoomWithReservation roomWithReservation : allRoomWithReservation) {
             checkAndUpdateRoomStatus(
                     roomWithReservation,
-                    SYSTEM_EMPLOYEE,
-                    mainController
+                    SYSTEM_EMPLOYEE
             );
         }
     }
 
     public static void checkAndUpdateRoomStatus(
             RoomWithReservation roomWithReservation,
-            Employee employee,
-            MainController mainController
+            Employee employee
     ) {
         ReservationForm reservationForm = roomWithReservation.getReservationForm();
         Room room = roomWithReservation.getRoom();
@@ -125,8 +122,6 @@ public class RoomManagementService {
                     roomWithReservation.getReservationForm().getReservationID()
             );
 
-            System.out.println(">> ROOM CHARGE: " + roomCharge);
-            System.out.println(">> SERVICE CHARGE: " + serviceCharge);
 
             InvoiceDAO.roomCheckingOutEarly(
                     roomWithReservation.getReservationForm().getReservationID(),
