@@ -11,6 +11,7 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -35,6 +36,8 @@ public class InvoiceManagerController {
     private HBox emptyLabelContainer;
     @FXML
     private VBox invoiceListContainer;
+    @FXML
+    private CheckBox dateRangeCheckBox;
 
     // Context
     private MainController mainController;
@@ -44,6 +47,9 @@ public class InvoiceManagerController {
 
     public void initialize() {
         setupSearchListeners();
+
+        invoiceDateRangeSearchField.setDisable(true);
+        invoiceDateRangeSearchField.setValue(null);
     }
 
     public void setupContext(MainController mainController, Employee employee) {
@@ -58,7 +64,7 @@ public class InvoiceManagerController {
         Task<List<Invoice>> loadDataTask = new Task<>() {
             @Override
             protected List<Invoice> call() {
-//                RoomManagementService.autoCheckoutOverdueRooms(notificationButtonController, mainController);
+                RoomManagementService.autoCheckoutOverdueRooms(mainController);
                 return InvoiceDAO.getAllInvoices();
             }
         };
@@ -143,6 +149,16 @@ public class InvoiceManagerController {
         invoiceIDSearchField.textProperty().addListener((observable, oldValue, newValue) -> handleSearchAction());
 
         invoiceDateRangeSearchField.valueProperty().addListener((observable, oldValue, newValue) -> handleSearchAction());
+
+        dateRangeCheckBox.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+            invoiceDateRangeSearchField.setDisable(!isSelected);
+
+            if (!isSelected) {
+                invoiceDateRangeSearchField.setValue(null);
+            }
+
+            handleSearchAction();
+        });
     }
 
     private void handleSearchAction() {
@@ -150,8 +166,17 @@ public class InvoiceManagerController {
             return;
 
         String invoiceID = invoiceIDSearchField.getText().trim();
-        LocalDate startDate = invoiceDateRangeSearchField.getValue().getStartDate();
-        LocalDate endDate = invoiceDateRangeSearchField.getValue().getEndDate();
+
+        final LocalDate startDate;
+        final LocalDate endDate;
+
+        if (dateRangeCheckBox.isSelected() && invoiceDateRangeSearchField.getValue() != null) {
+            startDate = invoiceDateRangeSearchField.getValue().getStartDate();
+            endDate = invoiceDateRangeSearchField.getValue().getEndDate();
+        } else {
+            startDate = null;
+            endDate = null;
+        }
 
         Task<List<Invoice>> searchTask = new Task<>() {
             @Override
@@ -166,8 +191,8 @@ public class InvoiceManagerController {
         };
 
         searchTask.setOnSucceeded(event -> displayInvoices(searchTask.getValue()));
-
         new Thread(searchTask).start();
     }
+
 
 }
