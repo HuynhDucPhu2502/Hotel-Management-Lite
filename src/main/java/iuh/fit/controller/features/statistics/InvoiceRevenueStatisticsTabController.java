@@ -2,8 +2,10 @@ package iuh.fit.controller.features.statistics;
 
 import com.dlsc.gemsfx.daterange.DateRange;
 import com.dlsc.gemsfx.daterange.DateRangePicker;
-import iuh.fit.dao.EmployeeDAO;
-import iuh.fit.dao.InvoiceDisplayOnTableDAO;
+import iuh.fit.dao.daointerface.EmployeeDAO;
+import iuh.fit.dao.daoimpl.EmployeeDAOImpl;
+import iuh.fit.dao.daointerface.InvoiceDisplayOnTableDAO;
+import iuh.fit.dao.daoimpl.InvoiceDisplayOnTableDAOImpl;
 import iuh.fit.models.Employee;
 import iuh.fit.models.enums.ExportExcelCategory;
 import iuh.fit.models.wrapper.InvoiceDisplayOnTable;
@@ -30,6 +32,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -100,6 +103,8 @@ public class InvoiceRevenueStatisticsTabController implements Initializable {
     private Pagination invoicePagination;
     @FXML
     private Button statisticAllTheTimeButton;
+    EmployeeDAO employeeDAO = new EmployeeDAOImpl();
+    InvoiceDisplayOnTableDAO invoiceDisplayOnTableDAO = new InvoiceDisplayOnTableDAOImpl();
 
     // limits of years that show on combobox year
     private static final int COMBO_YEAR_CAPACITY = 3;
@@ -110,7 +115,7 @@ public class InvoiceRevenueStatisticsTabController implements Initializable {
     private static final String NONE_VALUE_QUARTER = "--Quý--";
 
     // data of 3 years
-    private final List<InvoiceDisplayOnTable> invoiceDisplayOnTableData = InvoiceDisplayOnTableDAO.getDataThreeYearsLatest();
+    private final List<InvoiceDisplayOnTable> invoiceDisplayOnTableData = invoiceDisplayOnTableDAO.getDataThreeYearsLatest();
 
     // data of all the time
     private final List<InvoiceDisplayOnTable> allOfData = new ArrayList<>();
@@ -124,11 +129,18 @@ public class InvoiceRevenueStatisticsTabController implements Initializable {
     // limit of data rows per page on table view
     private static final int ROW_PER_PAGE = 12;
 
+    public InvoiceRevenueStatisticsTabController() throws RemoteException {
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         EditDateRangePicker.editDateRangePicker(invoiceTabDateRangePicker);
         invoiceDataTableView.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        loadDataToEmployeeNameCombobox();
+        try {
+            loadDataToEmployeeNameCombobox();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         loadDataToComboboxOfYear();
         loadDataToComboboxOfQuarter();
         dateRangeAction();
@@ -203,9 +215,9 @@ public class InvoiceRevenueStatisticsTabController implements Initializable {
         if (isGetALl()) {
             Task<List<InvoiceDisplayOnTable>> task = new Task<>() {
                 @Override
-                protected List<InvoiceDisplayOnTable> call() {
+                protected List<InvoiceDisplayOnTable> call() throws RemoteException {
                     if (allOfData.isEmpty()) {
-                        return InvoiceDisplayOnTableDAO.getAllData();
+                        return invoiceDisplayOnTableDAO.getAllData();
                     }
                     return allOfData;
                 }
@@ -1146,8 +1158,8 @@ public class InvoiceRevenueStatisticsTabController implements Initializable {
     }
 
     // set data to combox of employee name
-    private void loadDataToEmployeeNameCombobox() {
-        List<Employee> employeeList = EmployeeDAO.getEmployees();
+    private void loadDataToEmployeeNameCombobox() throws RemoteException {
+        List<Employee> employeeList = employeeDAO.getEmployees();
         ObservableList<String> empNames = FXCollections.observableArrayList(NONE_VALUE_EMPLOYEE_NAME);
         employeeList.forEach(e -> empNames.add(e.getFullName()));
         employeeNameCombobox.setItems(empNames);

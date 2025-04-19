@@ -6,9 +6,10 @@ import iuh.fit.controller.MainController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomAvailableItemController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomOnUseItemController;
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.RoomOverDueController;
-import iuh.fit.dao.RoomCategoryDAO;
-import iuh.fit.dao.RoomDAO;
-import iuh.fit.dao.RoomWithReservationDAO;
+import iuh.fit.dao.daoimpl.*;
+import iuh.fit.dao.daointerface.RoomCategoryDAO;
+import iuh.fit.dao.daointerface.RoomDAO;
+import iuh.fit.dao.daointerface.RoomWithReservationDAO;
 import iuh.fit.models.Employee;
 import iuh.fit.models.Room;
 import iuh.fit.models.enums.RoomStatus;
@@ -26,6 +27,7 @@ import javafx.scene.layout.Pane;
 import lombok.Getter;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,11 @@ import java.util.stream.Collectors;
 import static iuh.fit.utils.GlobalConstants.*;
 
 public class RoomBookingController {
+    private final RoomCategoryDAO roomCategoryDAO = new RoomCategoryDAOImpl();
+    private final RoomDAO roomDAO = new RoomDAOImpl();
+    private final RoomWithReservationDAO roomWithReservationDAO = new RoomWithReservationDAOImpl();
+
+
     @FXML
     private GridPane roomGridPane;
 
@@ -55,6 +62,9 @@ public class RoomBookingController {
     private Button activeButton;
     private RoomStatus selectedStatus = null;
 
+    public RoomBookingController() throws RemoteException {
+    }
+
 
     public void initialize() {
         dialogPane.toFront();
@@ -72,8 +82,8 @@ public class RoomBookingController {
 
     }
 
-    private List<String> getRoomCategories() {
-        List<String> roomCategoryList = RoomCategoryDAO.getRoomCategory().stream()
+    private List<String> getRoomCategories() throws RemoteException {
+        List<String> roomCategoryList = roomCategoryDAO.getRoomCategory().stream()
                 .map(rc -> rc.getRoomCategoryID() + " " + rc.getRoomCategoryName())
                 .collect(Collectors.toList());
         roomCategoryList.addFirst("TẤT CẢ");
@@ -87,7 +97,7 @@ public class RoomBookingController {
     private void loadData() {
         Task<List<RoomWithReservation>> loadDataTask = new Task<>() {
             @Override
-            protected List<RoomWithReservation> call() {
+            protected List<RoomWithReservation> call() throws RemoteException {
                 List<String> roomCategories = getRoomCategories();
                 List<String> floorNumbers = getFloorNumbers();
 
@@ -100,7 +110,7 @@ public class RoomBookingController {
                 });
 
                 RoomManagementService.autoCheckoutOverdueRooms(mainController);
-                return RoomWithReservationDAO.getRoomWithReservation().stream()
+                return roomWithReservationDAO.getRoomWithReservation().stream()
                         .sorted(Comparator.comparing(r -> r.getRoom().getRoomNumber()))
                         .toList();
             }
@@ -109,7 +119,11 @@ public class RoomBookingController {
         loadDataTask.setOnSucceeded(event -> {
             roomWithReservations = loadDataTask.getValue();
             displayFilteredRooms(roomWithReservations);
-            loadDataForBtn();
+            try {
+                loadDataForBtn();
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
             TimelineManager.getInstance().printAllTimelines();
         });
 
@@ -120,8 +134,8 @@ public class RoomBookingController {
         new Thread(loadDataTask).start();
     }
 
-    private void loadDataForBtn() {
-        Map<RoomStatus, Long> roomStatusCount = RoomDAO.getRoomStatusCount();
+    private void loadDataForBtn() throws RemoteException {
+        Map<RoomStatus, Long> roomStatusCount = roomDAO.getRoomStatusCount();
 
         availableBtn.setText(ROOM_BOOKING_AVAIL_BTN + " (" + roomStatusCount.getOrDefault(RoomStatus.AVAILABLE, 0L) + ")");
         onUseBtn.setText(ROOM_BOOKING_ON_USE_BTN + " (" + roomStatusCount.getOrDefault(RoomStatus.IN_USE, 0L) + ")");
@@ -189,7 +203,7 @@ public class RoomBookingController {
         return roomItem;
     }
 
-    private void handleSearch() {
+    private void handleSearch() throws RemoteException {
         if (roomWithReservations == null) {
             return;
         }
@@ -231,8 +245,20 @@ public class RoomBookingController {
         setupButtonAction(onUseBtn, RoomStatus.IN_USE);
         setupButtonAction(overDueBtn, RoomStatus.OVER_DUE);
 
-        roomCategoryCBox.setOnAction(e -> handleSearch());
-        roomFloorNumberCBox.setOnAction(e -> handleSearch());
+        roomCategoryCBox.setOnAction(e -> {
+            try {
+                handleSearch();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        roomFloorNumberCBox.setOnAction(e -> {
+            try {
+                handleSearch();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
     }
 
     private void setupButtonAction(Button button, RoomStatus status) {
@@ -248,7 +274,11 @@ public class RoomBookingController {
                 activeButton = button;
                 selectedStatus = status;
             }
-            handleSearch();
+            try {
+                handleSearch();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
         });
     }
 

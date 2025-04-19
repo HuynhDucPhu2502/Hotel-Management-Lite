@@ -2,8 +2,10 @@ package iuh.fit.controller.features.customer;
 
 import com.dlsc.gemsfx.CalendarPicker;
 import com.dlsc.gemsfx.DialogPane;
-import iuh.fit.dao.CustomerDAO;
-import iuh.fit.dao.GlobalSequenceDAO;
+import iuh.fit.dao.daointerface.CustomerDAO;
+import iuh.fit.dao.daoimpl.CustomerDAOImpl;
+import iuh.fit.dao.daointerface.GlobalSequenceDAO;
+import iuh.fit.dao.daoimpl.GlobalSequenceDAOImpl;
 import iuh.fit.models.Customer;
 import iuh.fit.models.enums.Gender;
 import iuh.fit.models.enums.ObjectStatus;
@@ -25,6 +27,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -83,8 +86,14 @@ public class CustomerManagerController {
 
     private ObservableList<Customer> items;
 
+    private CustomerDAO customerDAO = new CustomerDAOImpl();
+    private GlobalSequenceDAO globalSequenceDAO = new GlobalSequenceDAOImpl();
+
+    public CustomerManagerController() throws RemoteException {
+    }
+
     // Gọi mấy phương thức để gắn sự kiện và dữ liệu cho lúc đầu khởi tạo giao diện
-    public void initialize() {
+    public void initialize() throws RemoteException {
         dialogPane.toFront();
         customerTableView.setFixedCellSize(40);
 
@@ -93,7 +102,13 @@ public class CustomerManagerController {
 
         addBtn.setOnAction(e -> handleAddAction());
         updateBtn.setOnAction(e -> handleUpdateAction());
-        resetBtn.setOnAction(e -> handleResetAction());
+        resetBtn.setOnAction(e -> {
+            try {
+                handleResetAction();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         customerIDSearchField.setOnAction(e -> handleSearchAction());
 
         customerTableView.setRowFactory(x->{
@@ -119,15 +134,23 @@ public class CustomerManagerController {
     private void loadData() {
         Task<Void> loadDataTask = new Task<>() {
             @Override
-            protected Void call() {
-                List<Customer> customerList = CustomerDAO.findAll();
+            protected Void call() throws RemoteException {
+                List<Customer> customerList = customerDAO.findAll();
                 items = FXCollections.observableArrayList(customerList);
 
                 Platform.runLater(() -> {
                     customerTableView.setItems(items);
                     customerTableView.refresh();
-                    customerIDTextField.setText(GlobalSequenceDAO.getNextID("Customer"));
-                    customerIDSearchField.getItems().setAll(CustomerDAO.getTopThreeID());
+                    try {
+                        customerIDTextField.setText(globalSequenceDAO.getNextID("Customer"));
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                    try {
+                        customerIDSearchField.getItems().setAll(customerDAO.getTopThreeID());
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                 });
                 return null;
             }
@@ -138,8 +161,8 @@ public class CustomerManagerController {
 
 
     // Phương thức đổ dữ liệu vào bảng
-    private void setupTable() {
-        List<Customer> list = CustomerDAO.findAll();
+    private void setupTable() throws RemoteException {
+        List<Customer> list = customerDAO.findAll();
         ObservableList<Customer> customers = FXCollections.observableList(list);
 
         customerIDColumn.setCellValueFactory(new PropertyValueFactory<>("customerCode"));
@@ -208,8 +231,8 @@ public class CustomerManagerController {
     }
 
     // Chức năng 1: Làm mới
-    public void handleResetAction() {
-        customerIDTextField.setText(GlobalSequenceDAO.getNextID("Customer"));
+    public void handleResetAction() throws RemoteException {
+        customerIDTextField.setText(globalSequenceDAO.getNextID("Customer"));
         customerIDCardNumberTextField.setText("");
         customerNameTextField.setText("");
         customerPhoneNumberTextField.setText("");
@@ -227,7 +250,7 @@ public class CustomerManagerController {
     public void handleAddAction() {
         try{
             Customer customer = createCustomer();
-            CustomerDAO.create(customer);
+            customerDAO.create(customer);
             setupTable();
             handleResetAction();
             dialogPane.showInformation("Thành công", "Đã thêm khách hàng thành công");
@@ -242,9 +265,21 @@ public class CustomerManagerController {
 
         dialog.onClose(buttonType -> {
             if (buttonType == ButtonType.YES) {
-                CustomerDAO.delete(customer.getCustomerCode());
-                handleResetAction();
-                setupTable();
+                try {
+                    customerDAO.delete(customer.getCustomerCode());
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    handleResetAction();
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    setupTable();
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
     }
@@ -276,9 +311,17 @@ public class CustomerManagerController {
 
             dialog.onClose(buttonType -> {
                 if (buttonType == ButtonType.YES) {
-                    CustomerDAO.update(newInfor);
+                    try {
+                        customerDAO.update(newInfor);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                     loadData();
-                    handleResetAction();
+                    try {
+                        handleResetAction();
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
 
@@ -297,10 +340,10 @@ public class CustomerManagerController {
         String searchText = customerIDSearchField.getValue();
         Task<ObservableList<Customer>> searchTask = new Task<>() {
             @Override
-            protected ObservableList<Customer> call() {
+            protected ObservableList<Customer> call() throws RemoteException {
                 List<Customer> customers = (searchText == null || searchText.isEmpty())
-                        ? CustomerDAO.findAll()
-                        : CustomerDAO.findDataByContainsId(searchText);
+                        ? customerDAO.findAll()
+                        : customerDAO.findDataByContainsId(searchText);
                 return FXCollections.observableArrayList(customers);
             }
         };

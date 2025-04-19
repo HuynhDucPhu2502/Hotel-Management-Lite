@@ -1,20 +1,14 @@
 package iuh.fit.controller.features.customer;
 
-import iuh.fit.dao.ReservationFormDAO;
 import iuh.fit.models.Customer;
 import iuh.fit.models.ReservationForm;
 import iuh.fit.models.enums.Gender;
-import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class CustomerInformationViewController {
 
@@ -75,7 +69,7 @@ public class CustomerInformationViewController {
 //        Task<List<ReservationForm>> loadTask = new Task<>() {
 //            @Override
 //            protected List<ReservationForm> call() {
-//                return ReservationFormDAO.getReservationFormByCustomerID(customerID);
+//                return ReservationFormDAOImpl.getReservationFormByCustomerID(customerID);
 //            }
 //        };
 //

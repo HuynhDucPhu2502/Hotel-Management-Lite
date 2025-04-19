@@ -1,8 +1,10 @@
 package iuh.fit.controller.features.employee;
 
 import com.dlsc.gemsfx.DialogPane;
-import iuh.fit.dao.AccountDAO;
-import iuh.fit.dao.EmployeeDAO;
+import iuh.fit.dao.daointerface.AccountDAO;
+import iuh.fit.dao.daoimpl.AccountDAOImpl;
+import iuh.fit.dao.daointerface.EmployeeDAO;
+import iuh.fit.dao.daoimpl.EmployeeDAOImpl;
 import iuh.fit.models.Account;
 import iuh.fit.models.Employee;
 import iuh.fit.models.enums.AccountStatus;
@@ -26,6 +28,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -87,19 +90,37 @@ public class AccountManagerController {
 
     private ObservableList<Account> items;
 
-    public void initialize() {
+    AccountDAO accountDAO = new AccountDAOImpl();
+    EmployeeDAO employeeDAO = new EmployeeDAOImpl();
+
+    public AccountManagerController() throws RemoteException {
+    }
+
+    public void initialize() throws RemoteException {
         dialogPane.toFront();
         accountTableView.setFixedCellSize(40);
 
         loadData();
         setupTable();
 
-        resetBtn.setOnAction(e -> handleResetAction());
+        resetBtn.setOnAction(e -> {
+            try {
+                handleResetAction();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         updateBtn.setOnAction(e -> handleUpdateAction());
-        employeeIDSearchField.setOnAction(e -> handleSearchAction());
+        employeeIDSearchField.setOnAction(e -> {
+            try {
+                handleSearchAction();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
     }
 
-    private void loadData() {
+    private void loadData() throws RemoteException {
         statusCBox.getItems().setAll(
                 Stream.of(AccountStatus.values()).map(Enum::name)
                         .map(position -> {
@@ -121,12 +142,12 @@ public class AccountManagerController {
                         .toList()
         );
         statusCBox.getSelectionModel().selectFirst();
-        accountIDTextField.setText(AccountDAO.getNextAccountID());
+        accountIDTextField.setText(accountDAO.getNextAccountID());
 
-        List<String> Ids = EmployeeDAO.getTopThreeID();
+        List<String> Ids = employeeDAO.getTopThreeID();
         employeeIDSearchField.getItems().setAll(Ids);
 
-        List<Account> AccountList = AccountDAO.getAccount();
+        List<Account> AccountList = accountDAO.getAccount();
         items = FXCollections.observableArrayList(AccountList);
         accountTableView.setItems(items);
         accountTableView.refresh();
@@ -276,11 +297,11 @@ public class AccountManagerController {
         stage.show();
     }
 
-    private void handleResetAction() {
+    private void handleResetAction() throws RemoteException {
         passwordLabel.setText("Mật khẩu");
 
         passwordTextField.setText("");
-        accountIDTextField.setText(AccountDAO.getNextAccountID());
+        accountIDTextField.setText(accountDAO.getNextAccountID());
         employeeIDCBox.setText("");
         fullNameTextField.setText("");
         usernameTextField.setText("");
@@ -299,7 +320,7 @@ public class AccountManagerController {
         updateBtn.setVisible(false);
     }
 
-    private void handleSearchAction() {
+    private void handleSearchAction() throws RemoteException {
         fullNameSearchField.setText("");
         usernameSearchField.setText("");
         statusSearchField.setText("");
@@ -308,9 +329,9 @@ public class AccountManagerController {
         List<Account> accountList;
 
         if (searchText == null || searchText.isEmpty()) {
-            accountList = AccountDAO.getAccount();
+            accountList = accountDAO.getAccount();
         } else {
-            accountList = AccountDAO.findDataByContainsEmployeeCode(searchText);
+            accountList = accountDAO.findDataByContainsEmployeeCode(searchText);
             if (accountList.size() == 1) {
                 Account account = accountList.getFirst();
                 fullNameSearchField.setText(String.valueOf(account.getEmployee().getFullName()));
@@ -334,7 +355,7 @@ public class AccountManagerController {
 
     private void handleUpdateAction() {
         try {
-            Account account = AccountDAO.getAccountByEmployeeID(employeeIDCBox.getText());
+            Account account = accountDAO.getAccountByEmployeeID(employeeIDCBox.getText());
 
             if (account.getEmployee().getPosition().name().equals("MANAGER")){
                 dialogPane.showWarning("LỖI", "Không thể cập nhật thông tin cho QUẢN LÝ!!! Chỉ cho phép cập nhật thông tin cho LỄ TÂN");
@@ -369,19 +390,31 @@ public class AccountManagerController {
                             account.setStatus(ConvertHelper.accountStatusConverter(status));
 
                         }
-                        AccountDAO.updateData(account);
+                        accountDAO.updateData(account);
                         Platform.runLater(() -> {
                             dialogPane.showInformation("Thành công", "Cập nhật thông tin thành công");
-                            handleResetAction();
-                            loadData();
+                            try {
+                                handleResetAction();
+                            } catch (RemoteException e) {
+                                throw new RuntimeException(e);
+                            }
+                            try {
+                                loadData();
+                            } catch (RemoteException e) {
+                                throw new RuntimeException(e);
+                            }
                         });
                     } catch (IllegalArgumentException e) {
                         dialogPane.showWarning("LỖI", e.getMessage());
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             });
         } catch (IllegalArgumentException e) {
             dialogPane.showWarning("LỖI", e.getMessage());
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
         }
     }
 

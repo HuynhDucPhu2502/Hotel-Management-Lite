@@ -1,27 +1,30 @@
 package iuh.fit.devtools;
 
-import iuh.fit.dao.CustomerDAO;
-import iuh.fit.dao.EmployeeDAO;
+import iuh.fit.dao.daointerface.CustomerDAO;
+import iuh.fit.dao.daoimpl.CustomerDAOImpl;
+import iuh.fit.dao.daointerface.EmployeeDAO;
+import iuh.fit.dao.daoimpl.EmployeeDAOImpl;
 import iuh.fit.models.*;
 import iuh.fit.models.enums.*;
 import iuh.fit.security.PasswordHashing;
-import iuh.fit.utils.EntityManagerUtil;
 import iuh.fit.utils.RoomChargesCalculate;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 // =================================================================
 // Lớp tạo dữ liệu cho bài
 // =================================================================
 public class InitSampleData {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws RemoteException {
+        EmployeeDAO employeeDAO = new EmployeeDAOImpl();
+        CustomerDAO customerDAO = new CustomerDAOImpl();
         Persistence.createEntityManagerFactory("drop-data-mssql").close();
         System.out.println("Dữ liệu cũ đã được xóa");
 
@@ -35,7 +38,7 @@ public class InitSampleData {
         initRoomCategoryAndRoomData(em);
         initGlobalSequenceData(em);
         initAllReservationRelatedData(em);
-        initTestReservationForms(em);
+        initTestReservationForms(em, employeeDAO, customerDAO);
 
         emf.close();
     }
@@ -362,18 +365,18 @@ public class InitSampleData {
     // =================================================================
     // Hàm tạo dữ liệu test cho chức năng đặt phòng
     // =================================================================
-    public static void initTestReservationForms(EntityManager em) {
+    public static void initTestReservationForms(EntityManager em, EmployeeDAO employeeDAO, CustomerDAO customerDAO) {
         EntityTransaction tx = em.getTransaction();
 
         try {
             tx.begin();
 
-            Employee emp1 = EmployeeDAO.getEmployeeByEmployeeCode("EMP-000001");
-            Employee emp2 = EmployeeDAO.getEmployeeByEmployeeCode("EMP-000002");
-            Employee emp3 = EmployeeDAO.getEmployeeByEmployeeCode("EMP-000003");
-            Customer cus1 = CustomerDAO.findById("CUS-000001");
-            Customer cus2 = CustomerDAO.findById("CUS-000002");
-            Customer cus3 = CustomerDAO.findById("CUS-000003");
+            Employee emp1 = employeeDAO.getEmployeeByEmployeeCode("EMP-000001");
+            Employee emp2 = employeeDAO.getEmployeeByEmployeeCode("EMP-000002");
+            Employee emp3 = employeeDAO.getEmployeeByEmployeeCode("EMP-000003");
+            Customer cus1 = customerDAO.findById("CUS-000001");
+            Customer cus2 = customerDAO.findById("CUS-000002");
+            Customer cus3 = customerDAO.findById("CUS-000003");
             Room room1 = em.find(Room.class, "T1101");
             Room room2 = em.find(Room.class, "T1105");
             Room room3 = em.find(Room.class, "V2102");
@@ -476,8 +479,8 @@ public class InitSampleData {
                     500000.0,
                     ReservationStatus.RESERVATION,
                     em.find(Room.class, "V2206"),
-                    CustomerDAO.findById("CUS-000004"),
-                    EmployeeDAO.getEmployeeByEmployeeCode("EMP-000004")
+                    customerDAO.findById("CUS-000004"),
+                    employeeDAO.getEmployeeByEmployeeCode("EMP-000004")
             );
             em.persist(rf4);
 
@@ -507,8 +510,8 @@ public class InitSampleData {
                     600000.0,
                     ReservationStatus.RESERVATION,
                     em.find(Room.class, "V2304"),
-                    CustomerDAO.findById("CUS-000005"),
-                    EmployeeDAO.getEmployeeByEmployeeCode("EMP-000005")
+                    customerDAO.findById("CUS-000005"),
+                    employeeDAO.getEmployeeByEmployeeCode("EMP-000005")
             );
             em.persist(rf5);
 

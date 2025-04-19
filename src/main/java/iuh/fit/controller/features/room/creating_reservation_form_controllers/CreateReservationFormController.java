@@ -14,8 +14,10 @@ import iuh.fit.controller.features.room.checking_in_reservation_list_controllers
 import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutReservationFormController;
 import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
 import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
-import iuh.fit.dao.CustomerDAO;
-import iuh.fit.dao.ReservationFormDAO;
+import iuh.fit.dao.daointerface.CustomerDAO;
+import iuh.fit.dao.daoimpl.CustomerDAOImpl;
+import iuh.fit.dao.daointerface.ReservationFormDAO;
+import iuh.fit.dao.daoimpl.ReservationFormDAOImpl;
 import iuh.fit.models.Customer;
 import iuh.fit.models.Employee;
 import iuh.fit.models.ReservationForm;
@@ -39,6 +41,7 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -51,6 +54,9 @@ public class CreateReservationFormController {
     // ==================================================================================================================
     // 1. Các biến
     // ==================================================================================================================
+
+    ReservationFormDAO reservationFormDAO = new ReservationFormDAOImpl();
+
     @FXML private Button backBtn, bookingRoomNavigateLabel;
 
     @FXML
@@ -84,6 +90,11 @@ public class CreateReservationFormController {
 
     private LocalDateTime checkInTime, checkOutTime;
     private Customer customer;
+
+    private CustomerDAO customerDAO = new CustomerDAOImpl();
+
+    public CreateReservationFormController() throws RemoteException {
+    }
 
 
     // ==================================================================================================================
@@ -147,7 +158,13 @@ public class CreateReservationFormController {
 
         // Current Panel Button
         addBtn.setOnAction(e -> handleCreateReservationRoom());
-        reservationCheckDateBtn.setOnAction(e -> openCalendarViewStage());
+        reservationCheckDateBtn.setOnAction(e -> {
+            try {
+                openCalendarViewStage();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
     }
 
     // ==================================================================================================================
@@ -315,6 +332,8 @@ public class CreateReservationFormController {
                 bookingDepositLabel.setText(String.format("%.2f VND", totalCost));
             } catch (IllegalArgumentException e) {
                 bookingDepositLabel.setText(e.getMessage());
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
             }
         } else {
             stayLengthLabel.setText(GlobalConstants.STAY_LENGTH_EMPTY);
@@ -331,7 +350,11 @@ public class CreateReservationFormController {
             else if (newValue.length() > 12) {
                 handleInputExceedsLimit(oldValue);
             } else if (newValue.length() == 12) {
-                validateIDCardNumber(newValue);
+                try {
+                    validateIDCardNumber(newValue);
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
             } else if (customer != null) {
                 clearCustomerInfo();
             }
@@ -343,11 +366,11 @@ public class CreateReservationFormController {
         dialogPane.showError("LỖI", ErrorMessages.ID_CARD_NUMBER_OVER_LIMIT);
     }
 
-    private void validateIDCardNumber(String idCardNumber) {
+    private void validateIDCardNumber(String idCardNumber) throws RemoteException {
         if (!RegexChecker.isValidIDCardNumber(idCardNumber)) {
             dialogPane.showError("LỖI", ErrorMessages.INVALID_ID_CARD_NUMBER);
         } else {
-            customer = CustomerDAO.getDataByIDCardNumber(idCardNumber);
+            customer = customerDAO.getDataByIDCardNumber(idCardNumber);
             if (customer == null) {
                 dialogPane.showError("LỖI", ErrorMessages.CUS_NOT_FOUND);
                 clearCustomerInfo();
@@ -406,7 +429,7 @@ public class CreateReservationFormController {
                     RoomChargesCalculate.calculateRoomCharges(checkInTime, checkOutTime, roomWithReservation.getRoom()) * 0.1
             );
 
-            String result = ReservationFormDAO.createReservationForm(reservationForm);
+            String result = reservationFormDAO.createReservationForm(reservationForm);
 
             switch (result) {
                 case "CREATING_RESERVATION_FORM_SUCCESS" -> {
@@ -455,9 +478,9 @@ public class CreateReservationFormController {
     // ==================================================================================================================
     // 9. Chức năng xem lịch phòng
     // ==================================================================================================================
-    private void openCalendarViewStage() {
+    private void openCalendarViewStage() throws RemoteException {
         CalendarView calendarView = new CalendarView();
-        List<ReservationForm> reservations = ReservationFormDAO.getReservationsWithinLastMonth(room.getRoomID());
+        List<ReservationForm> reservations = reservationFormDAO.getReservationsWithinLastMonth(room.getRoomID());
         Calendar<String> calendar = new Calendar<>("Lịch Đặt Phòng");
 
         reservations.forEach(res -> {

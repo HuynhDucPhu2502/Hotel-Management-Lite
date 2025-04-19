@@ -7,7 +7,8 @@ import iuh.fit.controller.features.room.checking_out_controllers.CheckingOutRese
 import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
 import iuh.fit.controller.features.room.room_changing_controllers.RoomChangingController;
 import iuh.fit.controller.features.room.service_ordering_controllers.ServiceOrderingController;
-import iuh.fit.dao.ReservationFormDAO;
+import iuh.fit.dao.daointerface.ReservationFormDAO;
+import iuh.fit.dao.daoimpl.ReservationFormDAOImpl;
 import iuh.fit.models.Employee;
 import iuh.fit.models.ReservationForm;
 import iuh.fit.models.Room;
@@ -23,12 +24,15 @@ import javafx.scene.layout.*;
 import lombok.Getter;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.List;
 
 public class ReservationListController {
     // ==================================================================================================================
     // 1. Các biến
     // ==================================================================================================================
+    ReservationFormDAO reservationFormDAO = new ReservationFormDAOImpl();
+
     @FXML
     private Button backBtn, bookingRoomNavigateLabel;
 
@@ -59,6 +63,9 @@ public class ReservationListController {
     private List<ReservationForm> reservationForms;
     private RoomWithReservation roomWithReservation;
 
+    public ReservationListController() throws RemoteException {
+    }
+
 
     // ==================================================================================================================
     // 2. Khởi tạo và nạp dữ liệu vào giao diện
@@ -70,7 +77,7 @@ public class ReservationListController {
     public void setupContext(
             MainController mainController, Employee employee,
             RoomWithReservation roomWithReservation
-    ) {
+    ) throws RemoteException {
         this.mainController = mainController;
         this.employee = employee;
         this.roomWithReservation = roomWithReservation;
@@ -112,8 +119,8 @@ public class ReservationListController {
 
     }
 
-    private void loadData() {
-        reservationForms = ReservationFormDAO.getUpcomingReservations(room.getRoomID());
+    private void loadData() throws RemoteException {
+        reservationForms = reservationFormDAO.getUpcomingReservations(room.getRoomID());
     }
 
     // ==================================================================================================================
