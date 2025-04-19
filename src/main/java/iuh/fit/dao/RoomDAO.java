@@ -94,10 +94,8 @@ public class RoomDAO {
         em.getTransaction().commit();
     }
 
-    public static List<Room> getAvailableRoomsUntil(String roomID, String roomCategoryID, LocalDateTime checkout) {
+    public static List<Room> getAvailableRoomsUntil(String roomID, String roomCategoryID, LocalDateTime desiredCheckOut) {
         EntityManager em = EntityManagerUtil.getEntityManager();
-
-        LocalDateTime checkoutPlus2Hours = checkout.plusHours(2);
 
         String jpql = """
         SELECT r FROM Room r
@@ -105,10 +103,11 @@ public class RoomDAO {
           AND r.roomCategory.roomCategoryID = :rcid
           AND r.isActivate = :status
           AND NOT EXISTS (
-            SELECT 1 FROM ReservationForm rf
-            WHERE rf.room.roomID = r.roomID
-              AND rf.approxcheckInDate < :checkout
-              AND rf.approxcheckOutTime > :now
+              SELECT 1 FROM ReservationForm rf
+              WHERE rf.room.roomID = r.roomID
+                AND rf.historyCheckIn IS NULL
+                AND rf.approxcheckInDate < :desiredCheckOut
+                AND rf.approxcheckOutTime > :now
           )
     """;
 
@@ -116,11 +115,12 @@ public class RoomDAO {
         query.setParameter("rid", roomID);
         query.setParameter("rcid", roomCategoryID);
         query.setParameter("status", ObjectStatus.ACTIVE);
-        query.setParameter("checkout", checkout);
-        query.setParameter("now", checkoutPlus2Hours);
+        query.setParameter("desiredCheckOut", desiredCheckOut);
+        query.setParameter("now", LocalDateTime.now());
 
         return query.getResultList();
     }
+
 
 
 //    public static List<Room> getAvailableRoomsInDateRange(LocalDateTime checkIn, LocalDateTime checkOut) {
