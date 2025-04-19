@@ -58,13 +58,7 @@ public class RoomSearchingController {
     private Button searchBtn, resetBtn;
     private ObservableList<Room> items;
 
-    private MainController mainController;
-    private Account account;
-
-    public void setupContext(MainController mainController, Account account) {
-        this.mainController = mainController;
-        this.account = account;
-
+    public void setupContext() {
         loadData();
         setupTable();
         roomTableView.setFixedCellSize(25);
@@ -119,56 +113,7 @@ public class RoomSearchingController {
         });
 
         roomTableView.setItems(items);
-//        setupTableContextMenu();
     }
-
-//    private void setupTableContextMenu() {
-//        ContextMenu contextMenu = new ContextMenu();
-//
-//        MenuItem roomManageMenuItem = new MenuItem("Chỉnh sửa");
-//        MenuItem roomReservationManageMenuItem = new MenuItem("Quản lý đặt phòng");
-//
-//        roomReservationManageMenuItem.setOnAction(event -> {
-//            Room room = roomTableView.getSelectionModel().getSelectedItem();
-//            if (room != null) {
-//                try {
-//                    handleCreateReservationForm(room);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//        contextMenu.getItems().add(roomReservationManageMenuItem);
-//
-//        if (account.getEmployee().getPosition() == Position.MANAGER) {
-//            roomManageMenuItem.setOnAction(event -> {
-//                Room room = roomTableView.getSelectionModel().getSelectedItem();
-//                if (room != null) {
-//                    try {
-//                        handleEditRoom(room);
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            });
-//            contextMenu.getItems().add(roomManageMenuItem);
-//        }
-//
-//        roomTableView.setContextMenu(contextMenu);
-//    }
-
-//    private void handleEditRoom(Room room) throws IOException {
-//        if (room.getRoomStatus() != RoomStatus.AVAILABLE) {
-//            dialogPane.showInformation("LỖI", "Phòng này đang được sử dụng");
-//            return;
-//        }
-//        mainController.loadPanelRoomManagerController("/iuh/fit/view/features/room/RoomManagerPanel.fxml", room);
-//    }
-//
-//    private void handleCreateReservationForm(Room room) throws IOException {
-//        RoomWithReservation roomWithReservations = RoomWithReservationDAO.getRoomWithReservationByRoomId(room.getRoomID());
-//        mainController.loadPanelCreateReservationFormController("/iuh/fit/view/features/room/creating_reservation_form_panels/CreateReservationFormPanel.fxml", mainController, account, roomWithReservations);
-//    }
 
     private void handleResetAction() {
         roomIDSearchField.setText("");

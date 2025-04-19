@@ -9,7 +9,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -52,7 +51,7 @@ public class ReservationRoomDetailDAO {
         em.getTransaction().commit();
     }
 
-    public static void changingRoom(String currentRoomID, String newRoomID, String reservationFormID, String employeeID) {
+    public static void changingRoom(String currentRoomID, String newRoomID, String reservationFormID) {
         EntityManager em = EntityManagerUtil.getEntityManager();
 
         ReservationForm form = em.find(ReservationForm.class, reservationFormID);
@@ -88,7 +87,7 @@ public class ReservationRoomDetailDAO {
         em.getTransaction().commit();
     }
 
-    public static String roomCheckingIn(String reservationFormID, String employeeID) {
+    public static String roomCheckingIn(String reservationFormID) {
         EntityManager em = EntityManagerUtil.getEntityManager();
         LocalDateTime now = LocalDateTime.now();
 
@@ -116,7 +115,7 @@ public class ReservationRoomDetailDAO {
         List<ReservationForm> results = query.getResultList();
         if (results.isEmpty()) return "ROOM_CHECKING_IN_INVALID_RESERVATION";
 
-        ReservationForm form = results.get(0);
+        ReservationForm form = results.getFirst();
         Room room = form.getRoom();
 
         // ✅ Đoạn còn lại giữ nguyên như bạn đã viết
@@ -160,7 +159,7 @@ public class ReservationRoomDetailDAO {
     }
 
 
-    public static String roomEarlyCheckingIn(String reservationFormID, String employeeID) {
+    public static String roomEarlyCheckingIn(String reservationFormID) {
         EntityManager em = EntityManagerUtil.getEntityManager();
         LocalDateTime now = LocalDateTime.now();
 

@@ -13,20 +13,16 @@ import iuh.fit.controller.features.invoice.InvoiceManagerController;
 import iuh.fit.controller.features.room.RoomBookingController;
 import iuh.fit.controller.features.room.RoomManagerController;
 import iuh.fit.controller.features.room.RoomSearchingController;
-import iuh.fit.controller.features.room.creating_reservation_form_controllers.CreateReservationFormController;
 import iuh.fit.controller.features.service.HotelServiceManagerController;
 import iuh.fit.controller.features.service.HotelServiceSearchingController;
-import iuh.fit.controller.features.statistics.StatisticalController;
-import iuh.fit.dao.EmployeeDAO;
 import iuh.fit.models.*;
 
 import iuh.fit.models.enums.Position;
+import iuh.fit.utils.RoomManagementService;
 import iuh.fit.utils.TimelineManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import lombok.Getter;
@@ -45,7 +41,6 @@ public class MainController {
     private AnchorPane topPanel;
     private Stage mainStage;
 
-    private Button informationBtn;
 
     private MenuController menuController;
 
@@ -64,6 +59,8 @@ public class MainController {
         initializeTopBar();
         initializeDashboard();
         initializeMenuBar();
+
+        RoomManagementService.startAutoCheckoutScheduler(this);
     }
 
     public void initializeDashboard() {
@@ -201,7 +198,7 @@ public class MainController {
 
 
                 case RoomSearchingController roomSearchingController ->
-                        roomSearchingController.setupContext(this, account);
+                        roomSearchingController.setupContext();
 
                 default -> {}
             }

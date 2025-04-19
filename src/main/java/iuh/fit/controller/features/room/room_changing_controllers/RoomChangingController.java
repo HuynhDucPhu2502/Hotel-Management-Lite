@@ -423,8 +423,7 @@ public class RoomChangingController {
                         ReservationRoomDetailDAO.changingRoom(
                                 roomWithReservation.getRoom().getRoomID(),
                                 newRoom.getRoomID(),
-                                roomWithReservation.getReservationForm().getReservationID(),
-                                employee.getEmployeeCode()
+                                roomWithReservation.getReservationForm().getReservationID()
                         );
 
                         dialogPane.showInformation("Thành Công", "Chuyển phòng thành công!");
