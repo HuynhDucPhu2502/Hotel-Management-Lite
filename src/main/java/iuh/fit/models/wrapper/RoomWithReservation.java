@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class RoomWithReservation {
     private Room room;
     private ReservationForm reservationForm;
+
 }

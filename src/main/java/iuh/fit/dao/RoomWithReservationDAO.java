@@ -15,27 +15,32 @@ public class RoomWithReservationDAO {
     public static List<RoomWithReservation> getRoomWithReservation() {
         EntityManager em = EntityManagerUtil.getEntityManager();
         LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nowPlus2Hours = now.plusHours(2);
 
         String jpql = """
-            SELECT new iuh.fit.models.wrapper.RoomWithReservation(r, rf)
-            FROM Room r
-            LEFT JOIN r.roomCategory rc
-            LEFT JOIN ReservationForm rf ON rf.room = r
-                AND rf.historyCheckOut IS NULL
-                AND rf.approxcheckInDate <= :now
-                AND rf.approxcheckOutTime >= :now
-            WHERE r.isActivate = :activeStatus
-              AND rc.isActivate = :activeStatus
-              AND r.roomStatus <> :unavailableStatus
-        """;
+        SELECT new iuh.fit.models.wrapper.RoomWithReservation(r, rf)
+        FROM Room r
+        LEFT JOIN r.roomCategory rc
+        LEFT JOIN ReservationForm rf ON rf.room = r
+            AND rf.historyCheckOut IS NULL
+            AND :now BETWEEN rf.approxcheckInDate AND :nowPlus2Hours
+        WHERE r.isActivate = :activeStatus
+          AND rc.isActivate = :activeStatus
+          AND r.roomStatus <> :unavailableStatus
+    """;
 
         TypedQuery<RoomWithReservation> query = em.createQuery(jpql, RoomWithReservation.class);
+        query.setParameter("now", now);
+        query.setParameter("nowPlus2Hours", nowPlus2Hours);
         query.setParameter("activeStatus", ObjectStatus.ACTIVE);
         query.setParameter("unavailableStatus", RoomStatus.UNAVAILABLE);
-        query.setParameter("now", now);
 
         return query.getResultList();
     }
+
+
+
+
 
     public static RoomWithReservation getRoomWithReservationByRoomId(String roomId) {
         EntityManager em = EntityManagerUtil.getEntityManager();

@@ -369,11 +369,14 @@ public class InitSampleData {
             tx.begin();
 
             Employee emp1 = EmployeeDAO.getEmployeeByEmployeeCode("EMP-000001");
-            Employee emp2 = EmployeeDAO.getEmployeeByEmployeeCode("EMP-000001");
+            Employee emp2 = EmployeeDAO.getEmployeeByEmployeeCode("EMP-000002");
+            Employee emp3 = EmployeeDAO.getEmployeeByEmployeeCode("EMP-000003");
             Customer cus1 = CustomerDAO.findById("CUS-000001");
             Customer cus2 = CustomerDAO.findById("CUS-000002");
+            Customer cus3 = CustomerDAO.findById("CUS-000003");
             Room room1 = em.find(Room.class, "T1101");
             Room room2 = em.find(Room.class, "T1105");
+            Room room3 = em.find(Room.class, "V2102");
 
             // Phiếu 1: Chưa checkin
             ReservationForm rf1 = new ReservationForm(
@@ -403,27 +406,57 @@ public class InitSampleData {
             );
             em.persist(rf2);
 
-            HistoryCheckIn hci = new HistoryCheckIn();
-            hci.setRoomHistoryCheckinID("HCI-000031");
-            hci.setCheckInDate(LocalDateTime.now().minusDays(1));
-            hci.setReservationForm(rf2);
-            rf2.setHistoryCheckIn(hci);
-            em.persist(hci);
+            HistoryCheckIn hci2 = new HistoryCheckIn();
+            hci2.setRoomHistoryCheckinID("HCI-000031");
+            hci2.setCheckInDate(LocalDateTime.now().minusDays(1));
+            hci2.setReservationForm(rf2);
+            rf2.setHistoryCheckIn(hci2);
+            em.persist(hci2);
 
-            ReservationRoomDetail rrd = new ReservationRoomDetail();
-            rrd.setReservationRoomDetailID("RRD-000031");
-            rrd.setDateChanged(LocalDateTime.now().minusDays(1));
-            rrd.setRoom(room2);
-            rrd.setReservationForm(rf2);
-            em.persist(rrd);
+            ReservationRoomDetail rrd2 = new ReservationRoomDetail();
+            rrd2.setReservationRoomDetailID("RRD-000031");
+            rrd2.setDateChanged(LocalDateTime.now().minusDays(1));
+            rrd2.setRoom(room2);
+            rrd2.setReservationForm(rf2);
+            em.persist(rrd2);
 
-            // Cập nhật trạng thái phòng
             room2.setRoomStatus(RoomStatus.IN_USE);
 
+            // Phiếu 3: Đã checkin, quá hạn checkout 1 tiếng
+            ReservationForm rf3 = new ReservationForm(
+                    "RF-000033",
+                    LocalDateTime.now().minusDays(5),
+                    LocalDateTime.now().minusDays(4),
+                    LocalDateTime.now().minusHours(1), // Quá hạn 1 tiếng
+                    500000.0,
+                    ReservationStatus.RESERVATION,
+                    room3,
+                    cus3,
+                    emp3
+            );
+            em.persist(rf3);
+
+            HistoryCheckIn hci3 = new HistoryCheckIn();
+            hci3.setRoomHistoryCheckinID("HCI-000032");
+            hci3.setCheckInDate(LocalDateTime.now().minusDays(4));
+            hci3.setReservationForm(rf3);
+            rf3.setHistoryCheckIn(hci3);
+            em.persist(hci3);
+
+            ReservationRoomDetail rrd3 = new ReservationRoomDetail();
+            rrd3.setReservationRoomDetailID("RRD-000032");
+            rrd3.setDateChanged(LocalDateTime.now().minusDays(4));
+            rrd3.setRoom(room3);
+            rrd3.setReservationForm(rf3);
+            em.persist(rrd3);
+
+            room3.setRoomStatus(RoomStatus.OVER_DUE);
+
             tx.commit();
-            System.out.println("Tạo thành công dữ liệu cho chức năng đặt phòng:");
-            System.out.println("+ 1 phiếu đặt phòng đến thời gian nhưng chưa checkin");
-            System.out.println("+ 1 phiếu đặt phòng đã checkin");
+            System.out.println("Tạo thành công dữ liệu test:");
+            System.out.println("+ Phiếu 1: chưa checkin");
+            System.out.println("+ Phiếu 2: đã checkin");
+            System.out.println("+ Phiếu 3: đã checkin và quá hạn checkout");
         } catch (Exception e) {
             tx.rollback();
             e.printStackTrace();
@@ -447,9 +480,9 @@ public class InitSampleData {
                     new GlobalSequence(0, "HotelService", "HS-000021"),
                     new GlobalSequence(0, "Customer", "CUS-000031"),
                     new GlobalSequence(0, "RoomCategory", "RC-000005"),
-                    new GlobalSequence(0, "ReservationForm", "RF-000033"),
-                    new GlobalSequence(0, "ReservationRoomDetail", "RRD-000032"),
-                    new GlobalSequence(0, "HistoryCheckin", "HCI-000032"),
+                    new GlobalSequence(0, "ReservationForm", "RF-000034"),
+                    new GlobalSequence(0, "ReservationRoomDetail", "RRD-000033"),
+                    new GlobalSequence(0, "HistoryCheckin", "HCI-000033"),
                     new GlobalSequence(0, "HistoryCheckout", "HCO-000031"),
                     new GlobalSequence(0, "RoomUsageService", "RUS-000031"),
                     new GlobalSequence(0, "Invoice", "INV-000031")

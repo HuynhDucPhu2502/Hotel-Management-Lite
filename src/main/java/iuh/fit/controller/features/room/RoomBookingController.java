@@ -100,6 +100,7 @@ public class RoomBookingController {
                 });
 
                 RoomManagementService.autoCheckoutOverdueRooms(mainController);
+                RoomWithReservationDAO.getRoomWithReservation().forEach(System.out::println);
                 return RoomWithReservationDAO.getRoomWithReservation().stream()
                         .sorted(Comparator.comparing(r -> r.getRoom().getRoomNumber()))
                         .toList();
