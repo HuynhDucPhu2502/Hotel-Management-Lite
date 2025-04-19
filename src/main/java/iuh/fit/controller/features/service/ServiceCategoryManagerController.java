@@ -1,7 +1,8 @@
 package iuh.fit.controller.features.service;
 
 import com.dlsc.gemsfx.DialogPane;
-import iuh.fit.dao.ServiceCategoryDAO;
+import iuh.fit.dao.daointerface.ServiceCategoryDAO;
+import iuh.fit.dao.daoimpl.ServiceCategoryDAOImpl;
 import iuh.fit.models.ServiceCategory;
 import iuh.fit.models.enums.ObjectStatus;
 import javafx.collections.FXCollections;
@@ -15,12 +16,14 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class ServiceCategoryManagerController {
+    public final ServiceCategoryDAO serviceCategoryDAO = new ServiceCategoryDAOImpl();
 
     @FXML
     private TextField serviceCategoryIDTextField, serviceCategoryNameTextField;
@@ -52,6 +55,9 @@ public class ServiceCategoryManagerController {
     private ObservableList<ServiceCategory> items;
     private final Map<Image, String> iconServiceMap = new HashMap<>();
 
+    public ServiceCategoryManagerController() throws RemoteException {
+    }
+
     public void initialize() {
         dialogPane.toFront();
         serviceCategoryTableView.setFixedCellSize(40);
@@ -59,7 +65,13 @@ public class ServiceCategoryManagerController {
         loadData();
         setupTable();
 
-        resetBtn.setOnAction(e -> handleResetAction());
+        resetBtn.setOnAction(e -> {
+            try {
+                handleResetAction();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         addBtn.setOnAction(e -> handleAddAction());
         updateBtn.setOnAction(e -> handleUpdateAction());
         serviceCategoryIDSearchField.setOnAction(e -> handleSearchAction());
@@ -69,8 +81,8 @@ public class ServiceCategoryManagerController {
     private void loadData() {
         Task<ObservableList<ServiceCategory>> loadDataTask = new Task<>() {
             @Override
-            protected ObservableList<ServiceCategory> call() {
-                List<ServiceCategory> serviceCategories = ServiceCategoryDAO.findAll();
+            protected ObservableList<ServiceCategory> call() throws RemoteException {
+                List<ServiceCategory> serviceCategories = serviceCategoryDAO.findAll();
                 return FXCollections.observableArrayList(serviceCategories);
             }
         };
@@ -81,9 +93,18 @@ public class ServiceCategoryManagerController {
             serviceCategoryTableView.refresh();
             iconSelector.getSelectionModel().selectFirst();
 
-            List<String> Ids = ServiceCategoryDAO.getTopThreeID();
+            List<String> Ids = null;
+            try {
+                Ids = serviceCategoryDAO.getTopThreeID();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
             serviceCategoryIDSearchField.getItems().setAll(Ids);
-            serviceCategoryIDTextField.setText(ServiceCategoryDAO.getNextServiceCategoryID());
+            try {
+                serviceCategoryIDTextField.setText(serviceCategoryDAO.getNextServiceCategoryID());
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
 
@@ -132,7 +153,12 @@ public class ServiceCategoryManagerController {
                     return;
                 }
 
-                boolean hasRoomInUse = ServiceCategoryDAO.isServiceCategoryInUse(serviceCategory.getServiceCategoryID());
+                boolean hasRoomInUse = false;
+                try {
+                    hasRoomInUse = serviceCategoryDAO.isServiceCategoryInUse(serviceCategory.getServiceCategoryID());
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
                 updateButton.setDisable(hasRoomInUse);
                 deleteButton.setDisable(hasRoomInUse);
 
@@ -164,9 +190,9 @@ public class ServiceCategoryManagerController {
         });
     }
 
-    private void handleResetAction() {
+    private void handleResetAction() throws RemoteException {
         serviceCategoryNameTextField.setText("");
-        serviceCategoryIDTextField.setText(ServiceCategoryDAO.getNextServiceCategoryID());
+        serviceCategoryIDTextField.setText(serviceCategoryDAO.getNextServiceCategoryID());
         iconSelector.getSelectionModel().selectFirst();
 
         addBtn.setManaged(true);
@@ -189,8 +215,8 @@ public class ServiceCategoryManagerController {
 
             Task<Void> addTask = new Task<>() {
                 @Override
-                protected Void call() {
-                    ServiceCategoryDAO.createData(serviceCategory);
+                protected Void call() throws RemoteException {
+                    serviceCategoryDAO.createData(serviceCategory);
                     return null;
                 }
             };
@@ -203,7 +229,11 @@ public class ServiceCategoryManagerController {
             addTask.setOnSucceeded(e -> {
                 addBtn.setDisable(false);
                 updateBtn.setDisable(false);
-                handleResetAction();
+                try {
+                    handleResetAction();
+                } catch (RemoteException ex) {
+                    throw new RuntimeException(ex);
+                }
                 loadData();
                 dialogPane.showInformation("Thêm thành công", "Loại dịch vụ đã được thêm");
             });
@@ -224,8 +254,8 @@ public class ServiceCategoryManagerController {
             if (buttonType == ButtonType.YES) {
                 Task<Void> deleteTask = new Task<>() {
                     @Override
-                    protected Void call() {
-                        ServiceCategoryDAO.deleteData(serviceCategory.getServiceCategoryID());
+                    protected Void call() throws RemoteException {
+                        serviceCategoryDAO.deleteData(serviceCategory.getServiceCategoryID());
                         return null;
                     }
                 };
@@ -281,8 +311,8 @@ public class ServiceCategoryManagerController {
                 if (buttonType == ButtonType.YES) {
                     Task<Void> updateTask = new Task<>() {
                         @Override
-                        protected Void call() {
-                            ServiceCategoryDAO.updateData(serviceCategory);
+                        protected Void call() throws RemoteException {
+                            serviceCategoryDAO.updateData(serviceCategory);
                             return null;
                         }
                     };
@@ -295,7 +325,11 @@ public class ServiceCategoryManagerController {
                     updateTask.setOnSucceeded(e -> {
                         addBtn.setDisable(false);
                         updateBtn.setDisable(false);
-                        handleResetAction();
+                        try {
+                            handleResetAction();
+                        } catch (RemoteException ex) {
+                            throw new RuntimeException(ex);
+                        }
                         loadData();
                         dialogPane.showInformation("Cập nhật thành công", "Loại dịch vụ đã được cập nhật");
                     });
@@ -316,10 +350,10 @@ public class ServiceCategoryManagerController {
 
         Task<ObservableList<ServiceCategory>> searchTask = new Task<>() {
             @Override
-            protected ObservableList<ServiceCategory> call() {
+            protected ObservableList<ServiceCategory> call() throws RemoteException {
                 List<ServiceCategory> serviceCategories = searchText == null || searchText.isEmpty()
-                        ? ServiceCategoryDAO.findAll()
-                        : ServiceCategoryDAO.findDataByContainsId(searchText);
+                        ? serviceCategoryDAO.findAll()
+                        : serviceCategoryDAO.findDataByContainsId(searchText);
                 return FXCollections.observableArrayList(serviceCategories);
             }
         };

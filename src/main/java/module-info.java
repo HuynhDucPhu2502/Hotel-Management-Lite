@@ -56,7 +56,7 @@ module iuh.fit {
 
     opens iuh.fit.utils to javafx.fxml;
 
-    opens iuh.fit.dao to javafx.fxml;
+    opens iuh.fit.dao.daoimpl to javafx.fxml;
 
 
     // Exports
@@ -64,11 +64,13 @@ module iuh.fit {
     exports iuh.fit.models;
     exports iuh.fit.devtools;
 
-    exports iuh.fit.dao;
     exports iuh.fit.dto;
     exports iuh.fit.models.wrapper;
     exports iuh.fit.models.enums;
     exports iuh.fit.utils;
     exports iuh.fit.security;
     exports iuh.fit.controller.features.statistics;
+    exports iuh.fit.dao.daoimpl;
+    exports iuh.fit.dao.daointerface;
+    opens iuh.fit.dao.daointerface to javafx.fxml;
 }

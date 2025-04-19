@@ -1,7 +1,8 @@
 package iuh.fit.controller.features.customer;
 
 import iuh.fit.controller.MainController;
-import iuh.fit.dao.CustomerDAO;
+import iuh.fit.dao.daointerface.CustomerDAO;
+import iuh.fit.dao.daoimpl.CustomerDAOImpl;
 import iuh.fit.models.Account;
 import iuh.fit.models.Customer;
 import iuh.fit.models.enums.Gender;
@@ -22,11 +23,13 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
 public class CustomerSearchingController {
+    private final CustomerDAO customerDAO = new CustomerDAOImpl();
     // Input Fields
     @FXML
     private TextField
@@ -63,6 +66,9 @@ public class CustomerSearchingController {
     private MainController mainController;
     private Account account;
 
+    public CustomerSearchingController() throws RemoteException {
+    }
+
     public void setupContext(MainController mainController, Account account) {
         this.mainController = mainController;
         this.account = account;
@@ -79,8 +85,8 @@ public class CustomerSearchingController {
     private void loadData() {
         Task<Void> loadDataTask = new Task<>() {
             @Override
-            protected Void call() {
-                List<Customer> customerList = CustomerDAO.findAll();
+            protected Void call() throws RemoteException {
+                List<Customer> customerList = customerDAO.findAll();
                 items = FXCollections.observableArrayList(customerList);
                 Platform.runLater(() -> {
                     customerTableView.setItems(items);
@@ -202,7 +208,7 @@ public class CustomerSearchingController {
     private void handleSearchAction() {
         Task<ObservableList<Customer>> searchTask = new Task<>() {
             @Override
-            protected ObservableList<Customer> call() {
+            protected ObservableList<Customer> call() throws RemoteException {
                 String customerID = customerIDTextField.getText().isBlank() ? null : customerIDTextField.getText().trim();
                 String fullName = fullNameTextField.getText().isBlank() ? null : fullNameTextField.getText().trim();
                 String phoneNumber = phoneNumberTextField.getText().isBlank() ? null : phoneNumberTextField.getText().trim();
@@ -212,7 +218,7 @@ public class CustomerSearchingController {
                 LocalDate dob = DOBPicker.getValue();
                 String cardID = cardIDTextField.getText().isBlank() ? null : cardIDTextField.getText().trim();
 
-                List<Customer> searchResults = CustomerDAO.searchCustomer(
+                List<Customer> searchResults = customerDAO.searchCustomer(
                         customerID, fullName, phoneNumber, address, selectedGender, cardID, dob
                 );
                 return FXCollections.observableArrayList(searchResults);

@@ -1,8 +1,10 @@
 package iuh.fit.controller.features.employee;
 
 import com.dlsc.gemsfx.DialogPane;
-import iuh.fit.dao.AccountDAO;
-import iuh.fit.dao.EmployeeDAO;
+import iuh.fit.dao.daointerface.AccountDAO;
+import iuh.fit.dao.daoimpl.AccountDAOImpl;
+import iuh.fit.dao.daointerface.EmployeeDAO;
+import iuh.fit.dao.daoimpl.EmployeeDAOImpl;
 import iuh.fit.models.Account;
 import iuh.fit.models.Employee;
 import iuh.fit.models.enums.AccountStatus;
@@ -36,7 +38,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Callback;
 
 import java.io.IOException;
-import java.time.LocalDate;
+import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -89,6 +91,13 @@ public class EmployeeManagerController {
 
     private Delta mouseCordinate;
     private Delta currentStageCordinate;
+    EmployeeDAO employeeDAO = new EmployeeDAOImpl();
+
+    AccountDAO accountDAO = new AccountDAOImpl();
+
+    public EmployeeManagerController() throws RemoteException {
+    }
+
 
     public void initialize() {
         dialogPane.toFront();
@@ -99,7 +108,13 @@ public class EmployeeManagerController {
         loadData();
 
 
-        resetBtn.setOnAction(e -> handleResetAction());
+        resetBtn.setOnAction(e -> {
+            try {
+                handleResetAction();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         addBtn.setOnAction(e -> handleAddAction());
         updateBtn.setOnAction(e -> handleUpdateAction());
 
@@ -126,7 +141,7 @@ public class EmployeeManagerController {
     public void loadData() {
         Task<Void> loadDataTask = new Task<>() {
             @Override
-            protected Void call() {
+            protected Void call() throws RemoteException {
                 // Tải danh sách vị trí
                 Platform.runLater(() -> {
                     positionCBox.getItems().setAll(
@@ -141,11 +156,17 @@ public class EmployeeManagerController {
                     positionCBox.getSelectionModel().selectFirst();
                 });
 
-                Platform.runLater(() -> employeeIDTextField.setText(EmployeeDAO.getNextEmployeeID()));
-                List<String> Ids = EmployeeDAO.getTopThreeID();
+                Platform.runLater(() -> {
+                    try {
+                        employeeIDTextField.setText(employeeDAO.getNextEmployeeID());
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                List<String> Ids = employeeDAO.getTopThreeID();
                 Platform.runLater(() -> employeeIDSearchField.getItems().setAll(Ids));
 
-                List<Employee> employeeList = EmployeeDAO.getEmployees();
+                List<Employee> employeeList = employeeDAO.getEmployees();
                 items = FXCollections.observableArrayList(employeeList);
 
                 Platform.runLater(() -> {
@@ -231,8 +252,8 @@ public class EmployeeManagerController {
         actionColumn.setCellFactory(cellFactory);
     }
 
-    private void handleResetAction() {
-        employeeIDTextField.setText(EmployeeDAO.getNextEmployeeID());
+    private void handleResetAction() throws RemoteException {
+        employeeIDTextField.setText(employeeDAO.getNextEmployeeID());
         fullNameTextField.setText("");
         phoneNumberTextField.setText("");
         addressTextField.setText("");
@@ -269,17 +290,17 @@ public class EmployeeManagerController {
             );
 
             // Tạo mới nhân viên thông qua DAO
-            EmployeeDAO.createData(employee);
+            employeeDAO.createData(employee);
 
             // Đảm bảo lấy đúng đối tượng Employee từ database (đã được quản lý)
-            Employee savedEmployee = EmployeeDAO.getEmployeeByEmployeeCode(employee.getEmployeeCode());
+            Employee savedEmployee = employeeDAO.getEmployeeByEmployeeCode(employee.getEmployeeCode());
             if (savedEmployee == null) {
                 dialogPane.showWarning("LỖI", "Không tìm thấy nhân viên sau khi lưu.");
                 return;
             }
 
             // Tạo tài khoản cho nhân viên
-            String nextAccountID = AccountDAO.getNextAccountID();
+            String nextAccountID = accountDAO.getNextAccountID();
             String accountUsername = removePrefix(savedEmployee.getEmployeeCode());
             String hashedPassword = PasswordHashing.hashPassword("test123@");
 
@@ -293,7 +314,7 @@ public class EmployeeManagerController {
             );
 
             // Tạo tài khoản thông qua DAO
-            AccountDAO.createData(account);
+            accountDAO.createData(account);
 
             // Thông báo thành công
             dialogPane.showInformation("Thông báo", "Thêm nhân viên thành công!\nTài khoản: " + accountUsername + "\nMật khẩu: test123@");
@@ -357,14 +378,20 @@ public class EmployeeManagerController {
                 if (buttonType == ButtonType.YES) {
                     try {
                         // Gọi hàm cập nhật từ lớp DAO
-                        EmployeeDAO.updateData(employee);
+                        employeeDAO.updateData(employee);
                         dialogPane.showInformation("Thông báo", "Cập nhật thông tin nhân viên thành công");
                         Platform.runLater(() -> {
-                            handleResetAction();
+                            try {
+                                handleResetAction();
+                            } catch (RemoteException e) {
+                                throw new RuntimeException(e);
+                            }
                             loadData();
                         });
                     } catch (IllegalArgumentException e) {
                         dialogPane.showWarning("LỖI", "Cập nhật không thành công: " + e.getMessage());
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             });
@@ -385,12 +412,12 @@ public class EmployeeManagerController {
 
         Task<ObservableList<Employee>> searchTask = new Task<>() {
             @Override
-            protected ObservableList<Employee> call() {
+            protected ObservableList<Employee> call() throws RemoteException {
                 List<Employee> employeeList;
                 if (searchText == null || searchText.isEmpty()) {
-                    employeeList = EmployeeDAO.getEmployees();
+                    employeeList = employeeDAO.getEmployees();
                 } else {
-                    employeeList = EmployeeDAO.findDataByContainsId(searchText);
+                    employeeList = employeeDAO.findDataByContainsId(searchText);
                 }
                 return FXCollections.observableArrayList(employeeList);
             }

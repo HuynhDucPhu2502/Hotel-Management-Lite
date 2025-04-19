@@ -1,8 +1,10 @@
 package iuh.fit.controller.features.service;
 
 import com.dlsc.gemsfx.DialogPane;
-import iuh.fit.dao.HotelServiceDAO;
-import iuh.fit.dao.ServiceCategoryDAO;
+import iuh.fit.dao.daointerface.HotelServiceDAO;
+import iuh.fit.dao.daoimpl.HotelServiceDAOImpl;
+import iuh.fit.dao.daointerface.ServiceCategoryDAO;
+import iuh.fit.dao.daoimpl.ServiceCategoryDAOImpl;
 import iuh.fit.models.HotelService;
 import iuh.fit.models.ServiceCategory;
 import iuh.fit.models.enums.ObjectStatus;
@@ -21,12 +23,17 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
 
+import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 
 public class HotelServiceManagerController {
+
+    private final HotelServiceDAO hotelServiceDAO = new HotelServiceDAOImpl();
+    public final ServiceCategoryDAO serviceCategoryDAO = new ServiceCategoryDAOImpl();
+
     // Search Fields
     @FXML
     private ComboBox<String> hotelServiceIDSearchField;
@@ -83,22 +90,31 @@ public class HotelServiceManagerController {
 
     private ObservableList<HotelService> items;
 
+    public HotelServiceManagerController() throws RemoteException {
+    }
+
     // Gọi mấy phương thức để gắn sự kiện và dữ liệu cho lúc đầu khởi tạo giao diện
-    public void initialize() {
+    public void initialize() throws RemoteException {
         dialogPane.toFront();
         hotelServiceTableView.setFixedCellSize(40);
         setupTable();
         loadData();
 
 
-        resetBtn.setOnAction(e -> handleResetAction());
+        resetBtn.setOnAction(e -> {
+            try {
+                handleResetAction();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         addBtn.setOnAction(e -> handleAddAction());
         updateBtn.setOnAction(e -> handleUpdateAction());
         hotelServiceIDSearchField.setOnAction(e -> handleSearchAction());
     }
 
     // Phương thức load dữ liệu lên giao diện
-    private void loadData() {
+    private void loadData() throws RemoteException {
         Task<Void> loadDataTask = new Task<>() {
             @Override
             protected Void call() {
@@ -107,10 +123,10 @@ public class HotelServiceManagerController {
             }
         };
 
-        List<HotelService> hotelServiceList = HotelServiceDAO.getHotelService();
+        List<HotelService> hotelServiceList = hotelServiceDAO.getHotelService();
         items = FXCollections.observableArrayList(hotelServiceList);
 
-        List<String> comboBoxItems = Objects.requireNonNull(ServiceCategoryDAO.findAll())
+        List<String> comboBoxItems = Objects.requireNonNull(serviceCategoryDAO.findAll())
                 .stream()
                 .map(serviceCategory -> serviceCategory.getServiceCategoryID() + " " + serviceCategory.getServiceCategoryName())
                 .collect(Collectors.toList());
@@ -122,9 +138,18 @@ public class HotelServiceManagerController {
             hotelServiceTableView.setItems(items);
             hotelServiceTableView.refresh();
 
-            List<String> Ids = HotelServiceDAO.getTopThreeID();
+            List<String> Ids = null;
+            try {
+                Ids = hotelServiceDAO.getTopThreeID();
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
             hotelServiceIDSearchField.getItems().setAll(Ids);
-            serviceIDTextField.setText(HotelServiceDAO.getNextHotelServiceID());
+            try {
+                serviceIDTextField.setText(hotelServiceDAO.getNextHotelServiceID());
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
         });
 
         loadDataTask.setOnRunning(e -> setButtonsDisabled(true));
@@ -235,7 +260,7 @@ public class HotelServiceManagerController {
                 updateButton.setOnAction(event -> handleUpdateBtn(hotelService));
                 deleteButton.setOnAction(event -> handleDeleteAction(hotelService));
 
-//                boolean hasRoomInUse = HotelServiceDAO.isHotelServiceInUse(hotelService.getServiceId());
+//                boolean hasRoomInUse = HotelServiceDAOImpl.isHotelServiceInUse(hotelService.getServiceId());
 //                updateButton.setDisable(hasRoomInUse);
 //                deleteButton.setDisable(hasRoomInUse);
 
@@ -247,8 +272,8 @@ public class HotelServiceManagerController {
     }
 
     // Chức năng 1: Làm mới
-    private void handleResetAction() {
-        serviceIDTextField.setText(HotelServiceDAO.getNextHotelServiceID());
+    private void handleResetAction() throws RemoteException {
+        serviceIDTextField.setText(hotelServiceDAO.getNextHotelServiceID());
         serviceNameTextField.setText("");
         servicePriceTextField.setText("");
         if (!serviceCategoryCBox.getItems().isEmpty()) {
@@ -267,7 +292,7 @@ public class HotelServiceManagerController {
         try {
             String selectedService = serviceCategoryCBox.getSelectionModel().getSelectedItem();
             String serviceCategoryId = selectedService.split(" ")[0];
-            ServiceCategory serviceCategory = ServiceCategoryDAO.findById(serviceCategoryId);
+            ServiceCategory serviceCategory = serviceCategoryDAO.findById(serviceCategoryId);
 
             HotelService hotelService = new HotelService(
                     serviceIDTextField.getText(),
@@ -282,8 +307,8 @@ public class HotelServiceManagerController {
 
             Task<Void> addTask = new Task<>() {
                 @Override
-                protected Void call() {
-                    HotelServiceDAO.createData(hotelService);
+                protected Void call() throws RemoteException {
+                    hotelServiceDAO.createData(hotelService);
                     return null;
                 }
             };
@@ -291,8 +316,16 @@ public class HotelServiceManagerController {
             addTask.setOnRunning(e -> setButtonsDisabled(true));
             addTask.setOnSucceeded(e -> Platform.runLater(() -> {
                 dialogPane.showInformation("Thêm thành công", "Dịch vụ đã được thêm");
-                handleResetAction();
-                loadData();
+                try {
+                    handleResetAction();
+                } catch (RemoteException ex) {
+                    throw new RuntimeException(ex);
+                }
+                try {
+                    loadData();
+                } catch (RemoteException ex) {
+                    throw new RuntimeException(ex);
+                }
             }));
 
             new Thread(addTask).start();
@@ -308,16 +341,24 @@ public class HotelServiceManagerController {
             if (buttonType == ButtonType.YES) {
                 Task<Void> deleteTask = new Task<>() {
                     @Override
-                    protected Void call() {
-                        HotelServiceDAO.deleteData(hotelService.getServiceID());
+                    protected Void call() throws RemoteException {
+                        hotelServiceDAO.deleteData(hotelService.getServiceID());
                         return null;
                     }
                 };
 
                 deleteTask.setOnRunning(e -> setButtonsDisabled(true));
                 deleteTask.setOnSucceeded(e -> Platform.runLater(() -> {
-                    handleResetAction();
-                    loadData();
+                    try {
+                        handleResetAction();
+                    } catch (RemoteException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    try {
+                        loadData();
+                    } catch (RemoteException ex) {
+                        throw new RuntimeException(ex);
+                    }
                     dialogPane.showInformation("Xóa thành công", "Dịch vụ đã được xóa");
                 }));
 
@@ -355,7 +396,7 @@ public class HotelServiceManagerController {
         try {
             String selectedService = serviceCategoryCBox.getSelectionModel().getSelectedItem();
             String serviceCategoryId = selectedService.split(" ")[0];
-            ServiceCategory serviceCategory = ServiceCategoryDAO.findById(serviceCategoryId);
+            ServiceCategory serviceCategory = serviceCategoryDAO.findById(serviceCategoryId);
             System.out.println(serviceCategory);
             HotelService hotelService = new HotelService(
                     serviceIDTextField.getText(),
@@ -371,16 +412,24 @@ public class HotelServiceManagerController {
                 if (buttonType == ButtonType.YES) {
                     Task<Void> updateTask = new Task<>() {
                         @Override
-                        protected Void call() {
-                            HotelServiceDAO.updateData(hotelService);
+                        protected Void call() throws RemoteException {
+                            hotelServiceDAO.updateData(hotelService);
                             return null;
                         }
                     };
 
                     updateTask.setOnRunning(e -> setButtonsDisabled(true));
                     updateTask.setOnSucceeded(e -> Platform.runLater(() -> {
-                        loadData();
-                        handleResetAction();
+                        try {
+                            loadData();
+                        } catch (RemoteException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        try {
+                            handleResetAction();
+                        } catch (RemoteException ex) {
+                            throw new RuntimeException(ex);
+                        }
                         toggleAddUpdateButtons();
                         setButtonsDisabled(false);
                         dialogPane.showInformation("Cập nhật thành công", "Dịch vụ đã được cập nhật");
@@ -400,10 +449,10 @@ public class HotelServiceManagerController {
 
         Task<ObservableList<HotelService>> searchTask = new Task<>() {
             @Override
-            protected ObservableList<HotelService> call() {
+            protected ObservableList<HotelService> call() throws RemoteException {
                 List<HotelService> hotelServices = (searchText == null || searchText.isEmpty())
-                        ? HotelServiceDAO.getHotelService()
-                        : HotelServiceDAO.findDataByContainsId(searchText);
+                        ? hotelServiceDAO.getHotelService()
+                        : hotelServiceDAO.findDataByContainsId(searchText);
                 return FXCollections.observableArrayList(hotelServices);
             }
         };

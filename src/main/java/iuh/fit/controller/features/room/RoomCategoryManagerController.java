@@ -1,7 +1,8 @@
 package iuh.fit.controller.features.room;
 
 import com.dlsc.gemsfx.DialogPane;
-import iuh.fit.dao.RoomCategoryDAO;
+import iuh.fit.dao.daointerface.RoomCategoryDAO;
+import iuh.fit.dao.daoimpl.RoomCategoryDAOImpl;
 import iuh.fit.models.RoomCategory;
 import iuh.fit.models.enums.ObjectStatus;
 import javafx.collections.FXCollections;
@@ -13,10 +14,13 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 
+import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Objects;
 
 public class RoomCategoryManagerController {
+    RoomCategoryDAO roomCategoryDAO = new RoomCategoryDAOImpl();
+
     // Search Fields
     @FXML
     private ComboBox<String> roomCategoryIDSearchField;
@@ -69,28 +73,49 @@ public class RoomCategoryManagerController {
 
     private ObservableList<RoomCategory> items;
 
-    public void initialize() {
+    public RoomCategoryManagerController() throws RemoteException {
+    }
+
+    public void initialize() throws RemoteException {
         dialogPane.toFront();
         loadData();
         setupTable();
 
         roomCategoryTableView.setFixedCellSize(40);
 
-        resetBtn.setOnAction(e -> handleResetAction());
+        resetBtn.setOnAction(e -> {
+            try {
+                handleResetAction();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         addBtn.setOnAction(e -> handleAddAction());
         updateBtn.setOnAction(e -> handleUpdateAction());
-        roomCategoryIDSearchField.setOnKeyReleased(e -> handleSearchAction());
-        roomCategoryIDSearchField.setOnAction(e -> handleSearchAction());
+        roomCategoryIDSearchField.setOnKeyReleased(e -> {
+            try {
+                handleSearchAction();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        roomCategoryIDSearchField.setOnAction(e -> {
+            try {
+                handleSearchAction();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
     }
 
     // Load dữ liệu lên giao diện
-    private void loadData() {
-        List<String> ids = RoomCategoryDAO.getTopThreeID();
+    private void loadData() throws RemoteException {
+        List<String> ids = roomCategoryDAO.getTopThreeID();
         roomCategoryIDSearchField.getItems().setAll(ids);
 
-        roomCategoryIDTextField.setText(RoomCategoryDAO.getNextRoomCategoryID());
+        roomCategoryIDTextField.setText(roomCategoryDAO.getNextRoomCategoryID());
 
-        List<RoomCategory> roomCategories = RoomCategoryDAO.getRoomCategory();
+        List<RoomCategory> roomCategories = roomCategoryDAO.getRoomCategory();
         items = FXCollections.observableArrayList(roomCategories);
         roomCategoryTableView.setItems(items);
         roomCategoryTableView.refresh();
@@ -150,12 +175,16 @@ public class RoomCategoryManagerController {
 
                     RoomCategory roomCategory = getTableView().getItems().get(getIndex());
 
-                    if (!RoomCategoryDAO.checkAllowUpdateOrDelete(roomCategory.getRoomCategoryID())) {
-                        updateButton.setDisable(true);
-                        deleteButton.setDisable(true);
-                    } else {
-                        updateButton.setDisable(false);
-                        deleteButton.setDisable(false);
+                    try {
+                        if (!roomCategoryDAO.checkAllowUpdateOrDelete(roomCategory.getRoomCategoryID())) {
+                            updateButton.setDisable(true);
+                            deleteButton.setDisable(true);
+                        } else {
+                            updateButton.setDisable(false);
+                            deleteButton.setDisable(false);
+                        }
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
                     }
 
                     setGraphic(hBox);
@@ -166,8 +195,8 @@ public class RoomCategoryManagerController {
     }
 
     // Chức năng 1: Làm mới
-    private void handleResetAction() {
-        roomCategoryIDTextField.setText(RoomCategoryDAO.getNextRoomCategoryID());
+    private void handleResetAction() throws RemoteException {
+        roomCategoryIDTextField.setText(roomCategoryDAO.getNextRoomCategoryID());
         roomCategoryRankCBox.setDisable(false);
         roomCategoryRankCBox.getSelectionModel().selectFirst();
 
@@ -198,7 +227,7 @@ public class RoomCategoryManagerController {
 
 
 
-            RoomCategoryDAO.createData(roomCategory);
+            roomCategoryDAO.createData(roomCategory);
             handleResetAction();
             loadData();
         } catch (Exception e) {
@@ -211,8 +240,16 @@ public class RoomCategoryManagerController {
         DialogPane.Dialog<ButtonType> dialog = dialogPane.showConfirmation("XÁC NHẬN", "Bạn có chắc chắn muốn xóa loại phòng này? Bạn sẽ mất thông tin bên GIÁ PHÒNG");
         dialog.onClose(buttonType -> {
             if (buttonType == ButtonType.YES) {
-                RoomCategoryDAO.deleteData(roomCategory.getRoomCategoryID());
-                loadData();
+                try {
+                    roomCategoryDAO.deleteData(roomCategory.getRoomCategoryID());
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    loadData();
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
     }
@@ -260,10 +297,22 @@ public class RoomCategoryManagerController {
 
             dialog.onClose(buttonType -> {
                 if (buttonType == ButtonType.YES) {
-                    RoomCategoryDAO.updateData(roomCategory);
+                    try {
+                        roomCategoryDAO.updateData(roomCategory);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
 
-                    handleResetAction();
-                    loadData();
+                    try {
+                        handleResetAction();
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                    try {
+                        loadData();
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
         } catch (Exception e) {
@@ -272,7 +321,7 @@ public class RoomCategoryManagerController {
     }
 
     // Chức năng 5: Tìm kiếm
-    private void handleSearchAction() {
+    private void handleSearchAction() throws RemoteException {
         roomCategoryNameSearchField.setText("");
         numberOfBedSearchField.setText("");
 
@@ -280,9 +329,9 @@ public class RoomCategoryManagerController {
         List<RoomCategory> roomCategories;
 
         if (searchText == null || searchText.isEmpty()) {
-            roomCategories = RoomCategoryDAO.getRoomCategory();
+            roomCategories = roomCategoryDAO.getRoomCategory();
         } else {
-            roomCategories = RoomCategoryDAO.findDataByContainsId(searchText);
+            roomCategories = roomCategoryDAO.findDataByContainsId(searchText);
             if (!roomCategories.isEmpty()) {
                 if(roomCategories.size() == 1){
                     roomCategoryNameSearchField.setText(roomCategories.getFirst().getRoomCategoryName());

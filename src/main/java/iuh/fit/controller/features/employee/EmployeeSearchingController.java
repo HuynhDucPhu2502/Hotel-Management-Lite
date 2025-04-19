@@ -1,7 +1,8 @@
 package iuh.fit.controller.features.employee;
 
 import iuh.fit.controller.MainController;
-import iuh.fit.dao.EmployeeDAO;
+import iuh.fit.dao.daointerface.EmployeeDAO;
+import iuh.fit.dao.daoimpl.EmployeeDAOImpl;
 import iuh.fit.models.Employee;
 import iuh.fit.models.enums.Gender;
 import iuh.fit.models.enums.Position;
@@ -21,6 +22,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -72,20 +74,30 @@ public class EmployeeSearchingController {
     private ObservableList<Employee> items;
 
     private MainController mainController;
+    EmployeeDAO employeeDAO = new EmployeeDAOImpl();
+
+    public EmployeeSearchingController() throws RemoteException {
+    }
 
     public void setupContext(MainController mainController) {
         this.mainController = mainController;
     }
 
-    public void initialize() {
+    public void initialize() throws RemoteException {
         loadData();
         setupTable();
         employeeTableView.setFixedCellSize(40);
         searchBtn.setOnAction(e -> handleSearchAction());
-        resetBtn.setOnAction(e -> handleResetAction());
+        resetBtn.setOnAction(e -> {
+            try {
+                handleResetAction();
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
     }
 
-    private void loadData() {
+    private void loadData() throws RemoteException {
         positionCBox.getItems().setAll(
                 Stream.of(Position.values())
                         .map(Enum::name)
@@ -105,7 +117,7 @@ public class EmployeeSearchingController {
                         .toList()
         );
         positionCBox.getItems().addFirst("TẤT CẢ");
-        List<Employee> employeeList = EmployeeDAO.getEmployees();
+        List<Employee> employeeList = employeeDAO.getEmployees();
         items = FXCollections.observableArrayList(employeeList);
         employeeTableView.setItems(items);
         employeeTableView.refresh();
@@ -211,7 +223,7 @@ public class EmployeeSearchingController {
         stage.show();
     }
 
-    private void handleResetAction() {
+    private void handleResetAction() throws RemoteException {
         employeeIDTextField.setText("");
         fullNameTextField.setText("");
         phoneNumberTextField.setText("");
@@ -247,7 +259,7 @@ public class EmployeeSearchingController {
             } else{
                position = ConvertHelper.positionConverter(positionCBox.getSelectionModel().getSelectedItem().equalsIgnoreCase("QUẢN LÝ")?"MANAGER":"RECEPTIONIST");
             }
-            List<Employee> searchResults = EmployeeDAO.searchEmployee(
+            List<Employee> searchResults = employeeDAO.searchEmployee(
                         employeeID, fullName, phoneNumber, address, gder, cardID, dob, position
                     );
             items.setAll(searchResults);

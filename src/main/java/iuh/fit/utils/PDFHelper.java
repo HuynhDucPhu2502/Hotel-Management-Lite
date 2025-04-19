@@ -4,7 +4,7 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.*;
-import iuh.fit.dao.RoomUsageServiceDAO;
+import iuh.fit.dao.daoimpl.RoomUsageServiceDAOImpl;
 import iuh.fit.models.Invoice;
 import iuh.fit.models.RoomUsageService;
 import javafx.stage.FileChooser;
@@ -21,13 +21,25 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.rmi.RemoteException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Objects;
 
 public class PDFHelper {
+    private static final RoomUsageServiceDAOImpl roomUsageServiceDAO;
+
+    static {
+        try {
+            roomUsageServiceDAO = new RoomUsageServiceDAOImpl();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     private static File createInvoicePDF(Invoice invoice) throws DocumentException, IOException {
-        ArrayList<RoomUsageService> roomUsageServices = (ArrayList<RoomUsageService>) RoomUsageServiceDAO
+        ArrayList<RoomUsageService> roomUsageServices = (ArrayList<RoomUsageService>) roomUsageServiceDAO
                 .getByReservationFormID(invoice.getReservationForm().getReservationID());
 
         FileChooser fileChooser = new FileChooser();

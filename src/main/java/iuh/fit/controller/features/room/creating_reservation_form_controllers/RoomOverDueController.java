@@ -20,6 +20,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -80,14 +81,20 @@ public class RoomOverDueController {
             TimelineManager.getInstance().removeTimeline(timelineKey);
         }
 
-        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> refreshLateDurationDisplay(checkOutDate)));
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            try {
+                refreshLateDurationDisplay(checkOutDate);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
 
         TimelineManager.getInstance().addTimeline(timelineKey, timeline);
     }
 
-    private void refreshLateDurationDisplay(LocalDateTime checkOutDate) {
+    private void refreshLateDurationDisplay(LocalDateTime checkOutDate) throws RemoteException {
         duration = java.time.Duration.between(checkOutDate, LocalDateTime.now());
 
         long hours = duration.toHours();

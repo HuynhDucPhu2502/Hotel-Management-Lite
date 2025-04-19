@@ -1,7 +1,8 @@
 package iuh.fit.controller.features;
 
 import iuh.fit.controller.MainController;
-import iuh.fit.dao.RoomDAO;
+import iuh.fit.dao.daointerface.RoomDAO;
+import iuh.fit.dao.daoimpl.RoomDAOImpl;
 import iuh.fit.models.Account;
 import iuh.fit.models.enums.Position;
 
@@ -17,12 +18,16 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
+import lombok.SneakyThrows;
 
 
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DashboardController {
+
+    private final RoomDAO roomDAO = new RoomDAOImpl();
 
     @FXML
     private Label welcomeLabel;
@@ -45,24 +50,35 @@ public class DashboardController {
     // Phần 2: đường dẫn FXML
     private HashMap<HashMap<String, String>, String> featureKeywordFXMLMapping;
 
+    public DashboardController() throws RemoteException {
+    }
+
     public void initialize() {
     }
 
-    public void setupContext(Account account, MainController mainController) {
+    public void setupContext(Account account, MainController mainController) throws Exception {
         this.account = account;
         this.mainController = mainController;
 
         loadData();
     }
 
-    private void loadData() {
+
+    @SneakyThrows
+    private void loadData(){
         String empName = account.getEmployee().getFullName();
         welcomeLabel.setText("Xin chào, " + empName);
 
         loadDataIntoKeywords();
         loadFeaturesIntoGridPane();
         bindSearchFunctionality();
-        Platform.runLater(this::loadNumberOfRoomInformation);
+        Platform.runLater(() -> {
+            try {
+                loadNumberOfRoomInformation();
+            } catch (RemoteException e) {
+                e.printStackTrace(); // hoặc xử lý phù hợp
+            }
+        });
     }
 
     private void loadDataIntoKeywords() {
@@ -110,10 +126,17 @@ public class DashboardController {
         }
     }
 
-    private void loadNumberOfRoomInformation(){
+    @SneakyThrows
+    private void loadNumberOfRoomInformation() throws RemoteException {
         TimelineManager.getInstance().removeTimeline("REALTIME_DASHBOARD");
         getNumbersOfRoomInformation();
-        Timeline timeline =  new Timeline(new KeyFrame(Duration.seconds(60), event -> getNumbersOfRoomInformation()));
+        Timeline timeline =  new Timeline(new KeyFrame(Duration.seconds(60), event -> {
+            try {
+                getNumbersOfRoomInformation();
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }));
 
         timeline.setCycleCount(Timeline.INDEFINITE); // Lặp vô hạn
         timeline.play(); // Bắt đầu chạy
@@ -122,8 +145,8 @@ public class DashboardController {
     }
 
 
-    private void getNumbersOfRoomInformation(){
-        Map<RoomStatus, Long> roomStatusCount = RoomDAO.getRoomStatusCount();
+    private void getNumbersOfRoomInformation() throws RemoteException {
+        Map<RoomStatus, Long> roomStatusCount = roomDAO.getRoomStatusCount();
 
         roomAvailabelCountLabel.setText(String.valueOf(roomStatusCount.getOrDefault(RoomStatus.AVAILABLE, 0L)));
         roomOnUseCountLabel.setText(String.valueOf(roomStatusCount.getOrDefault(RoomStatus.IN_USE, 0L)));

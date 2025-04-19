@@ -2,9 +2,9 @@ package iuh.fit.controller.features.invoice;
 
 import com.dlsc.gemsfx.DialogPane;
 import iuh.fit.controller.MainController;
-import iuh.fit.dao.HistoryCheckInDAO;
-import iuh.fit.dao.HistoryCheckOutDAO;
-import iuh.fit.dao.RoomUsageServiceDAO;
+import iuh.fit.dao.daoimpl.*;
+import iuh.fit.dao.daointerface.HistoryCheckInDAO;
+import iuh.fit.dao.daointerface.HistoryCheckOutDAO;
 import iuh.fit.models.*;
 //import iuh.fit.utils.PDFHelper;
 import iuh.fit.utils.PDFHelper;
@@ -20,12 +20,18 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
 public class InvoiceDetailsController {
+
+    private final HistoryCheckInDAO historyCheckInDAO = new HistoryCheckInDAOImpl();
+    private final HistoryCheckOutDAO historyCheckOutDAO = new HistoryCheckOutDAOImpl();
+    private final RoomUsageServiceDAOImpl roomUsageServiceDAO = new RoomUsageServiceDAOImpl();
+
     @FXML
     private Button backBtn, invoiceManagerNavigateBtn, exportPDFBtn, printPDFBtn;
 
@@ -73,6 +79,9 @@ public class InvoiceDetailsController {
     private Employee employee;
     private Invoice invoice;
 
+    public InvoiceDetailsController() throws RemoteException {
+    }
+
     // ==================================================================================================================
     // 2. Khởi tạo và nạp dữ liệu vào giao diện
     // ==================================================================================================================
@@ -82,7 +91,7 @@ public class InvoiceDetailsController {
     }
 
     public void setupContext(MainController mainController, Employee employee,
-                             Invoice invoice) {
+                             Invoice invoice) throws RemoteException {
         this.mainController = mainController;
         this.employee = employee;
         this.invoice = invoice;
@@ -96,7 +105,7 @@ public class InvoiceDetailsController {
     }
 
     private void loadData() {
-        List<RoomUsageService> roomUsageServices = RoomUsageServiceDAO.getByReservationFormID(invoice.getReservationForm().getReservationID());
+        List<RoomUsageService> roomUsageServices = roomUsageServiceDAO.getByReservationFormID(invoice.getReservationForm().getReservationID());
         ObservableList<RoomUsageService> roomUsageServicesData = FXCollections.observableArrayList(roomUsageServices);
         roomUsageServiceTableView.setItems(roomUsageServicesData);
         roomUsageServiceTableView.refresh();
@@ -127,14 +136,14 @@ public class InvoiceDetailsController {
 
     }
 
-    private void setupReservationForm() {
+    private void setupReservationForm() throws RemoteException {
         ReservationForm reservationForm = invoice.getReservationForm();
 
         Room reservationFormRoom = reservationForm.getRoom();
         Customer reservationFormCustomer = reservationForm.getCustomer();
 
-        LocalDateTime actualCheckInDate = HistoryCheckInDAO.getActualCheckInDate(reservationForm.getReservationID());
-        LocalDateTime actualCheckOutDate = HistoryCheckOutDAO.getActualCheckOutDate(reservationForm.getReservationID());
+        LocalDateTime actualCheckInDate = historyCheckInDAO.getActualCheckInDate(reservationForm.getReservationID());
+        LocalDateTime actualCheckOutDate = historyCheckOutDAO.getActualCheckOutDate(reservationForm.getReservationID());
 
         roomNumberLabel.setText(reservationFormRoom.getRoomNumber());
         roomCategoryLabel.setText(reservationFormRoom.getRoomCategory().getRoomCategoryName());
@@ -210,5 +219,4 @@ public class InvoiceDetailsController {
             return new SimpleStringProperty(employeeName);
         });
     }
-
 }

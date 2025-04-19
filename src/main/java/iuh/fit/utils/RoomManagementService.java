@@ -1,17 +1,19 @@
 package iuh.fit.utils;
 
 import iuh.fit.controller.MainController;
-import iuh.fit.dao.EmployeeDAO;
-import iuh.fit.dao.InvoiceDAO;
-import iuh.fit.dao.RoomDAO;
-import iuh.fit.dao.RoomWithReservationDAO;
+import iuh.fit.dao.daoimpl.*;
 
+import iuh.fit.dao.daointerface.EmployeeDAO;
+import iuh.fit.dao.daointerface.InvoiceDAO;
+import iuh.fit.dao.daointerface.RoomDAO;
+import iuh.fit.dao.daointerface.RoomWithReservationDAO;
 import iuh.fit.models.Employee;
 import iuh.fit.models.ReservationForm;
 import iuh.fit.models.Room;
 import iuh.fit.models.enums.RoomStatus;
 import iuh.fit.models.wrapper.RoomWithReservation;
 
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -20,24 +22,76 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class RoomManagementService {
+    private static final EmployeeDAO employeeDAO;
+
+    static {
+        try {
+            employeeDAO = new EmployeeDAOImpl();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final InvoiceDAO invoiceDAO;
+
+    static {
+        try {
+            invoiceDAO = new InvoiceDAOImpl();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final RoomDAO roomDAO;
+
+    static {
+        try {
+            roomDAO = new RoomDAOImpl();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final RoomWithReservationDAO roomWithReservationDAO;
+
+    static {
+        try {
+            roomWithReservationDAO = new RoomWithReservationDAOImpl();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static final ScheduledExecutorService SCHEDULER =
             Executors.newScheduledThreadPool(1);
-    public static final Employee SYSTEM_EMPLOYEE =
-            EmployeeDAO.getEmployeeByEmployeeCode("EMP-000000");
+    public static final Employee SYSTEM_EMPLOYEE;
+
+    static {
+        try {
+            SYSTEM_EMPLOYEE = employeeDAO.getEmployeeByEmployeeCode("EMP-000000");
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void startAutoCheckoutScheduler(MainController mainController) {
         SCHEDULER.scheduleAtFixedRate(
-                () -> RoomManagementService.autoCheckoutOverdueRooms(mainController),
+                () -> {
+                    try {
+                        RoomManagementService.autoCheckoutOverdueRooms(mainController);
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
                 0,
                 60,
                 TimeUnit.SECONDS
         );
     }
 
-    public static void autoCheckoutOverdueRooms(MainController mainController) {
+    public static void autoCheckoutOverdueRooms(MainController mainController) throws RemoteException {
         List<RoomWithReservation> overdueRooms =
-                RoomWithReservationDAO.getRoomOverDueWithLatestReservation();
+                roomWithReservationDAO.getRoomOverDueWithLatestReservation();
 
         for (RoomWithReservation roomWithReservation : overdueRooms) {
             checkAndUpdateRoomStatus(
@@ -47,7 +101,7 @@ public class RoomManagementService {
         }
 
         List<RoomWithReservation> allRoomWithReservation =
-                RoomWithReservationDAO.getRoomWithReservation();
+                roomWithReservationDAO.getRoomWithReservation();
 
         for (RoomWithReservation roomWithReservation : allRoomWithReservation) {
             checkAndUpdateRoomStatus(
@@ -60,7 +114,7 @@ public class RoomManagementService {
     public static void checkAndUpdateRoomStatus(
             RoomWithReservation roomWithReservation,
             Employee employee
-    ) {
+    ) throws RemoteException {
         ReservationForm reservationForm = roomWithReservation.getReservationForm();
         Room room = roomWithReservation.getRoom();
 
@@ -75,11 +129,11 @@ public class RoomManagementService {
             if (hoursOverdue >= 2) {
                 handleCheckOut(roomWithReservation, employee);
                 room.setRoomStatus(RoomStatus.AVAILABLE);
-                RoomDAO.updateRoomStatus(room.getRoomID(), RoomStatus.AVAILABLE);
+                roomDAO.updateRoomStatus(room.getRoomID(), RoomStatus.AVAILABLE);
 
 
             } else {
-                RoomDAO.updateRoomStatus(room.getRoomID(), RoomStatus.OVER_DUE);
+                roomDAO.updateRoomStatus(room.getRoomID(), RoomStatus.OVER_DUE);
                 room.setRoomStatus(RoomStatus.OVER_DUE);
 
 
@@ -99,7 +153,7 @@ public class RoomManagementService {
             );
 
 
-            InvoiceDAO.roomCheckingOut(
+            invoiceDAO.roomCheckingOut(
                     roomWithReservation.getReservationForm().getReservationID(),
                     roomCharge,
                     serviceCharge
@@ -121,7 +175,7 @@ public class RoomManagementService {
             );
 
 
-            InvoiceDAO.roomCheckingOutEarly(
+            invoiceDAO.roomCheckingOutEarly(
                     roomWithReservation.getReservationForm().getReservationID(),
                     roomCharge,
                     serviceCharge

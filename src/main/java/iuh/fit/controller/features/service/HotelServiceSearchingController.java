@@ -2,8 +2,10 @@ package iuh.fit.controller.features.service;
 
 import com.dlsc.gemsfx.DialogPane;
 import iuh.fit.controller.MainController;
-import iuh.fit.dao.HotelServiceDAO;
-import iuh.fit.dao.ServiceCategoryDAO;
+import iuh.fit.dao.daointerface.HotelServiceDAO;
+import iuh.fit.dao.daoimpl.HotelServiceDAOImpl;
+import iuh.fit.dao.daointerface.ServiceCategoryDAO;
+import iuh.fit.dao.daoimpl.ServiceCategoryDAOImpl;
 import iuh.fit.models.Account;
 import iuh.fit.models.HotelService;
 import iuh.fit.models.ServiceCategory;
@@ -21,11 +23,15 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.text.Text;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class HotelServiceSearchingController {
+
+    private final HotelServiceDAO hotelServiceDAO = new HotelServiceDAOImpl();
+    public final ServiceCategoryDAO serviceCategoryDAO = new ServiceCategoryDAOImpl();
 
     // Dialog Pane
     @FXML
@@ -61,6 +67,9 @@ public class HotelServiceSearchingController {
     MainController mainController;
     Account account;
 
+    public HotelServiceSearchingController() throws RemoteException {
+    }
+
     public void setupContext(MainController mainController, Account account) {
         this.mainController = mainController;
         this.account = account;
@@ -80,8 +89,8 @@ public class HotelServiceSearchingController {
     private void loadData() {
         Task<ObservableList<HotelService>> loadDataTask = new Task<>() {
             @Override
-            protected ObservableList<HotelService> call() {
-                List<HotelService> hotelServiceList = HotelServiceDAO.getHotelService();
+            protected ObservableList<HotelService> call() throws RemoteException {
+                List<HotelService> hotelServiceList = hotelServiceDAO.getHotelService();
                 assert hotelServiceList != null;
                 return FXCollections.observableArrayList(hotelServiceList);
             }
@@ -97,11 +106,16 @@ public class HotelServiceSearchingController {
             hotelServiceTableView.setItems(items);
             hotelServiceTableView.refresh();
 
-            List<String> comboBoxItems = Objects.requireNonNull(ServiceCategoryDAO.findAll())
-                    .stream()
-                    .map(serviceCategory -> serviceCategory.getServiceCategoryID() +
-                            " " + serviceCategory.getServiceCategoryName())
-                    .collect(Collectors.toList());
+            List<String> comboBoxItems = null;
+            try {
+                comboBoxItems = Objects.requireNonNull(serviceCategoryDAO.findAll())
+                        .stream()
+                        .map(serviceCategory -> serviceCategory.getServiceCategoryID() +
+                                " " + serviceCategory.getServiceCategoryName())
+                        .collect(Collectors.toList());
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
+            }
             comboBoxItems.addFirst("KHÔNG CÓ");
             comboBoxItems.addFirst("TẤT CẢ");
 
@@ -207,7 +221,7 @@ public class HotelServiceSearchingController {
     }
 
     private void handleEditService(HotelService service) throws IOException {
-//        if (HotelServiceDAO.isHotelServiceInUse(service.getServiceID())) {
+//        if (HotelServiceDAOImpl.isHotelServiceInUse(service.getServiceID())) {
 //            dialogPane.showInformation("LỖI", "Dịch vụ đang được sử dụng");
 //            return;
 //        }
@@ -228,7 +242,7 @@ public class HotelServiceSearchingController {
     private void handleSearchAction() {
         Task<ObservableList<HotelService>> searchTask = new Task<>() {
             @Override
-            protected ObservableList<HotelService> call() {
+            protected ObservableList<HotelService> call() throws RemoteException {
                 String serviceID = serviceIDSearchField.getText().isBlank() ? null : serviceIDSearchField.getText().trim();
                 String serviceName = serviceNameSearchField.getText().isBlank() ? null : serviceNameSearchField.getText().trim();
                 Double minPrice = handlePriceInput(priceLowerBoundSearchField.getText());
@@ -236,7 +250,7 @@ public class HotelServiceSearchingController {
                 String selectedCategory = serviceCategorySearchField.getSelectionModel().getSelectedItem();
                 String categoryID = handleCategoryIDInput(selectedCategory);
 
-                List<HotelService> searchResults = HotelServiceDAO.searchHotelServices(
+                List<HotelService> searchResults = hotelServiceDAO.searchHotelServices(
                         serviceID, serviceName, minPrice, maxPrice, categoryID);
 
                 if (searchResults == null || searchResults.isEmpty()) {

@@ -21,6 +21,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -80,7 +81,13 @@ public class RoomOnUseItemController {
                         timeline.stop();
                         TimelineManager.getInstance().removeTimeline(timelineKey);
                         if (MainController.isRoomBookingLoaded()) navigateToRoomBookingPanel(false);
-                        else RoomManagementService.autoCheckoutOverdueRooms(mainController);
+                        else {
+                            try {
+                                RoomManagementService.autoCheckoutOverdueRooms(mainController);
+                            } catch (RemoteException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
                     }
                 })
         );
