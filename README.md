@@ -18,6 +18,12 @@ Một hệ thống quản lý khách sạn theo mô-đun, hỗ trợ các chức
 
 ---
 
+### ✅ [Client dành cho nhân viên](https://github.com/HuyGia2210/Hotel-Management-Employee-Client)
+
+> Dự án sẽ chia ra làm 2 (máy chủ và máy khách (client)). Máy chủ và máy khách giao tiếp nhau qua kết nối RMI TCP
+
+---
+
 ### 🆘 [Trang trợ giúp sử dụng phần mềm](https://github.com/HuynhDucPhu2502/Hotel-Management-HelpCenter)
 
 > Website tài liệu hướng dẫn sử dụng phần mềm, hỗ trợ người dùng dễ dàng tiếp cận và thao tác.
