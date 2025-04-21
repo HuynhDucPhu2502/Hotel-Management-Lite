@@ -19,7 +19,7 @@ public interface ReservationRoomDetailDAO extends Remote {
 
     void createData(ReservationRoomDetail detail)throws RemoteException;
 
-    void changingRoom(String currentRoomID, String newRoomID, String reservationFormID, String employeeID)throws RemoteException;
+    void changingRoom(String currentRoomID, String newRoomID, String reservationFormID)throws RemoteException;
 
     String roomCheckingIn(String reservationFormID)throws RemoteException;
 

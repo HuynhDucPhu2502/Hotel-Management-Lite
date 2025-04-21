@@ -1,9 +1,10 @@
 package iuh.fit.models.wrapper;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class ServiceDisplayOnTable {
+public class ServiceDisplayOnTable  implements Serializable {
     private String serviceId;
     private String serviceName;
     private String serviceCategory;

@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "hotel_services")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -14,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class HotelService {
+public class HotelService  implements Serializable {
     @Id
     @EqualsAndHashCode.Include
     @Column(name = "service_id")

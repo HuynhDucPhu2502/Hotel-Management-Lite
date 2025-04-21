@@ -1,12 +1,14 @@
 package iuh.fit.models.misc;
 
+import java.io.Serializable;
+
 /**
  * @author Le Tran Gia Huy
  * @created 09/11/2024 - 3:14 PM
  * @project HotelManagement
  * @package iuh.fit.models
  */
-public class Delta {
+public class Delta  implements Serializable {
     double x, y;
 
     public Delta(double x, double y) {

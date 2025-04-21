@@ -13,6 +13,7 @@ import java.rmi.server.UnicastRemoteObject;
  * @project Hotel-Management-Lite
  * @package iuh.fit.dao.daoimpl
  */
+
 @Getter
 public class AllDAOImpl extends UnicastRemoteObject implements AllDAO {
     private final AccountDAO accountDAO = new AccountDAOImpl();

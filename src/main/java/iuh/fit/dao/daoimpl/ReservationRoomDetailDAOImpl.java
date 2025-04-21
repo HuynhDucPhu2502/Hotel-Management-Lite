@@ -61,7 +61,7 @@ public class ReservationRoomDetailDAOImpl extends UnicastRemoteObject implements
     }
 
     @Override
-    public void changingRoom(String currentRoomID, String newRoomID, String reservationFormID, String employeeID) {
+    public void changingRoom(String currentRoomID, String newRoomID, String reservationFormID) {
         EntityManager em = EntityManagerUtil.getEntityManager();
 
         ReservationForm form = em.find(ReservationForm.class, reservationFormID);

@@ -1,8 +1,9 @@
 package iuh.fit.models.wrapper;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class RoomDisplayOnTable {
+public class RoomDisplayOnTable  implements Serializable {
     private String roomID;
     private String roomCategory;
     private int numOfPeople;
