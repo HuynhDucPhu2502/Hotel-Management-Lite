@@ -72,5 +72,6 @@ module iuh.fit {
     exports iuh.fit.controller.features.statistics;
     exports iuh.fit.dao.daoimpl;
     exports iuh.fit.dao.daointerface;
+    exports iuh.fit.models.misc;
     opens iuh.fit.dao.daointerface to javafx.fxml;
 }
