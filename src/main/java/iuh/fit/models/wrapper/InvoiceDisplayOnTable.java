@@ -1,9 +1,10 @@
 package iuh.fit.models.wrapper;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class InvoiceDisplayOnTable {
+public class InvoiceDisplayOnTable implements Serializable {
     private String invoiceID;
     private String cusName;
     private String roomID;

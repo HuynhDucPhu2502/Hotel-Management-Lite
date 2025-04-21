@@ -6,10 +6,10 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-public interface AccountDAO  extends Remote {
+public interface AccountDAO extends Remote {
 
     // Lấy danh sách tất cả tài khoản
-    List<Account> getAccount()throws RemoteException;
+    List<Account> getAccount() throws RemoteException;
 
     // Lấy tài khoản theo ID
     Account getDataByID(String accountID)throws RemoteException;

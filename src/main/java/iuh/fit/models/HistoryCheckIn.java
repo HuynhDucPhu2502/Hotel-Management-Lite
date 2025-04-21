@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CollectionId;
 import org.hibernate.annotations.JoinColumnOrFormula;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class HistoryCheckIn {
+public class HistoryCheckIn  implements Serializable {
     @Id
     @EqualsAndHashCode.Include
     @Column(name = "room_history_checkin_id")

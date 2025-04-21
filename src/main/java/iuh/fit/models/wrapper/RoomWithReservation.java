@@ -6,10 +6,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class RoomWithReservation {
+public class RoomWithReservation  implements Serializable {
     private Room room;
     private ReservationForm reservationForm;
 

@@ -19,6 +19,7 @@ public class EmployeeClientServer {
     public static void main(String[] args) throws Exception {
         AllDAO allDAO = new AllDAOImpl();
         Context ct = new InitialContext();
+
         LocateRegistry.createRegistry(8702);
 
         ct.bind("rmi://localhost:8702/allDAO", allDAO);

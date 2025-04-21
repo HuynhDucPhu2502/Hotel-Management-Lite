@@ -4,6 +4,8 @@ import iuh.fit.models.enums.ObjectStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "service_categories")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -11,7 +13,7 @@ import lombok.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ServiceCategory {
+public class ServiceCategory  implements Serializable {
     @Id
     @EqualsAndHashCode.Include
     @Column(name = "service_category_id")
