@@ -15,7 +15,12 @@ import java.util.Set;
  * Admin 1/14/2025
  **/
 @Entity
-@Table(name = "employees")
+@Table(
+        name = "employees",
+        indexes = {
+                @Index(name = "idx_employee_code", columnList = "employee_code")
+        }
+)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

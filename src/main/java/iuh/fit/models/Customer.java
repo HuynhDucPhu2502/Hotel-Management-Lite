@@ -2,10 +2,7 @@ package iuh.fit.models;
 
 import iuh.fit.models.enums.Gender;
 import iuh.fit.models.enums.ObjectStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,7 +15,12 @@ import java.time.LocalDate;
  * Admin 1/14/2025
  **/
 @Entity
-@Table(name = "customers")
+@Table(
+        name = "customers",
+        indexes = {
+                @Index(name = "idx_customer_code", columnList = "customer_code")
+        }
+)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
