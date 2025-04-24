@@ -24,26 +24,10 @@ module iuh.fit {
     requires itextpdf;
     requires org.apache.pdfbox;
 
-    // Opens
-    opens iuh.fit to javafx.fxml;
-
     // open excel
     requires java.desktop;
     requires com.fasterxml.jackson.databind;
 
-    opens iuh.fit.controller to javafx.fxml;
-    opens iuh.fit.controller.features to javafx.fxml;
-    opens iuh.fit.controller.features.service to javafx.fxml;
-    opens iuh.fit.controller.features.customer to javafx.fxml;
-    opens iuh.fit.controller.features.employee to javafx.fxml;
-    opens iuh.fit.controller.features.room to javafx.fxml;
-    opens iuh.fit.controller.features.room.creating_reservation_form_controllers to javafx.fxml;
-    opens iuh.fit.controller.features.room.checking_in_reservation_list_controllers to javafx.fxml;
-    opens iuh.fit.controller.features.room.service_ordering_controllers to javafx.fxml;
-    opens iuh.fit.controller.features.room.room_changing_controllers to javafx.fxml;
-    opens iuh.fit.controller.features.room.checking_out_controllers to javafx.fxml;
-    opens iuh.fit.controller.features.invoice to javafx.fxml;
-    opens iuh.fit.controller.features.statistics to javafx.fxml;
 
     opens iuh.fit.devtools to javafx.fxml;
 
@@ -60,7 +44,6 @@ module iuh.fit {
 
 
     // Exports
-    exports iuh.fit;
     exports iuh.fit.models;
     exports iuh.fit.devtools;
 
@@ -69,7 +52,6 @@ module iuh.fit {
     exports iuh.fit.models.enums;
     exports iuh.fit.utils;
     exports iuh.fit.security;
-    exports iuh.fit.controller.features.statistics;
     exports iuh.fit.dao.daoimpl;
     exports iuh.fit.dao.daointerface;
     exports iuh.fit.models.misc;
